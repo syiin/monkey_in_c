@@ -1,11 +1,16 @@
 #include "lexer.h"
+#include "token.h"
 #include <stdlib.h>
 #include <string.h>
-#include "token.h"
+#include <stdbool.h>
+#include <stdio.h>
 
 
 token_t *next_token(lexer_t *l){
 	token_t *tok = new_token(ILLEGAL, "");
+	
+	skip_whitespace(l);
+
 	switch (l->ch){
 		case '=':
 			tok->type = ASSIGN;
@@ -43,9 +48,57 @@ token_t *next_token(lexer_t *l){
 			tok->type = EOF_TOKEN;
 			tok->literal = "";
 			break;
+		default:
+			if (is_letter(l->ch)){
+				tok->literal = read_identifier(l);
+				tok->type = lookup_ident(tok);
+				return tok;
+			} else if (is_digit(l->ch)){
+				tok->type = INT;
+				tok->literal = read_number(l);
+				return tok;
+			} else {
+				tok->type = ILLEGAL;
+				char str[2];
+				str[0] = l->ch;
+				str[1] = '\0';
+				tok->literal = str;
+			}
 	}
 	read_char(l);
 	return tok;
+}
+
+char *read_identifier(lexer_t *l){
+	int position = l->position;
+	while(is_letter(l->ch)){
+		read_char(l);
+	}
+	size_t length = l->position - position;
+	char *result_string = malloc(length + 1);
+	if (result_string == NULL) {
+		return NULL;
+	}
+
+	strncpy(result_string, l->input + position, length);
+	result_string[length] = '\0';
+	return result_string;
+}
+
+char *read_number(lexer_t *l){
+	int position = l->position;
+	while(is_digit(l->ch)){
+		read_char(l);
+	}
+	size_t length = l->position - position;
+	char *result_string = malloc(length + 1);
+	if (result_string == NULL) {
+		return NULL;
+	}
+
+	strncpy(result_string, l->input + position, length);
+	result_string[length] = '\0';
+	return result_string;
 }
 
 void read_char(lexer_t *l){
@@ -59,6 +112,32 @@ void read_char(lexer_t *l){
 	l->read_position++;
 }
 
+void skip_whitespace(lexer_t *l){
+	while (l->ch == ' ' || l->ch == '\t' || l->ch =='\n' || l->ch == '\r'){
+		read_char(l);
+	}
+}
+
+TokenType lookup_ident(token_t *token){
+	if (strcmp(token->literal, "fn") == 0){
+		return FUNCTION;
+	} else if (strcmp(token->literal, "let") == 0){
+		return LET;
+	} else {
+		return IDENT;
+	}
+}
+
+
+bool is_letter(unsigned char ch) {
+    return ((ch >= 'a' && ch <= 'z') ||
+            (ch >= 'A' && ch <= 'Z') ||
+            (ch == '_'));
+}
+
+bool is_digit(unsigned char ch) {
+	return (('0' <= ch) && (ch <= '9'));
+}
 
 lexer_t *new_lexer(char *input){
 	lexer_t *lexer = malloc(sizeof(lexer_t));

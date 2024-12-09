@@ -1,6 +1,8 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <stdbool.h>
+
 typedef enum {
 	ILLEGAL,
 	EOF_TOKEN,
@@ -51,8 +53,12 @@ TokenType string_to_token_type(const char *str);
 token_t *new_token(TokenType type, char *literal);
 void free_token(token_t *token);
 void print_token(token_t *token);
+bool is_letter(unsigned char ch);
+bool is_digit(unsigned char ch);
+TokenType lookup_ident(token_t *token);
 
 typedef struct Lexer lexer_t;
 token_t *next_token(lexer_t *l);
-
+char *read_identifier(lexer_t *l);
+char *read_number(lexer_t *l);
 #endif
