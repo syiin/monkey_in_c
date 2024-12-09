@@ -15,6 +15,8 @@ typedef enum {
 	BANG,
 	ASTERISK,
 	SLASH,
+	EQ,
+	NOT_EQ,
 	LT,
 	GT,
 	// Delimiters
@@ -47,6 +49,8 @@ static const char *TOKEN_TYPE_STRINGS[TOKEN_TYPE_COUNT] = {
 	[BANG] = "!",
 	[ASTERISK] = "*",
 	[SLASH] = "/",
+	[EQ] = "==",
+	[NOT_EQ] = "!=",
 	[LT] = "<",
 	[GT] = ">",
 	[COMMA]     = "COMMA",

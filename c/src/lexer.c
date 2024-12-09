@@ -13,8 +13,15 @@ token_t *next_token(lexer_t *l){
 
 	switch (l->ch){
 		case '=':
-			tok->type = ASSIGN;
-			tok->literal = "=";
+			if (peek_char(l) == '='){
+				read_char(l);
+				tok->type = EQ;
+				tok->literal = "==";
+
+			} else {
+				tok->type = ASSIGN;
+				tok->literal = "=";
+			}
 			break;
 		case ';':
 			tok->type = SEMICOLON;
@@ -41,8 +48,14 @@ token_t *next_token(lexer_t *l){
 			tok->literal = "-";
 			break;
 		case '!':
-			tok->type = BANG;
-			tok->literal = "!";
+			if (peek_char(l) == '='){
+				read_char(l);
+				tok->type = NOT_EQ;
+				tok->literal = "!=";
+			} else {
+				tok->type = BANG;
+				tok->literal = "!";
+			}
 			break;
 		case '/':
 			tok->type = SLASH;
@@ -134,6 +147,14 @@ void read_char(lexer_t *l){
 	}
 	l->position = l->read_position;
 	l->read_position++;
+}
+
+char peek_char(lexer_t *l){
+	if (l->read_position >= strlen(l->input)){
+		return 0;
+	} else {
+		return l->input[l->read_position];
+	}
 }
 
 void skip_whitespace(lexer_t *l){

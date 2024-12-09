@@ -38,7 +38,9 @@ void test_next_token(){
 		"\treturn true;\n"
 		"} else {\n"
 		"\treturn false;\n"
-		"}\n";
+		"}\n"
+		"10 == 10;\n"
+		"10 != 9;\n";
 	
 	token_t tests[] = {
 		{LET, "let"},
@@ -106,7 +108,15 @@ void test_next_token(){
 		{FALSE, "false"},
 		{SEMICOLON, ";"},
 		{RBRACE, "}"},
-		{EOF_TOKEN, ""}	
+		{INT, "10"},
+		{EQ, "=="},
+		{INT, "10"},
+		{SEMICOLON, ";"},
+		{INT, "10"},
+		{NOT_EQ, "!="},
+		{INT, "9"},
+		{SEMICOLON, ";"},
+		{EOF_TOKEN, ""},
 	};
 	lexer_t *l = new_lexer(input);
 	token_t *t;
