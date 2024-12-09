@@ -8,7 +8,7 @@ TESTS= bin/lexer_test
 all: bin/monkey
 bin/:
 	mkdir -p bin/
-bin/monkey: monkey.c $(LEXER_SRC) | bin/
+bin/monkey: main.c $(LEXER_SRC) | bin/
 	$(CC) $(CFLAGS) $^ -Ofast -march=native -o $@
 bin/lexer_test: tests/lexer_test.c $(LEXER_SRC) | bin/
 	$(CC) $(CFLAGS) $^ -o $@

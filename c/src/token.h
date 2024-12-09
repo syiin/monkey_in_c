@@ -48,8 +48,11 @@ typedef struct Token {
 
 const char *token_type_to_string(TokenType t);
 TokenType string_to_token_type(const char *str);
-token_t *new_token(const char *type, char *literal);
+token_t *new_token(TokenType type, char *literal);
 void free_token(token_t *token);
 void print_token(token_t *token);
+
+typedef struct Lexer lexer_t;
+token_t *next_token(lexer_t *l);
 
 #endif

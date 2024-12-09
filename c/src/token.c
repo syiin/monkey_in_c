@@ -20,9 +20,9 @@ TokenType string_to_token_type(const char *str) {
 }
 
 
-token_t *new_token(const char *type, char *literal){
+token_t *new_token(TokenType type, char *literal){
 	token_t *token = malloc(sizeof(token_t));
-	token->type = string_to_token_type(type);
+	token->type = type;
 	token->literal = strdup(literal);
 	return token;
 }
