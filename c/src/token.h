@@ -27,6 +27,11 @@ typedef enum {
 	// Keywords
 	FUNCTION,
 	LET,
+	TRUE,
+	FALSE,
+	IF,
+	ELSE,
+	RETURN,
 
 	TOKEN_TYPE_COUNT,
 } TokenType;

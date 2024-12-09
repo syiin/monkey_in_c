@@ -147,6 +147,16 @@ TokenType lookup_ident(token_t *token){
 		return FUNCTION;
 	} else if (strcmp(token->literal, "let") == 0){
 		return LET;
+	} else if (strcmp(token->literal, "true") == 0){
+		return TRUE;
+	} else if (strcmp(token->literal, "false") == 0){
+		return FALSE;
+	} else if (strcmp(token->literal, "if") == 0){
+		return IF;
+	} else if (strcmp(token->literal, "else") == 0){
+		return ELSE;
+	} else if (strcmp(token->literal, "return") == 0){
+		return RETURN;
 	} else {
 		return IDENT;
 	}

@@ -33,7 +33,12 @@ void test_next_token(){
 		"};\n"
 		"let result = add(five, ten);\n"
 		"!-/*5;\n"
-		"5 < 10 > 5;\n";
+		"5 < 10 > 5;\n"
+		"if (5 < 10) {\n"
+		"\treturn true;\n"
+		"} else {\n"
+		"\treturn false;\n"
+		"}\n";
 	
 	token_t tests[] = {
 		{LET, "let"},
@@ -84,6 +89,23 @@ void test_next_token(){
 		{GT, ">"},
 		{INT, "5"},
 		{SEMICOLON, ";"},
+		{IF, "if"},
+		{LPAREN, "("},
+		{INT, "5"},
+		{LT, "<"},
+		{INT, "10"},
+		{RPAREN, ")"},
+		{LBRACE, "{"},
+		{RETURN, "return"},
+		{TRUE, "true"},
+		{SEMICOLON, ";"},
+		{RBRACE, "}"},
+		{ELSE, "else"},
+		{LBRACE, "{"},
+		{RETURN, "return"},
+		{FALSE, "false"},
+		{SEMICOLON, ";"},
+		{RBRACE, "}"},
 		{EOF_TOKEN, ""}	
 	};
 	lexer_t *l = new_lexer(input);
