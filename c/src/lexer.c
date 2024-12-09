@@ -36,6 +36,30 @@ token_t *next_token(lexer_t *l){
 			tok->type = PLUS;
 			tok->literal = "+";
 			break;
+		case '-':
+			tok->type = MINUS;
+			tok->literal = "-";
+			break;
+		case '!':
+			tok->type = BANG;
+			tok->literal = "!";
+			break;
+		case '/':
+			tok->type = SLASH;
+			tok->literal = "/";
+			break;
+		case '*':
+			tok->type = ASTERISK;
+			tok->literal = "*";
+			break;
+		case '<':
+			tok->type = LT;
+			tok->literal = "<";
+			break;
+		case '>':
+			tok->type = GT;
+			tok->literal = ">";
+			break;
 		case '{':
 			tok->type = LBRACE;
 			tok->literal = "{";

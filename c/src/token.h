@@ -1,7 +1,6 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
-#include <stdbool.h>
 
 typedef enum {
 	ILLEGAL,
@@ -12,6 +11,12 @@ typedef enum {
 	// Operators
 	ASSIGN,
 	PLUS,
+	MINUS,
+	BANG,
+	ASTERISK,
+	SLASH,
+	LT,
+	GT,
 	// Delimiters
 	COMMA,
 	SEMICOLON,
@@ -27,20 +32,26 @@ typedef enum {
 } TokenType;
 
 static const char *TOKEN_TYPE_STRINGS[TOKEN_TYPE_COUNT] = {
-    [ILLEGAL]   = "ILLEGAL",
-    [EOF_TOKEN] = "EOF_TOKEN",
-    [IDENT]     = "IDENT",
-    [INT]       = "INT",
-    [ASSIGN]    = "ASSIGN",
-    [PLUS]     = "PLUS",
-    [COMMA]     = "COMMA",
-    [SEMICOLON] = "SEMICOLON",
-    [LPAREN]    = "LPAREN",
-    [RPAREN]    = "RPAREN",
-    [LBRACE]    = "LBRACE",
-    [RBRACE]    = "RBRACE",
-    [FUNCTION]  = "FUNCTION",
-    [LET]       = "LET"
+	[ILLEGAL]   = "ILLEGAL",
+	[EOF_TOKEN] = "EOF_TOKEN",
+	[IDENT]     = "IDENT",
+	[INT]       = "INT",
+	[ASSIGN]    = "ASSIGN",
+	[PLUS]     = "PLUS",
+	[MINUS] = "-",
+	[BANG] = "!",
+	[ASTERISK] = "*",
+	[SLASH] = "/",
+	[LT] = "<",
+	[GT] = ">",
+	[COMMA]     = "COMMA",
+	[SEMICOLON] = "SEMICOLON",
+	[LPAREN]    = "LPAREN",
+	[RPAREN]    = "RPAREN",
+	[LBRACE]    = "LBRACE",
+	[RBRACE]    = "RBRACE",
+	[FUNCTION]  = "FUNCTION",
+	[LET]       = "LET"
 };
 
 typedef struct Token {
@@ -53,12 +64,5 @@ TokenType string_to_token_type(const char *str);
 token_t *new_token(TokenType type, char *literal);
 void free_token(token_t *token);
 void print_token(token_t *token);
-bool is_letter(unsigned char ch);
-bool is_digit(unsigned char ch);
-TokenType lookup_ident(token_t *token);
 
-typedef struct Lexer lexer_t;
-token_t *next_token(lexer_t *l);
-char *read_identifier(lexer_t *l);
-char *read_number(lexer_t *l);
 #endif

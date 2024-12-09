@@ -31,7 +31,10 @@ void test_next_token(){
 		"let add = fn(x, y) {\n"
 		"\tx + y;\n"
 		"};\n"
-		"let result = add(five, ten);\n";
+		"let result = add(five, ten);\n"
+		"!-/*5;\n"
+		"5 < 10 > 5;\n";
+	
 	token_t tests[] = {
 		{LET, "let"},
 		{IDENT, "five"},
@@ -68,6 +71,18 @@ void test_next_token(){
 		{COMMA, ","},
 		{IDENT, "ten"},
 		{RPAREN, ")"},
+		{SEMICOLON, ";"},
+		{BANG, "!"},
+		{MINUS, "-"},
+		{SLASH, "/"},
+		{ASTERISK, "*"},
+		{INT, "5"},
+		{SEMICOLON, ";"},
+		{INT, "5"},
+		{LT, "<"},
+		{INT, "10"},
+		{GT, ">"},
+		{INT, "5"},
 		{SEMICOLON, ";"},
 		{EOF_TOKEN, ""}	
 	};
