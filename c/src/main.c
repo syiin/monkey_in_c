@@ -1,9 +1,7 @@
 #include <stdio.h>
-#include "token.h"
+#include "repl.h"
 
 int main(){
-	/*token_t *token = new_token("IDENT", "x");*/
-	token_t *token = new_token(IDENT, "x");
-	print_token(token);
-
+	printf("Hello! Welcome to C Monkeys!\n");
+	repl_start(stdin, stdout);
 }
