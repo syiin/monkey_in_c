@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 
-token_t *next_token(lexer_t *l){
+token_t *lexer_next_token(lexer_t *l){
 	token_t *tok = new_token(ILLEGAL, "");
 	
 	skip_whitespace(l);

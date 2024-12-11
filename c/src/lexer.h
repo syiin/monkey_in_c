@@ -15,7 +15,7 @@ lexer_t *new_lexer(char *input);
 void read_char(lexer_t *l);
 char peek_char(lexer_t *l);
 void skip_whitespace(lexer_t *l);
-token_t *next_token(lexer_t *l);
+token_t *lexer_next_token(lexer_t *l);
 char *read_identifier(lexer_t *l);
 char *read_number(lexer_t *l);
 bool is_letter(unsigned char ch);

@@ -11,10 +11,10 @@ void repl_start(FILE *in, FILE *out){
 		}
 
 		lexer_t *lexer = new_lexer(input);
-		token_t *token = next_token(lexer);
+		token_t *token = lexer_next_token(lexer);
 		while(token->type != EOF_TOKEN){
 			print_token(token);
-			token = next_token(lexer);
+			token = lexer_next_token(lexer);
 		}
 	}
 	
