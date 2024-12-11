@@ -20,6 +20,6 @@ char *read_identifier(lexer_t *l);
 char *read_number(lexer_t *l);
 bool is_letter(unsigned char ch);
 bool is_digit(unsigned char ch);
-TokenType lookup_ident(token_t *token);
+TokenType lookup_ident(char *literal);
 
 #endif

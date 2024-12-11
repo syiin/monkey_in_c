@@ -15,7 +15,7 @@ void test_let_statements(){
 		exit(1);
 	}
 
-	assertf(program->size == 3, "Program does not container 3 statements");
+	assertf(program->count == 3, "Program does not container 3 statements");
 
 	struct { char *name; } tests[] = {
 		{"x"},

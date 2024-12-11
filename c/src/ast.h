@@ -25,7 +25,8 @@ typedef struct Statement {
 
 typedef struct Program{
 	statement_t *statements;
-	int size;
+	int statement_cap;
+	int count;
 } program_t;
 
 void token_literal(program_t *program);

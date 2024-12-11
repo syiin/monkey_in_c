@@ -6,103 +6,82 @@
 #include <stdio.h>
 
 
-token_t *lexer_next_token(lexer_t *l){
-	token_t *tok = new_token(ILLEGAL, "");
-	
-	skip_whitespace(l);
+token_t *lexer_next_token(lexer_t *lexer){
+	token_t *tok;
+	skip_whitespace(lexer);
 
-	switch (l->ch){
+	switch (lexer->ch){
 		case '=':
-			if (peek_char(l) == '='){
-				read_char(l);
-				tok->type = EQ;
-				tok->literal = "==";
+			if (peek_char(lexer) == '='){
+				read_char(lexer);
+				tok = new_token(EQ, "==");
 
 			} else {
-				tok->type = ASSIGN;
-				tok->literal = "=";
+				tok = new_token(ASSIGN, "=");
 			}
 			break;
 		case ';':
-			tok->type = SEMICOLON;
-			tok->literal = ";";
+			tok = new_token(SEMICOLON, ";");
 			break;
 		case '(':
-			tok->type = LPAREN;
-			tok->literal = "(";
+			tok = new_token(LPAREN, "(");
 			break;
 		case ')':
-			tok->type = RPAREN;
-			tok->literal = ")";
+			tok = new_token(RPAREN, ")");
 			break;
 		case ',':
-			tok->type = COMMA;
-			tok->literal = ",";
+			tok = new_token(COMMA, ",");
 			break;
 		case '+':
-			tok->type = PLUS;
-			tok->literal = "+";
+			tok = new_token(PLUS, "+");
 			break;
 		case '-':
-			tok->type = MINUS;
-			tok->literal = "-";
+			tok = new_token(MINUS, "-");
 			break;
 		case '!':
-			if (peek_char(l) == '='){
-				read_char(l);
-				tok->type = NOT_EQ;
-				tok->literal = "!=";
+			if (peek_char(lexer) == '='){
+				read_char(lexer);
+				tok = new_token(NOT_EQ, "!=");
 			} else {
-				tok->type = BANG;
-				tok->literal = "!";
+				tok = new_token(BANG, "!");
 			}
 			break;
 		case '/':
-			tok->type = SLASH;
-			tok->literal = "/";
+			tok = new_token(SLASH, "/");
 			break;
 		case '*':
-			tok->type = ASTERISK;
-			tok->literal = "*";
+			tok = new_token(ASTERISK, "*");
 			break;
 		case '<':
-			tok->type = LT;
-			tok->literal = "<";
+			tok = new_token(LT, "<");
 			break;
 		case '>':
-			tok->type = GT;
-			tok->literal = ">";
+			tok = new_token(GT, ">");
 			break;
 		case '{':
-			tok->type = LBRACE;
-			tok->literal = "{";
+			tok = new_token(LBRACE, "{");
 			break;
 		case '}':
-			tok->type = RBRACE;
-			tok->literal = "}";
+			tok = new_token(RBRACE, "}");
 			break;
 		case 0:
-			tok->type = EOF_TOKEN;
-			tok->literal = "";
+			tok = new_token(EOF_TOKEN, "");
 			break;
 		default:
-			if (is_letter(l->ch)){
-				tok->literal = read_identifier(l);
-				tok->type = lookup_ident(tok);
-				return tok;
-			} else if (is_digit(l->ch)){
-				tok->type = INT;
-				tok->literal = read_number(l);
-				return tok;
+			if (is_letter(lexer->ch)){
+				char *literal = read_identifier(lexer);
+				return new_token(lookup_ident(literal), literal);
+			} else if (is_digit(lexer->ch)){
+				char *literal = read_number(lexer);
+				return new_token(INT, literal);
 			} else {
-				tok->type = ILLEGAL;
 				char str[2];
-				str[0] = l->ch;
+				str[0] = lexer->ch;
 				str[1] = '\0';
-				tok->literal = str;
+				tok = new_token(ILLEGAL, strdup(str));
 			}
 	}
-	read_char(l);
+	read_char(lexer);
 	return tok;
 }
 
@@ -163,20 +142,20 @@ void skip_whitespace(lexer_t *l){
 	}
 }
 
-TokenType lookup_ident(token_t *token){
-	if (strcmp(token->literal, "fn") == 0){
+TokenType lookup_ident(char *literal){
+	if (strcmp(literal, "fn") == 0){
 		return FUNCTION;
-	} else if (strcmp(token->literal, "let") == 0){
+	} else if (strcmp(literal, "let") == 0){
 		return LET;
-	} else if (strcmp(token->literal, "true") == 0){
+	} else if (strcmp(literal, "true") == 0){
 		return TRUE;
-	} else if (strcmp(token->literal, "false") == 0){
+	} else if (strcmp(literal, "false") == 0){
 		return FALSE;
-	} else if (strcmp(token->literal, "if") == 0){
+	} else if (strcmp(literal, "if") == 0){
 		return IF;
-	} else if (strcmp(token->literal, "else") == 0){
+	} else if (strcmp(literal, "else") == 0){
 		return ELSE;
-	} else if (strcmp(token->literal, "return") == 0){
+	} else if (strcmp(literal, "return") == 0){
 		return RETURN;
 	} else {
 		return IDENT;
