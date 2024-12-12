@@ -43,11 +43,6 @@ statement_t *parse_let_statement(parser_t *parser){
 		return NULL;
 	}
 
-	printf("Current Token:\n");
-	print_token(&parser->curr_token);
-	printf("Next Token:\n");
-	print_token(&parser->peek_token);
-
 	statement->name.token = parser->curr_token;
 	statement->name.value = parser->curr_token.literal;
 
