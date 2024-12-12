@@ -1,6 +1,7 @@
 #include "ast.h"
 #include "token.h"
 #include "lexer.h"
+#include "vector.h"
 #include <stdlib.h>
 
 typedef struct Parser {
@@ -8,8 +9,13 @@ typedef struct Parser {
 
 	token_t	curr_token;
 	token_t	peek_token;
+
+	vector_t *errors;
 } parser_t;
 
+typedef struct ParserError {
+	char *error;
+} parser_error_t;
 
 void parser_next_token(parser_t *parser);
 program_t *parse_program(parser_t *parser);

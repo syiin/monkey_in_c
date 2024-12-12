@@ -4,6 +4,7 @@
 #include "parser.h"
 #include "lexer.h"
 #include "token.h"
+#include "vector.h"
 
 parser_t *new_parser(lexer_t *lexer){
 	parser_t *parser = malloc(sizeof(parser_t));
@@ -11,7 +12,7 @@ parser_t *new_parser(lexer_t *lexer){
 		return NULL;
 	}
 	parser->lexer = lexer;
-
+	parser->errors = create_vector();
 	parser_next_token(parser);
 	return parser;
 }

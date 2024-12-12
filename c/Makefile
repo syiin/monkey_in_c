@@ -1,7 +1,8 @@
 CC = gcc
 CFLAGS+= -Werror -Wall -Isrc/ -g
 VPATH= src
-TOKEN_SRC= token.c
+VECTOR_SRC = vector.c
+TOKEN_SRC= token.c $(VECTOR_SRC)
 LEXER_SRC= lexer.c $(TOKEN_SRC)
 REPL_SRC = repl.c ${LEXER_SRC}
 AST_SRC = ast.c ${REPL_SRC}
