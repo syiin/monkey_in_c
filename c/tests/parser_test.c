@@ -2,6 +2,13 @@
 #include "../src/lexer.h"
 #include "../src/parser.h"
 
+void check_parser_errors(parser_t *parser){
+	if (parser->errors->count > 0){
+		print_errors(parser);
+	}
+	assertf(parser->errors->count == 0, "expected no errors but got %d", 0, parser->errors->count);
+}
+
 void test_let_statements(){
 	char *input = "let x = 5;\n"
 		"let y = 10;\n"
@@ -10,6 +17,8 @@ void test_let_statements(){
 	parser_t *parser = new_parser(lexer);
 
 	program_t *program = parse_program(parser);
+	check_parser_errors(parser);
+
 	if (program == NULL){
 		printf("Parse program failed \n");
 		exit(1);
@@ -32,6 +41,7 @@ void test_let_statements(){
 		/*assertf(strcmp(statement.name.token.literal, tests[i].name) == 0, "wrong name literal. expected %s, got %s", tests[i].value, statement.token.literal);*/
 	}
 }
+
 
 int main(int argc, char *argv[]) {
 	TEST(test_let_statements);

@@ -25,11 +25,13 @@ void append_vector(vector_t *vector, void *element){
 		void **tmp = realloc(vector->data, sizeof(void *) * vector->capacity);
 		vector->data = tmp;
 	}
-	vector->count++;
 	vector->data[vector->count] = element;
+	vector->count++;
 }
 
 void free_vector(vector_t *vector){
-	free(vector->data);
+	for (int i = 0; i < vector->count; i++){
+		free(vector->data[i]);
+	}
 	free(vector);
 }
