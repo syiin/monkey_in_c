@@ -35,3 +35,12 @@ void free_token(token_t *token){
 void print_token(token_t *token){
 	printf("type: %s, literal: %s \n", token_type_to_string(token->type), token->literal);
 }
+
+void copy_token(token_t *dest, token_t *src) {
+    dest->type = src->type;
+    if (src->literal != NULL) {
+        dest->literal = strdup(src->literal);
+    } else {
+        dest->literal = NULL;
+    }
+}

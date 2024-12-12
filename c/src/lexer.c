@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-
 token_t *lexer_next_token(lexer_t *lexer){
 	token_t *tok;
 	skip_whitespace(lexer);

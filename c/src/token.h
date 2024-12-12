@@ -73,5 +73,6 @@ TokenType string_to_token_type(const char *str);
 token_t *new_token(TokenType type, char *literal);
 void free_token(token_t *token);
 void print_token(token_t *token);
+void copy_token(token_t *dest, token_t *src);
 
 #endif

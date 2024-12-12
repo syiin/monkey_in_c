@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 #include "parser.h"
 #include "lexer.h"
 #include "token.h"
@@ -16,7 +17,7 @@ parser_t *new_parser(lexer_t *lexer){
 }
 
 void parser_next_token(parser_t *parser){
-	parser->curr_token = *lexer_next_token(parser->lexer);
+	copy_token(&parser->curr_token, &parser->peek_token);
 	parser->peek_token = *lexer_next_token(parser->lexer);
 }
 
@@ -41,6 +42,11 @@ statement_t *parse_let_statement(parser_t *parser){
 	if (!(expect_peek(parser, IDENT))){
 		return NULL;
 	}
+
+	printf("Current Token:\n");
+	print_token(&parser->curr_token);
+	printf("Next Token:\n");
+	print_token(&parser->peek_token);
 
 	statement->name.token = parser->curr_token;
 	statement->name.value = parser->curr_token.literal;
@@ -81,20 +87,22 @@ program_t *parse_program(parser_t *parser){
 	while (parser->curr_token.type != EOF_TOKEN){
 		statement_t *statement = parse_statement(parser);
 		if (statement != NULL){
-			push_to_program(statement, program);
+			program = push_to_program(statement, program);
 		}
 		parser_next_token(parser);
 	}
 	return program;
 }
 
-void push_to_program(statement_t *statement, program_t *program){
+program_t *push_to_program(statement_t *statement, program_t *program){
 	if (program->count >= program->statement_cap){
 		program->statement_cap = program->statement_cap * 2;
 		size_t to_allocate = sizeof(program_t) + program->statement_cap * sizeof(statement_t);
-		program = realloc(program, to_allocate);
-		assert(program != NULL);
+		program_t *new_program = realloc(program, to_allocate);
+		assert(new_program != NULL);
+		program = new_program;
 	}
-	program->statements[program->count] = *statement;
+	program->statements[program->count] = statement;
 	program->count++;
+	return program;
 }
