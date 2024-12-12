@@ -22,6 +22,7 @@ program_t *parse_program(parser_t *parser);
 parser_t *new_parser(lexer_t *lexer);
 program_t *push_to_program(statement_t *statement, program_t *program);
 statement_t *parse_let_statement(parser_t *parser);
+statement_t *parse_return_statement(parser_t *parser);
 statement_t *parse_statement(parser_t *parser);
 bool expect_peek(parser_t *parser, TokenType token_type);
 bool peek_token_is(parser_t *parser, TokenType token_type);

@@ -5,6 +5,7 @@
 
 typedef enum {
 	LET_STATEMENT,
+	RETURN_STATEMENT,
 } StatementType;
 
 typedef struct Expression {

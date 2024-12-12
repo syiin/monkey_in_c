@@ -26,9 +26,29 @@ statement_t *parse_statement(parser_t *parser){
 	switch(parser->curr_token.type){
 		case LET:
 			return parse_let_statement(parser);
+		case RETURN:
+			return parse_return_statement(parser);
 		default:
 			return NULL;
 	}
+}
+
+statement_t *parse_return_statement(parser_t *parser){
+	statement_t *statement = malloc(sizeof(statement_t));
+	if (statement == NULL){
+		return NULL;
+	}
+
+	statement->type = RETURN_STATEMENT;
+	statement->token = parser->curr_token;
+
+	parser_next_token(parser);
+
+	if (!(curr_token_is(parser, SEMICOLON))){
+		parser_next_token(parser);
+	}
+
+	return statement;
 }
 
 statement_t *parse_let_statement(parser_t *parser){
