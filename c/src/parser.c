@@ -74,6 +74,25 @@ bool curr_token_is(parser_t *parser, TokenType token_type){
 	return parser->curr_token.type == token_type;
 }
 
+void peek_error(parser_t *parser, token_t token){
+	const char *received = token_type_to_string(parser->peek_token.type);
+	const char *expected = token_type_to_string(token.type);
+	char buffer[128];
+	snprintf(buffer, sizeof(buffer), "expected next token to be %s, got %s instead", expected, received);
+	append_error(parser, buffer);
+}
+
+void append_error(parser_t *parser, const char *error){
+	append_vector(parser->errors, strdup(error));
+}
+
+void print_errors(parser_t *parser){
+	vector_t *errors = parser->errors;
+	for (int i = 0; i < errors->count; i++){
+		printf("%s", (char *)errors->data[i]);
+	}
+}
+
 program_t *parse_program(parser_t *parser){
 	int initial_cap = 2;
 	program_t *program = malloc(sizeof(program_t) + sizeof(statement_t) * initial_cap);
@@ -102,3 +121,5 @@ program_t *push_to_program(statement_t *statement, program_t *program){
 	program->count++;
 	return program;
 }
+
+

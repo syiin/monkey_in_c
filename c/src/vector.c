@@ -1,6 +1,5 @@
 #include "vector.h"
 #include <stdlib.h>
-#include <stdio.h>
 
 vector_t *create_vector(){
 	int init_cap = 2;
@@ -28,4 +27,9 @@ void append_vector(vector_t *vector, void *element){
 	}
 	vector->count++;
 	vector->data[vector->count] = element;
+}
+
+void free_vector(vector_t *vector){
+	free(vector->data);
+	free(vector);
 }

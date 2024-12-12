@@ -26,3 +26,6 @@ statement_t *parse_statement(parser_t *parser);
 bool expect_peek(parser_t *parser, TokenType token_type);
 bool peek_token_is(parser_t *parser, TokenType token_type);
 bool curr_token_is(parser_t *parser, TokenType token_type);
+void append_error(parser_t *parser, const char *error);
+void peek_error(parser_t *parser, token_t token);
+void print_errors(parser_t *parser);
