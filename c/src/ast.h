@@ -9,12 +9,17 @@ typedef enum {
 	EXPRESSION_STATEMENT,
 } StatementType;
 
+typedef enum {
+	IDENT_EXPR,
+} ExpressionType;
+
 typedef struct Identifier {
 	token_t token;
 	char *value;
 } identifier_t;
 
 typedef struct Expression {
+	ExpressionType type;
 	token_t token;
 	union {
 		identifier_t ident;
@@ -29,7 +34,6 @@ typedef struct Statement {
 } statement_t;
 
 typedef struct Program{
-	/*statement_t **statements;*/
 	int statement_cap;
 	int count;
 	statement_t *statements[];
@@ -39,5 +43,6 @@ void token_literal(program_t *program);
 void print_ast(program_t *program);
 void format_statement(char *str_buffer, int buffer_size, statement_t *statement);
 void ast_string(char *str_buffer, program_t *program);
+expression_t *new_expression(ExpressionType type, token_t token);
 
 #endif

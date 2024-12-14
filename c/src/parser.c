@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include "parser.h"
+#include "ast.h"
 #include "lexer.h"
 #include "token.h"
 #include "vector.h"
@@ -29,7 +30,7 @@ statement_t *parse_statement(parser_t *parser){
 		case RETURN:
 			return parse_return_statement(parser);
 		default:
-			return NULL;
+			return parse_expression_statement(parser);
 	}
 }
 
@@ -75,6 +76,26 @@ statement_t *parse_let_statement(parser_t *parser){
 		parser_next_token(parser);
 	}
 
+	return statement;
+}
+
+expression_t *parse_expression(parser_t *parser, Precedence precedence){
+	parse_prefix_expression prefix_fn = parse_prefix_fns(parser->curr_token.type);
+	return prefix_fn(parser);
+}
+
+statement_t *parse_expression_statement(parser_t *parser){
+	statement_t *statement = malloc(sizeof(statement_t));
+	if (statement == NULL){
+		return NULL;
+	}
+
+	statement->type = EXPRESSION_STATEMENT;
+	statement->value = parse_expression(parser, LOWEST);
+	
+	if (!(expect_peek(parser, SEMICOLON))){
+		return NULL;
+	}
 	return statement;
 }
 
@@ -144,4 +165,20 @@ program_t *push_to_program(statement_t *statement, program_t *program){
 	return program;
 }
 
+parse_prefix_expression parse_prefix_fns(TokenType token_type){
+	switch(token_type){
+		case IDENT:
+			return parse_identifier;
+		default:
+			return NULL;
+	}
+}
+
+expression_t *parse_identifier(parser_t *parser){
+	token_t token = {
+			.type = IDENT,
+			.literal = "anotherVar"
+		};
+	return new_expression(IDENT_EXPR, token);
+};
 

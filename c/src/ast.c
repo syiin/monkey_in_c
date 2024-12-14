@@ -1,9 +1,9 @@
 #include "token.h"
-#include "vector.h"
 #include "ast.h"
 #include <err.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 void token_literal(program_t *program){
 	for (int i = 0; i < program->count; i++){
@@ -42,4 +42,11 @@ void format_statement(char *str_buffer, int buffer_size, statement_t *statement)
 		default:
 			return;
 	}
+}
+
+expression_t *new_expression(ExpressionType type, token_t token){
+	expression_t *expression = malloc(sizeof(expression_t));
+	expression->token = token;
+	expression->type = type;
+	return expression;
 }
