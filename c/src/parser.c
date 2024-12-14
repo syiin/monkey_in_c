@@ -29,6 +29,10 @@ statement_t *parse_statement(parser_t *parser){
 			return parse_let_statement(parser);
 		case RETURN:
 			return parse_return_statement(parser);
+		case ILLEGAL:
+			return NULL;
+		case SEMICOLON:
+			return NULL;
 		default:
 			return parse_expression_statement(parser);
 	}
@@ -79,11 +83,6 @@ statement_t *parse_let_statement(parser_t *parser){
 	return statement;
 }
 
-expression_t *parse_expression(parser_t *parser, Precedence precedence){
-	parse_prefix_expression prefix_fn = parse_prefix_fns(parser->curr_token.type);
-	return prefix_fn(parser);
-}
-
 statement_t *parse_expression_statement(parser_t *parser){
 	statement_t *statement = malloc(sizeof(statement_t));
 	if (statement == NULL){
@@ -97,6 +96,11 @@ statement_t *parse_expression_statement(parser_t *parser){
 		return NULL;
 	}
 	return statement;
+}
+
+expression_t *parse_expression(parser_t *parser, Precedence precedence){
+	parse_prefix_expression prefix_fn = parse_prefix_fns(parser->curr_token.type);
+	return prefix_fn(parser);
 }
 
 bool expect_peek(parser_t *parser, TokenType token_type){
@@ -166,9 +170,10 @@ program_t *push_to_program(statement_t *statement, program_t *program){
 }
 
 parse_prefix_expression parse_prefix_fns(TokenType token_type){
+	printf("%s\n", token_type_to_string(token_type));
 	switch(token_type){
 		case IDENT:
-			return parse_identifier;
+			return &parse_identifier;
 		default:
 			return NULL;
 	}
@@ -177,7 +182,7 @@ parse_prefix_expression parse_prefix_fns(TokenType token_type){
 expression_t *parse_identifier(parser_t *parser){
 	token_t token = {
 			.type = IDENT,
-			.literal = "anotherVar"
+			.literal = parser->curr_token.literal
 		};
 	return new_expression(IDENT_EXPR, token);
 };
