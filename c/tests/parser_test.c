@@ -94,12 +94,35 @@ void test_identifier(){
 	statement_t statement = *program->statements[0];
 
 	assertf(statement.type == EXPRESSION_STATEMENT, "wrong token type. expected %s, got %s\n", "EXPRESSION_STATEMENT", token_type_to_string(statement.token.type));
-	assertf(strcmp(statement.value->ident.value, "foobar") == 0, "wrong identifier value. expected %s, got %s\n", "foobar", statement.name.value);
+	assertf(statement.value->type == IDENT_EXPR, "wrong expression type. expected %s, got %d\n", "IDENT_EXPR", statement.value->type);
+	assertf(strcmp(statement.value->ident.value, "foobar") == 0, "wrong identifier value. expected %s, got %s\n", "foobar", statement.value->ident.value);
 	assertf(strcmp(statement.value->ident.token.literal, "foobar") == 0, "wrong literal. expected %s, got %s\n", "foobar", statement.token.literal);
+}
+
+void test_integer(){
+	char *input = "5;";
+	lexer_t *lexer = new_lexer(input);
+	parser_t *parser = new_parser(lexer);
+
+	program_t *program = parse_program(parser);
+	check_parser_errors(parser);
+
+	if (program == NULL){
+		printf("Parse program failed \n");
+		exit(1);
+	}
+	assertf(program->count == 1, "Program does not container 1 statement");
+	statement_t statement = *program->statements[0];
+
+	assertf(statement.type == EXPRESSION_STATEMENT, "wrong token type. expected %s, got %s\n", "EXPRESSION_STATEMENT", token_type_to_string(statement.token.type));
+	assertf(statement.value->type == INTEGER_LITERAL, "wrong expression type. expected %s, got %d\n", "INTEGER_LITERAL", statement.value->type);
+	assertf(statement.value->integer == 5, "wrong value. expected %d, got %d\n", 5, statement.value->integer);
+	assertf(strcmp(statement.value->token.literal, "5") == 0, "wrong literal. expected %s, got %s\n", "foobar", statement.token.literal);
 }
 
 int main(int argc, char *argv[]) {
 	TEST(test_let_statements);
 	TEST(test_return_statements);
 	TEST(test_identifier);
+	TEST(test_integer);
 }

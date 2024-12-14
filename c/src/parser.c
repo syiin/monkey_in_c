@@ -173,6 +173,8 @@ parse_prefix_expression parse_prefix_fns(TokenType token_type){
 	switch(token_type){
 		case IDENT:
 			return &parse_identifier;
+		case INT:
+			return &parse_integer_literal;
 		default:
 			return NULL;
 	}
@@ -186,6 +188,16 @@ expression_t *parse_identifier(parser_t *parser){
 	expression_t *expression = new_expression(IDENT_EXPR, token);
 	expression->ident.token = token;
 	expression->ident.value = token.literal;
+	return expression;
+};
+
+expression_t *parse_integer_literal(parser_t *parser){
+	token_t token = {
+			.type = INT,
+			.literal = parser->curr_token.literal
+		};
+	expression_t *expression = new_expression(INTEGER_LITERAL, token);
+	expression->integer = atoi(token.literal);
 	return expression;
 };
 

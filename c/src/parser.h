@@ -38,9 +38,10 @@ statement_t *parse_statement(parser_t *parser);
 
 typedef expression_t *(*parse_prefix_expression)(parser_t*);
 typedef expression_t *(*parse_infix_expression)(expression_t*);
-expression_t *parse_identifier(parser_t *parser);
 parse_prefix_expression parse_prefix_fns(TokenType token_type);
 expression_t *parse_expression(parser_t *parser, Precedence precedence);
+expression_t *parse_identifier(parser_t *parser);
+expression_t *parse_integer_literal(parser_t *parser);
 
 bool expect_peek(parser_t *parser, TokenType token_type);
 bool peek_token_is(parser_t *parser, TokenType token_type);
