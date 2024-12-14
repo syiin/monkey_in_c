@@ -12,6 +12,7 @@ typedef enum {
 typedef enum {
 	IDENT_EXPR,
 	INTEGER_LITERAL,
+	PREFIX_EXPR,
 } ExpressionType;
 
 typedef struct Identifier {
@@ -19,12 +20,20 @@ typedef struct Identifier {
 	char *value;
 } identifier_t;
 
+typedef struct Expression expression_t;
+
+typedef struct PrefixExpression {
+	char *op;
+	expression_t *right;
+} prefix_expression_t;
+
 typedef struct Expression {
 	ExpressionType type;
 	token_t token;
 	union {
 		int integer;
 		identifier_t ident;
+		prefix_expression_t prefix_expression;
 	};
 } expression_t;
 

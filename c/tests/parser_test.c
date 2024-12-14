@@ -1,6 +1,7 @@
 #include "test_helpers.h"
 #include "../src/lexer.h"
 #include "../src/parser.h"
+#include <string.h>
 
 void check_parser_errors(parser_t *parser){
 	if (parser->errors->count > 0){
@@ -140,6 +141,13 @@ void test_parsing_prefix_expressions(){
 			printf("Parse program failed \n");
 			exit(1);
 		}
+		assertf(program->count == 1, "Program does not container 1 statement");
+		statement_t statement = *program->statements[0];
+
+		assertf(statement.type == EXPRESSION_STATEMENT, "wrong token type. expected %s, got %s\n", "EXPRESSION_STATEMENT", token_type_to_string(statement.token.type));
+		assertf(statement.value->type == PREFIX_EXPR, "wrong expression type. expected %s, got %d\n", "PREFIX_EXPRESSION", statement.value->type);
+		assertf(strcmp(statement.value->prefix_expression.op, tests[i].operator), "wrong operator type. got %s, expected %s\n", statement.value->prefix_expression.op, tests[i].operator);
+		assertf(statement.value->prefix_expression.right->integer == tests[i].integer_value, "wrong literal. expected %s, got %s\n", tests[i].integer_value, tests[i].integer_value);
 	}
 }
 
