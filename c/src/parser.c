@@ -91,7 +91,7 @@ statement_t *parse_expression_statement(parser_t *parser){
 
 	statement->type = EXPRESSION_STATEMENT;
 	statement->value = parse_expression(parser, LOWEST);
-	
+
 	if (!(expect_peek(parser, SEMICOLON))){
 		return NULL;
 	}
@@ -170,7 +170,6 @@ program_t *push_to_program(statement_t *statement, program_t *program){
 }
 
 parse_prefix_expression parse_prefix_fns(TokenType token_type){
-	printf("%s\n", token_type_to_string(token_type));
 	switch(token_type){
 		case IDENT:
 			return &parse_identifier;
@@ -184,6 +183,9 @@ expression_t *parse_identifier(parser_t *parser){
 			.type = IDENT,
 			.literal = parser->curr_token.literal
 		};
-	return new_expression(IDENT_EXPR, token);
+	expression_t *expression = new_expression(IDENT_EXPR, token);
+	expression->ident.token = token;
+	expression->ident.value = token.literal;
+	return expression;
 };
 

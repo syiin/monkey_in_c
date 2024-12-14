@@ -77,7 +77,7 @@ void test_return_statements(){
 }
 
 void test_identifier(){
-	char *input = "foobar";
+	char *input = "foobar;";
 
 	lexer_t *lexer = new_lexer(input);
 	parser_t *parser = new_parser(lexer);
@@ -89,13 +89,13 @@ void test_identifier(){
 		printf("Parse program failed \n");
 		exit(1);
 	}
-	assertf(program->count == 1, "Program does not container 3 statements");
+	assertf(program->count == 1, "Program does not container 1 statements");
 
 	statement_t statement = *program->statements[0];
 
 	assertf(statement.type == EXPRESSION_STATEMENT, "wrong token type. expected %s, got %s\n", "EXPRESSION_STATEMENT", token_type_to_string(statement.token.type));
-	assertf(strcmp(statement.name.value, "foobar") == 0, "wrong identifier value. expected %s, got %s\n", "foobar", statement.name.value);
-	assertf(strcmp(statement.token.literal, "foobar") == 0, "wrong literal. expected %s, got %s\n", "foobar", statement.token.literal);
+	assertf(strcmp(statement.value->ident.value, "foobar") == 0, "wrong identifier value. expected %s, got %s\n", "foobar", statement.name.value);
+	assertf(strcmp(statement.value->ident.token.literal, "foobar") == 0, "wrong literal. expected %s, got %s\n", "foobar", statement.token.literal);
 }
 
 int main(int argc, char *argv[]) {
