@@ -120,9 +120,33 @@ void test_integer(){
 	assertf(strcmp(statement.value->token.literal, "5") == 0, "wrong literal. expected %s, got %s\n", "foobar", statement.token.literal);
 }
 
+void test_parsing_prefix_expressions(){
+	struct {
+		char	*input;
+		char	*operator;
+		int	integer_value;
+	} tests[] = {
+		{"!5;", "!", 5},
+		{"-15;", "-", 15},
+	};
+	for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++){
+		lexer_t *lexer = new_lexer(tests[i].input);
+		parser_t *parser = new_parser(lexer);
+
+		program_t *program = parse_program(parser);
+		check_parser_errors(parser);
+
+		if (program == NULL){
+			printf("Parse program failed \n");
+			exit(1);
+		}
+	}
+}
+
 int main(int argc, char *argv[]) {
 	TEST(test_let_statements);
 	TEST(test_return_statements);
 	TEST(test_identifier);
 	TEST(test_integer);
+	TEST(test_parsing_prefix_expressions);
 }
