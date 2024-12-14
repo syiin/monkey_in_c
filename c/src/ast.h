@@ -6,20 +6,24 @@
 typedef enum {
 	LET_STATEMENT,
 	RETURN_STATEMENT,
+	EXPRESSION_STATEMENT,
 } StatementType;
 
-typedef struct Expression {
-	token_t token; 
-} expression_t;
-
 typedef struct Identifier {
-	token_t token; //IDENT
+	token_t token;
 	char *value;
 } identifier_t;
 
+typedef struct Expression {
+	token_t token;
+	union {
+		identifier_t ident;
+	};
+} expression_t;
+
 typedef struct Statement {
 	StatementType type;
-	token_t token; //LET
+	token_t token;
 	identifier_t name;
 	expression_t *value;
 } statement_t;
@@ -32,5 +36,8 @@ typedef struct Program{
 } program_t;
 
 void token_literal(program_t *program);
+void print_ast(program_t *program);
+void format_statement(char *str_buffer, int buffer_size, statement_t *statement);
+void ast_string(char *str_buffer, program_t *program);
 
 #endif

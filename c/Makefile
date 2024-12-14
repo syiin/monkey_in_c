@@ -5,9 +5,9 @@ VECTOR_SRC = vector.c
 TOKEN_SRC= token.c $(VECTOR_SRC)
 LEXER_SRC= lexer.c $(TOKEN_SRC)
 REPL_SRC = repl.c ${LEXER_SRC}
-AST_SRC = ast.c ${REPL_SRC}
 PARSER_SRC = parser.c ${REPL_SRC}
-TESTS= bin/lexer_test bin/parser_test
+AST_SRC = ast.c ${PARSER_SRC}
+TESTS= bin/lexer_test bin/parser_test bin/ast_test
 
 all: bin/monkey
 bin/:
@@ -17,6 +17,8 @@ bin/monkey: main.c $(PARSER_SRC) | bin/
 bin/lexer_test: tests/lexer_test.c $(LEXER_SRC) | bin/
 	$(CC) $(CFLAGS) $^ -o $@
 bin/parser_test: tests/parser_test.c $(PARSER_SRC) | bin/
+	$(CC) $(CFLAGS) $^ -o $@
+bin/ast_test: tests/ast_test.c $(AST_SRC) | bin/
 	$(CC) $(CFLAGS) $^ -o $@
 
 check: $(TESTS)
