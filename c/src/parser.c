@@ -90,6 +90,7 @@ statement_t *parse_expression_statement(parser_t *parser){
 	}
 
 	statement->type = EXPRESSION_STATEMENT;
+	statement->token = parser->curr_token;
 	statement->value = parse_expression(parser, LOWEST);
 
 	if (!(expect_peek(parser, SEMICOLON))){
@@ -99,8 +100,19 @@ statement_t *parse_expression_statement(parser_t *parser){
 }
 
 expression_t *parse_expression(parser_t *parser, Precedence precedence){
-	parse_prefix_expression prefix_fn = parse_prefix_fns(parser->curr_token.type);
-	return prefix_fn(parser);
+	prefix_parser prefix_fn = parse_prefix_fns(parser->curr_token.type);
+	if (prefix_fn == NULL) {
+		char error[100];
+		snprintf(error, sizeof(error), "no prefix parse function for %s found", 
+			token_type_to_string(parser->curr_token.type));
+		append_error(parser, error);
+		return NULL;
+	}
+	expression_t *left = prefix_fn(parser);	
+	if (left == NULL) {
+		return NULL;
+	}
+	return left;
 }
 
 bool expect_peek(parser_t *parser, TokenType token_type){
@@ -169,12 +181,16 @@ program_t *push_to_program(statement_t *statement, program_t *program){
 	return program;
 }
 
-parse_prefix_expression parse_prefix_fns(TokenType token_type){
+prefix_parser parse_prefix_fns(TokenType token_type){
 	switch(token_type){
 		case IDENT:
 			return &parse_identifier;
 		case INT:
 			return &parse_integer_literal;
+		case BANG:
+			return &parse_prefix_expression;
+		case MINUS:
+			return &parse_prefix_expression;
 		default:
 			return NULL;
 	}
@@ -200,4 +216,18 @@ expression_t *parse_integer_literal(parser_t *parser){
 	expression->integer = atoi(token.literal);
 	return expression;
 };
+
+expression_t *parse_prefix_expression(parser_t *parser){
+	token_t token = {
+			.type = parser->curr_token.type,
+			.literal = strdup(parser->curr_token.literal)
+		};
+	expression_t *expression = new_expression(PREFIX_EXPR, token);
+	expression->prefix_expression.op = strdup(token.literal);
+	parser_next_token(parser);
+
+	expression->prefix_expression.right = parse_expression(parser, PREFIX);
+	return expression;
+
+}
 

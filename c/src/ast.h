@@ -52,7 +52,8 @@ typedef struct Program{
 
 void token_literal(program_t *program);
 void print_ast(program_t *program);
-void format_statement(char *str_buffer, int buffer_size, statement_t *statement);
+void format_statement(char *str_buffer, statement_t *statement);
+void format_expression_statement(char *str_buffer, expression_t *expression);
 void ast_string(char *str_buffer, program_t *program);
 expression_t *new_expression(ExpressionType type, token_t token);
 

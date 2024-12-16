@@ -1,0 +1,825 @@
+#include "token.h"
+#include "ast.h"
+#include <err.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+
+void token_literal(program_t *program){
+	for (int i = 0; i < program->count; i++){
+		print_token(&program->statements[i]->token);
+	};
+}
+
+void ast_string(char *str_buffer, program_t *program){
+	for (int i = 0; i < program->count; i++){
+		statement_t *statement = program->statements[i];
+		char statement_str[BUFSIZ];
+		format_statement(statement_str, statement);
+		strcat(str_buffer, statement_str);
+	};
+}
+
+void format_statement(char *str_buffer, statement_t *statement){
+	if (str_buffer == NULL){
+		err(EXIT_FAILURE, "OUT OF MEMORY");
+	}
+	snprintf(str_buffer, BUFSIZ, "");
+	switch(statement->type){
+		case LET_STATEMENT:
+		    snprintf(str_buffer + strlen(str_buffer), BUFSIZ - strlen(str_buffer),
+			     "%s %s = %s;",
+			     statement->token.literal,
+			     statement->name.value,
+			     statement->value->ident.value);
+			break;
+		case RETURN_STATEMENT:
+		    snprintf(str_buffer + strlen(str_buffer), BUFSIZ - strlen(str_buffer),
+			     "%s %s;",
+			     statement->token.literal,
+			     statement->value->ident.value);
+			break;
+		case EXPRESSION_STATEMENT:
+			format_expression_statement(str_buffer, statement->value);
+			break;
+		default:
+			return;
+	}
+}
+
+void format_expression_statement(char *str_buffer, expression_t *expression){
+	switch(expression->type){
+		case IDENT_EXPR:
+		    snprintf(str_buffer + strlen(str_buffer), BUFSIZ - strlen(str_buffer),
+			     "%s;",
+			     expression->token.literal);
+			break;
+		case INTEGER_LITERAL:
+		    snprintf(str_buffer + strlen(str_buffer), BUFSIZ - strlen(str_buffer),
+			     "%s;",
+			     expression->token.literal);
+			break;
+		case PREFIX_EXPR:
+			snprintf(str_buffer + strlen(str_buffer), BUFSIZ - strlen(str_buffer),
+			     "(%s",
+			     expression->prefix_expression.op);
+			format_expression_statement(str_buffer, expression->prefix_expression.right);
+			strcat(str_buffer, ")");
+	}
+}
+
+expression_t *new_expression(ExpressionType type, token_t token){
+	expression_t *expression = malloc(sizeof(expression_t));
+	expression->token = token;
+	expression->type = type;
+	return expression;
+}
+#ifndef AST_H
+#define AST_H
+
+#include "token.h"
+
+typedef enum {
+	LET_STATEMENT,
+	RETURN_STATEMENT,
+	EXPRESSION_STATEMENT,
+} StatementType;
+
+typedef enum {
+	IDENT_EXPR,
+	INTEGER_LITERAL,
+	PREFIX_EXPR,
+} ExpressionType;
+
+typedef struct Identifier {
+	token_t token;
+	char *value;
+} identifier_t;
+
+typedef struct Expression expression_t;
+
+typedef struct PrefixExpression {
+	char *op;
+	expression_t *right;
+} prefix_expression_t;
+
+typedef struct Expression {
+	ExpressionType type;
+	token_t token;
+	union {
+		int integer;
+		identifier_t ident;
+		prefix_expression_t prefix_expression;
+	};
+} expression_t;
+
+typedef struct Statement {
+	StatementType type;
+	token_t token;
+	identifier_t name;
+	expression_t *value;
+} statement_t;
+
+typedef struct Program{
+	int statement_cap;
+	int count;
+	statement_t *statements[];
+} program_t;
+
+void token_literal(program_t *program);
+void print_ast(program_t *program);
+void format_statement(char *str_buffer, statement_t *statement);
+void format_expression_statement(char *str_buffer, expression_t *expression);
+void ast_string(char *str_buffer, program_t *program);
+expression_t *new_expression(ExpressionType type, token_t token);
+
+#endif
+#include "lexer.h"
+#include "token.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdio.h>
+
+token_t *lexer_next_token(lexer_t *lexer){
+	token_t *tok;
+	skip_whitespace(lexer);
+
+	switch (lexer->ch){
+		case '=':
+			if (peek_char(lexer) == '='){
+				read_char(lexer);
+				tok = new_token(EQ, "==");
+
+			} else {
+				tok = new_token(ASSIGN, "=");
+			}
+			break;
+		case ';':
+			tok = new_token(SEMICOLON, ";");
+			break;
+		case '(':
+			tok = new_token(LPAREN, "(");
+			break;
+		case ')':
+			tok = new_token(RPAREN, ")");
+			break;
+		case ',':
+			tok = new_token(COMMA, ",");
+			break;
+		case '+':
+			tok = new_token(PLUS, "+");
+			break;
+		case '-':
+			tok = new_token(MINUS, "-");
+			break;
+		case '!':
+			if (peek_char(lexer) == '='){
+				read_char(lexer);
+				tok = new_token(NOT_EQ, "!=");
+			} else {
+				tok = new_token(BANG, "!");
+			}
+			break;
+		case '/':
+			tok = new_token(SLASH, "/");
+			break;
+		case '*':
+			tok = new_token(ASTERISK, "*");
+			break;
+		case '<':
+			tok = new_token(LT, "<");
+			break;
+		case '>':
+			tok = new_token(GT, ">");
+			break;
+		case '{':
+			tok = new_token(LBRACE, "{");
+			break;
+		case '}':
+			tok = new_token(RBRACE, "}");
+			break;
+		case 0:
+			tok = new_token(EOF_TOKEN, "");
+			break;
+		default:
+			if (is_letter(lexer->ch)){
+				char *literal = read_identifier(lexer);
+				return new_token(lookup_ident(literal), literal);
+			} else if (is_digit(lexer->ch)){
+				char *literal = read_number(lexer);
+				return new_token(INT, literal);
+			} else {
+				char str[2];
+				str[0] = lexer->ch;
+				str[1] = '\0';
+				tok = new_token(ILLEGAL, strdup(str));
+			}
+	}
+	read_char(lexer);
+	return tok;
+}
+
+char *read_identifier(lexer_t *l){
+	int position = l->position;
+	while(is_letter(l->ch)){
+		read_char(l);
+	}
+	size_t length = l->position - position;
+	char *result_string = malloc(length + 1);
+	if (result_string == NULL) {
+		return NULL;
+	}
+
+	strncpy(result_string, l->input + position, length);
+	result_string[length] = '\0';
+	return result_string;
+}
+
+char *read_number(lexer_t *l){
+	int position = l->position;
+	while(is_digit(l->ch)){
+		read_char(l);
+	}
+	size_t length = l->position - position;
+	char *result_string = malloc(length + 1);
+	if (result_string == NULL) {
+		return NULL;
+	}
+
+	strncpy(result_string, l->input + position, length);
+	result_string[length] = '\0';
+	return result_string;
+}
+
+void read_char(lexer_t *l){
+	//TODO: store length of input once?
+	if (l->read_position >= strlen(l->input)){
+		l->ch = 0;
+	} else {
+		l->ch = l->input[l->read_position];
+	}
+	l->position = l->read_position;
+	l->read_position++;
+}
+
+char peek_char(lexer_t *l){
+	if (l->read_position >= strlen(l->input)){
+		return 0;
+	} else {
+		return l->input[l->read_position];
+	}
+}
+
+void skip_whitespace(lexer_t *l){
+	while (l->ch == ' ' || l->ch == '\t' || l->ch =='\n' || l->ch == '\r'){
+		read_char(l);
+	}
+}
+
+TokenType lookup_ident(char *literal){
+	if (strcmp(literal, "fn") == 0){
+		return FUNCTION;
+	} else if (strcmp(literal, "let") == 0){
+		return LET;
+	} else if (strcmp(literal, "true") == 0){
+		return TRUE;
+	} else if (strcmp(literal, "false") == 0){
+		return FALSE;
+	} else if (strcmp(literal, "if") == 0){
+		return IF;
+	} else if (strcmp(literal, "else") == 0){
+		return ELSE;
+	} else if (strcmp(literal, "return") == 0){
+		return RETURN;
+	} else {
+		return IDENT;
+	}
+}
+
+
+bool is_letter(unsigned char ch) {
+    return ((ch >= 'a' && ch <= 'z') ||
+            (ch >= 'A' && ch <= 'Z') ||
+            (ch == '_'));
+}
+
+bool is_digit(unsigned char ch) {
+	return (('0' <= ch) && (ch <= '9'));
+}
+
+lexer_t *new_lexer(char *input){
+	lexer_t *lexer = malloc(sizeof(lexer_t));
+	if (lexer == NULL){
+		return NULL;
+	}
+	lexer->input = strdup(input);
+	read_char(lexer);
+	return lexer;
+}
+#ifndef LEXER_H
+#define LEXER_H
+
+#include <stdbool.h>
+#include "token.h"
+
+typedef struct Lexer {
+	char	*input;
+	int	position;
+	int	read_position;
+	char    ch;
+} lexer_t;
+
+lexer_t *new_lexer(char *input);
+void read_char(lexer_t *l);
+char peek_char(lexer_t *l);
+void skip_whitespace(lexer_t *l);
+token_t *lexer_next_token(lexer_t *l);
+char *read_identifier(lexer_t *l);
+char *read_number(lexer_t *l);
+bool is_letter(unsigned char ch);
+bool is_digit(unsigned char ch);
+TokenType lookup_ident(char *literal);
+
+#endif
+#include <stdio.h>
+#include "repl.h"
+
+int main(){
+	printf("Hello! Welcome to C Monkeys!\n");
+	repl_start(stdin, stdout);
+}
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
+#include "parser.h"
+#include "ast.h"
+#include "lexer.h"
+#include "token.h"
+#include "vector.h"
+
+parser_t *new_parser(lexer_t *lexer){
+	parser_t *parser = malloc(sizeof(parser_t));
+	if (parser == NULL){
+		return NULL;
+	}
+	parser->lexer = lexer;
+	parser->errors = create_vector();
+	parser_next_token(parser);
+	return parser;
+}
+
+void parser_next_token(parser_t *parser){
+	copy_token(&parser->curr_token, &parser->peek_token);
+	parser->peek_token = *lexer_next_token(parser->lexer);
+}
+
+statement_t *parse_statement(parser_t *parser){
+	switch(parser->curr_token.type){
+		case LET:
+			return parse_let_statement(parser);
+		case RETURN:
+			return parse_return_statement(parser);
+		case ILLEGAL:
+			return NULL;
+		case SEMICOLON:
+			return NULL;
+		default:
+			return parse_expression_statement(parser);
+	}
+}
+
+statement_t *parse_return_statement(parser_t *parser){
+	statement_t *statement = malloc(sizeof(statement_t));
+	if (statement == NULL){
+		return NULL;
+	}
+
+	statement->type = RETURN_STATEMENT;
+	statement->token = parser->curr_token;
+
+	parser_next_token(parser);
+
+	if (!(curr_token_is(parser, SEMICOLON))){
+		parser_next_token(parser);
+	}
+
+	return statement;
+}
+
+statement_t *parse_let_statement(parser_t *parser){
+	statement_t *statement = malloc(sizeof(statement_t));
+	if (statement == NULL){
+		return NULL;
+	}
+
+	statement->type = LET_STATEMENT;
+	statement->token = parser->curr_token;
+	
+	if (!(expect_peek(parser, IDENT))){
+		return NULL;
+	}
+
+	statement->name.token = parser->curr_token;
+	statement->name.value = parser->curr_token.literal;
+
+	if (!(expect_peek(parser, ASSIGN))){
+		return NULL;
+	}
+
+	if (!(curr_token_is(parser, SEMICOLON))){
+		parser_next_token(parser);
+	}
+
+	return statement;
+}
+
+statement_t *parse_expression_statement(parser_t *parser){
+	statement_t *statement = malloc(sizeof(statement_t));
+	if (statement == NULL){
+		return NULL;
+	}
+
+	statement->type = EXPRESSION_STATEMENT;
+	statement->value = parse_expression(parser, LOWEST);
+
+	if (!(expect_peek(parser, SEMICOLON))){
+		return NULL;
+	}
+	return statement;
+}
+
+expression_t *parse_expression(parser_t *parser, Precedence precedence){
+	prefix_parser prefix_fn = parse_prefix_fns(parser->curr_token.type);
+	expression_t *left = prefix_fn(parser);
+	return left;
+}
+
+bool expect_peek(parser_t *parser, TokenType token_type){
+	if (peek_token_is(parser, token_type)){
+		parser_next_token(parser);
+		return true;
+	} else {
+		peek_error(parser, token_type);
+		return false;
+	}
+}
+
+bool peek_token_is(parser_t *parser, TokenType token_type){
+	return parser->peek_token.type == token_type;
+}
+
+bool curr_token_is(parser_t *parser, TokenType token_type){
+	return parser->curr_token.type == token_type;
+}
+
+void peek_error(parser_t *parser, TokenType token_type){
+	const char *received = token_type_to_string(parser->peek_token.type);
+	const char *expected = token_type_to_string(token_type);
+	char buffer[128];
+	snprintf(buffer, sizeof(buffer), "expected next token to be %s, got %s instead", expected, received);
+	append_error(parser, buffer);
+}
+
+void append_error(parser_t *parser, const char *error){
+	append_vector(parser->errors, strdup(error));
+}
+
+void print_errors(parser_t *parser){
+	vector_t *errors = parser->errors;
+	for (int i = 0; i < errors->count; i++){
+		printf("%s\n", (char *)errors->data[i]);
+	}
+}
+
+program_t *parse_program(parser_t *parser){
+	int initial_cap = 2;
+	program_t *program = malloc(sizeof(program_t) + sizeof(statement_t) * initial_cap);
+	program->statement_cap = initial_cap;
+	program->count = 0;
+
+	while (parser->curr_token.type != EOF_TOKEN){
+		statement_t *statement = parse_statement(parser);
+		if (statement != NULL){
+			program = push_to_program(statement, program);
+		}
+		parser_next_token(parser);
+	}
+	return program;
+}
+
+program_t *push_to_program(statement_t *statement, program_t *program){
+	if (program->count >= program->statement_cap){
+		program->statement_cap = program->statement_cap * 2;
+		size_t to_allocate = sizeof(program_t) + program->statement_cap * sizeof(statement_t);
+		program_t *new_program = realloc(program, to_allocate);
+		assert(new_program != NULL);
+		program = new_program;
+	}
+	program->statements[program->count] = statement;
+	program->count++;
+	return program;
+}
+
+prefix_parser parse_prefix_fns(TokenType token_type){
+	switch(token_type){
+		case IDENT:
+			return &parse_identifier;
+		case INT:
+			return &parse_integer_literal;
+		case BANG:
+			return &parse_prefix_expression;
+		case MINUS:
+			return &parse_prefix_expression;
+		default:
+			return NULL;
+	}
+}
+
+expression_t *parse_identifier(parser_t *parser){
+	token_t token = {
+			.type = IDENT,
+			.literal = parser->curr_token.literal
+		};
+	expression_t *expression = new_expression(IDENT_EXPR, token);
+	expression->ident.token = token;
+	expression->ident.value = token.literal;
+	return expression;
+};
+
+expression_t *parse_integer_literal(parser_t *parser){
+	token_t token = {
+			.type = INT,
+			.literal = parser->curr_token.literal
+		};
+	expression_t *expression = new_expression(INTEGER_LITERAL, token);
+	expression->integer = atoi(token.literal);
+	return expression;
+};
+
+expression_t *parse_prefix_expression(parser_t *parser){
+	token_t token = {
+			.type = parser->curr_token.type,
+			.literal = parser->curr_token.literal
+		};
+	expression_t *expression = new_expression(PREFIX_EXPR, token);
+	parser_next_token(parser);
+
+	expression->prefix_expression.right = parse_expression(parser, PREFIX);
+	return expression;
+
+}
+
+#include "ast.h"
+#include "token.h"
+#include "lexer.h"
+#include "vector.h"
+#include <stdlib.h>
+
+typedef struct Parser {
+	lexer_t *lexer;
+
+	token_t	curr_token;
+	token_t	peek_token;
+
+	vector_t *errors;
+} parser_t;
+
+typedef struct ParserError {
+	char *error;
+} parser_error_t;
+
+typedef enum {
+	LOWEST,
+	EQUALS ,// ==
+	LESSGREATER, // > or <
+	SUM, // +
+	PRODUCT, // *
+	PREFIX ,// -X or !X
+	CALL, // myFunction(X)
+} Precedence;
+
+void parser_next_token(parser_t *parser);
+program_t *parse_program(parser_t *parser);
+parser_t *new_parser(lexer_t *lexer);
+program_t *push_to_program(statement_t *statement, program_t *program);
+statement_t *parse_let_statement(parser_t *parser);
+statement_t *parse_return_statement(parser_t *parser);
+statement_t *parse_expression_statement(parser_t *parser);
+statement_t *parse_statement(parser_t *parser);
+
+typedef expression_t *(*prefix_parser)(parser_t*);
+typedef expression_t *(*parse_infix_expression)(expression_t*);
+prefix_parser parse_prefix_fns(TokenType token_type);
+expression_t *parse_expression(parser_t *parser, Precedence precedence);
+expression_t *parse_identifier(parser_t *parser);
+expression_t *parse_integer_literal(parser_t *parser);
+expression_t *parse_prefix_expression(parser_t *parser);
+
+bool expect_peek(parser_t *parser, TokenType token_type);
+bool peek_token_is(parser_t *parser, TokenType token_type);
+bool curr_token_is(parser_t *parser, TokenType token_type);
+void append_error(parser_t *parser, const char *error);
+void peek_error(parser_t *parser, TokenType token_type);
+void print_errors(parser_t *parser);
+#include <stdio.h>
+#include "lexer.h"
+#include "token.h"
+
+void repl_start(FILE *in, FILE *out){
+	char input[1024] = { '\0' };
+	while(true){
+		printf(">> ");
+		if (fgets(input, sizeof(input), in) == NULL){
+			return;
+		}
+
+		lexer_t *lexer = new_lexer(input);
+		token_t *token = lexer_next_token(lexer);
+		while(token->type != EOF_TOKEN){
+			print_token(token);
+			token = lexer_next_token(lexer);
+		}
+	}
+	
+}
+#include <stdio.h>
+
+void repl_start(FILE *in, FILE *out);
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include "token.h"
+
+const char *token_type_to_string(TokenType t) {
+    if (t < 0 || t >= TOKEN_TYPE_COUNT) {
+        return "UNKNOWN";
+    }
+    return TOKEN_TYPE_STRINGS[t];
+}
+
+TokenType string_to_token_type(const char *str) {
+    for (int i = 0; i < TOKEN_TYPE_COUNT; i++) {
+        if (strcmp(TOKEN_TYPE_STRINGS[i], str) == 0) {
+            return (TokenType)i;
+        }
+    }
+    return TOKEN_TYPE_COUNT; // invalid indicator
+}
+
+
+token_t *new_token(TokenType type, char *literal){
+	token_t *token = malloc(sizeof(token_t));
+	token->type = type;
+	token->literal = strdup(literal);
+	return token;
+}
+
+void free_token(token_t *token){
+	free(token->literal);
+	free(token);
+}
+
+void print_token(token_t *token){
+	printf("type: %s, literal: %s \n", token_type_to_string(token->type), token->literal);
+}
+
+void copy_token(token_t *dest, token_t *src) {
+    dest->type = src->type;
+    if (src->literal != NULL) {
+        dest->literal = strdup(src->literal);
+    } else {
+        dest->literal = NULL;
+    }
+}
+#ifndef TOKEN_H
+#define TOKEN_H
+
+
+typedef enum {
+	ILLEGAL,
+	EOF_TOKEN,
+	// Identifiers + literals
+	IDENT, // add, foobar, x, y, ...
+	INT, // 1343456
+	// Operators
+	ASSIGN,
+	PLUS,
+	MINUS,
+	BANG,
+	ASTERISK,
+	SLASH,
+	EQ,
+	NOT_EQ,
+	LT,
+	GT,
+	// Delimiters
+	COMMA,
+	SEMICOLON,
+	LPAREN,
+	RPAREN,
+	LBRACE,
+	RBRACE,
+	// Keywords
+	FUNCTION,
+	LET,
+	TRUE,
+	FALSE,
+	IF,
+	ELSE,
+	RETURN,
+
+	TOKEN_TYPE_COUNT,
+} TokenType;
+
+static const char *TOKEN_TYPE_STRINGS[TOKEN_TYPE_COUNT] = {
+	[ILLEGAL]   = "ILLEGAL",
+	[EOF_TOKEN] = "EOF_TOKEN",
+	[IDENT]     = "IDENT",
+	[INT]       = "INT",
+	[ASSIGN]    = "ASSIGN",
+	[PLUS]     = "PLUS",
+	[MINUS] = "-",
+	[BANG] = "!",
+	[ASTERISK] = "*",
+	[SLASH] = "/",
+	[EQ] = "==",
+	[NOT_EQ] = "!=",
+	[LT] = "<",
+	[GT] = ">",
+	[COMMA]     = "COMMA",
+	[SEMICOLON] = "SEMICOLON",
+	[LPAREN]    = "LPAREN",
+	[RPAREN]    = "RPAREN",
+	[LBRACE]    = "LBRACE",
+	[RBRACE]    = "RBRACE",
+	[FUNCTION]  = "FUNCTION",
+	[LET]       = "LET"
+};
+
+typedef struct Token {
+	TokenType	type;
+	char		*literal;
+} token_t;
+
+const char *token_type_to_string(TokenType t);
+TokenType string_to_token_type(const char *str);
+token_t *new_token(TokenType type, char *literal);
+void free_token(token_t *token);
+void print_token(token_t *token);
+void copy_token(token_t *dest, token_t *src);
+
+#endif
+#include "vector.h"
+#include <stdlib.h>
+
+vector_t *create_vector(){
+	int init_cap = 2;
+	vector_t *vector = malloc(sizeof(vector_t));
+	if (vector == NULL){
+		return NULL;
+	}
+
+	vector->data =  malloc(sizeof(void *) * init_cap);
+	if (vector->data == NULL){
+		free(vector);
+		return NULL;
+	}
+
+	vector->capacity = init_cap;
+	vector->count = 0;
+	return vector;
+}
+
+void append_vector(vector_t *vector, void *element){
+	if (vector->count >= vector->capacity){
+		vector->capacity = vector->capacity * 2;
+		void **tmp = realloc(vector->data, sizeof(void *) * vector->capacity);
+		vector->data = tmp;
+	}
+	vector->data[vector->count] = element;
+	vector->count++;
+}
+
+void free_vector(vector_t *vector){
+	for (int i = 0; i < vector->count; i++){
+		free(vector->data[i]);
+	}
+	free(vector);
+}
+#ifndef VECTOR_H
+#define VECTOR_H
+
+#include <stdlib.h>
+
+typedef struct Vector {
+	void **data;
+	size_t capacity;
+	size_t count;
+} vector_t;
+
+vector_t *create_vector();
+void append_vector(vector_t *vector, void *element);
+
+#endif
