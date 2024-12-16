@@ -1,3 +1,3 @@
 - Consider snprintf method in ast statement printing - is this the worthwhile over strcat?
-- Write a custom string class?
 - Go back and be more thorough in our NULLS
+- Write a custom string class? Did this
