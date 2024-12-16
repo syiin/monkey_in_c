@@ -43,6 +43,7 @@ void test_ast_string(){
 	string_t *expected_str = string_from("let myVar = anotherVar;");
 	
 	assertf(string_equals(expected_str, program_str), "wrong ast string. expected %s, got %s\n", program_str, expected_str);
+	string_free(program_str);
 }
 
 int main(int argc, char *argv[]) {
