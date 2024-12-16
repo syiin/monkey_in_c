@@ -1,3 +1,3 @@
-- Rename parse_prefix_expression as a type to something more descriptive so we can name a function that
 - Consider snprintf method in ast statement printing - is this the worthwhile over strcat?
 - Write a custom string class?
+- Go back and be more thorough in our NULLS
