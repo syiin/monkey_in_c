@@ -1,8 +1,8 @@
-#ifndef STRING_H
-#define STRING_H
+#ifndef CUSTOM_STRING_H
+#define CUSTOM_STRING_H
 
 #include <stdio.h>
-
+#include <stdbool.h>
 /*Could have used the Vector class but the void * type would have precluded us from*/
 /*conveniently using alot of convenient string things - currently using this just for printing, may extend to hold more char * things like token literals*/
 
@@ -24,7 +24,7 @@ void string_clear(string_t *str);
 char *string_get_data(string_t *str); //Transferring ownership
 
 // Utility methods
-int string_len(const string_t *str);
+size_t string_len(const string_t *str);
 bool string_equals(const string_t *a, const string_t *b);
 string_t *string_clone(const string_t *str);
 void string_print(const string_t *str, FILE *out);

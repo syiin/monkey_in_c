@@ -2,6 +2,7 @@
 #include "../src/ast.h"
 #include "../src/token.h"
 #include "../src/parser.h"
+#include "../src/custom_string.h"
 
 void test_ast_string(){
 	int initial_cap = 2;
@@ -37,12 +38,11 @@ void test_ast_string(){
 		},
 	};
 	push_to_program(statement, program);
-
-	char program_str[256];
+	string_t *program_str = string_new();
 	ast_string(program_str, program);
-	char *expected_str = "let myVar = anotherVar;";
+	string_t *expected_str = string_from("let myVar = anotherVar;");
 	
-	assertf(strcmp(expected_str, program_str) == 0, "wrong ast string. expected %s, got %s\n", program_str, expected_str);
+	assertf(string_equals(expected_str, program_str), "wrong ast string. expected %s, got %s\n", program_str, expected_str);
 }
 
 int main(int argc, char *argv[]) {

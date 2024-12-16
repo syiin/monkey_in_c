@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include "string.h"
+#include "custom_string.h"
 
 #define INITIAL_CAPACITY 16
 
