@@ -157,10 +157,62 @@ void test_parsing_prefix_expressions(){
 	}
 }
 
+void test_parsing_infix_expressions() {
+    struct {
+        char *input;
+        int left_value;
+        char *operator;
+        int right_value;
+    } tests[] = {
+        {"5 + 5;", 5, "+", 5},
+        {"5 - 5;", 5, "-", 5},
+        {"5 * 5;", 5, "*", 5},
+        {"5 / 5;", 5, "/", 5},
+        {"5 > 5;", 5, ">", 5},
+        {"5 < 5;", 5, "<", 5},
+        {"5 == 5;", 5, "==", 5},
+        {"5 != 5;", 5, "!=", 5},
+    };
+
+    for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+        lexer_t *lexer = new_lexer(tests[i].input);
+        parser_t *parser = new_parser(lexer);
+
+        program_t *program = parse_program(parser);
+        check_parser_errors(parser);
+
+        assertf(program->count == 1, 
+               "program.Statements does not contain 1 statement. got=%d\n",
+               program->count);
+
+        statement_t *stmt = program->statements[0];
+        assertf(stmt->type == EXPRESSION_STATEMENT,
+               "program.Statements[0] is not EXPRESSION_STATEMENT. got=%d",
+               stmt->type);
+
+        expression_t *exp = stmt->value;
+        assertf(exp->type == INFIX_EXPR,
+               "exp is not INFIX_EXPRESSION. got=%d",
+               exp->type);
+
+        // Check left value
+        check_integer_literal(exp->infix_expression.left, tests[i].left_value);
+
+        // Check operator
+        assertf(strcmp(exp->infix_expression.op, tests[i].operator) == 0,
+               "exp.Operator is not '%s'. got=%s",
+               tests[i].operator,
+               exp->infix_expression.op);
+
+        // Check right value  
+        check_integer_literal(exp->infix_expression.right, tests[i].right_value);
+    }
+}
 int main(int argc, char *argv[]) {
 	TEST(test_let_statements);
 	TEST(test_return_statements);
 	TEST(test_identifier);
 	TEST(test_integer);
 	TEST(test_parsing_prefix_expressions);
+	TEST(test_parsing_infix_expressions);
 }
