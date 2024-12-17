@@ -91,7 +91,7 @@ statement_t *parse_expression_statement(parser_t *parser){
 
 	statement->type = EXPRESSION_STATEMENT;
 	statement->token = parser->curr_token;
-	statement->value = parse_expression(parser, LOWEST);
+	statement->value = parse_expression(parser, PRECEDENCE_LOWEST);
 
 	if (!(expect_peek(parser, SEMICOLON))){
 		return NULL;
@@ -196,6 +196,10 @@ prefix_parser parse_prefix_fns(TokenType token_type){
 	}
 }
 
+infix_parser parser_infix_fns(TokenType token_type){
+	return &parse_infix_expression;
+}
+
 expression_t *parse_identifier(parser_t *parser){
 	token_t token = {
 			.type = IDENT,
@@ -226,8 +230,51 @@ expression_t *parse_prefix_expression(parser_t *parser){
 	expression->prefix_expression.op = strdup(token.literal);
 	parser_next_token(parser);
 
-	expression->prefix_expression.right = parse_expression(parser, PREFIX);
+	expression->prefix_expression.right = parse_expression(parser, PRECEDENCE_PREFIX);
 	return expression;
 
 }
 
+expression_t *parse_infix_expression(parser_t *parser, expression_t *left){
+	token_t token = {
+			.type = parser->curr_token.type,
+			.literal = strdup(parser->curr_token.literal)
+		};
+	expression_t *expression = new_expression(INFIX_EXPR, token);
+	expression->infix_expression.op = token.literal;
+	expression->infix_expression.left = left;
+	Precedence precedence = curr_precedence(parser);
+	expression->infix_expression.right = parse_expression(parser, precedence);
+	return expression;
+}
+
+Precedence peek_precedence(parser_t *parser){
+	return get_precedence(parser->peek_token.type);
+}
+
+
+Precedence curr_precedence(parser_t *parser){
+	return get_precedence(parser->curr_token.type);
+}
+
+Precedence get_precedence(TokenType token_type) {
+    switch (token_type) {
+        case EQ:
+            return PRECEDENCE_EQUALS;
+        case NOT_EQ:
+            return PRECEDENCE_NOT_EQUALS;
+        case LT:
+        case GT:
+            return PRECEDENCE_LESSGREATER;
+        case PLUS:
+        case MINUS:
+            return PRECEDENCE_SUM;
+        case ASTERISK:
+        case SLASH:
+            return PRECEDENCE_PRODUCT;
+        case LPAREN:
+            return PRECEDENCE_CALL;
+        default:
+            return PRECEDENCE_LOWEST;
+    }
+}
