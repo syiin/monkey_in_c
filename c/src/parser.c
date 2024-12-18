@@ -112,6 +112,17 @@ expression_t *parse_expression(parser_t *parser, Precedence precedence){
 	if (left == NULL) {
 		return NULL;
 	}
+
+	while(!peek_token_is(parser, SEMICOLON) && precedence < peek_precedence(parser)){
+		infix_parser infix_fn = parser_infix_fns(parser->peek_token.type);
+		if (infix_fn == NULL){
+			return left;
+		}
+		parser_next_token(parser);
+
+		left = infix_fn(parser, left);
+	}
+
 	return left;
 }
 
@@ -244,6 +255,7 @@ expression_t *parse_infix_expression(parser_t *parser, expression_t *left){
 	expression->infix_expression.op = token.literal;
 	expression->infix_expression.left = left;
 	Precedence precedence = curr_precedence(parser);
+	parser_next_token(parser);
 	expression->infix_expression.right = parse_expression(parser, precedence);
 	return expression;
 }

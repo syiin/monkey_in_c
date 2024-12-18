@@ -48,6 +48,7 @@ expression_t *parse_prefix_expression(parser_t *parser);
 expression_t *parse_infix_expression(parser_t *parser, expression_t *left);
 Precedence get_precedence(TokenType token_type);
 Precedence curr_precedence(parser_t *parser);
+Precedence peek_precedence(parser_t *parser);
 
 bool expect_peek(parser_t *parser, TokenType token_type);
 bool peek_token_is(parser_t *parser, TokenType token_type);
