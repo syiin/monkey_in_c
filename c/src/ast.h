@@ -64,6 +64,7 @@ void print_ast(program_t *program);
 void format_statement(string_t *str_buffer, statement_t *statement);
 void format_expression_statement(string_t *str, expression_t *expression);
 void ast_string(string_t *format_buffer, program_t *program);
+char *program_to_string(program_t *program);
 expression_t *new_expression(ExpressionType type, token_t token);
 
 #endif

@@ -208,6 +208,40 @@ void test_parsing_infix_expressions() {
         check_integer_literal(exp->infix_expression.right, tests[i].right_value);
     }
 }
+
+
+void test_operator_precedence() {
+    struct {
+        char *input;
+        char *expected;
+    } tests[] = {
+        {"-a * b;", "((-a) * b)"},
+        {"!-a;", "(!(-a))"},
+        {"a + b + c;", "((a + b) + c)"},
+        {"a + b - c;", "((a + b) - c)"},
+        {"a * b * c;", "((a * b) * c)"},
+        {"a * b / c;", "((a * b) / c)"},
+        {"a + b / c;", "(a + (b / c))"},
+        {"a + b * c + d / e - f;", "(((a + (b * c)) + (d / e)) - f)"},
+        {"3 + 4; -5 * 5;", "(3 + 4)((-5) * 5)"},
+        {"5 > 4 == 3 < 4;", "((5 > 4) == (3 < 4))"},
+        {"5 < 4 != 3 > 4;", "((5 < 4) != (3 > 4))"},
+        {"3 + 4 * 5 == 3 * 1 + 4 * 5;", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
+    };
+
+    for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+        lexer_t *lexer = new_lexer(tests[i].input);
+        parser_t *parser = new_parser(lexer);
+
+        program_t *program = parse_program(parser);
+        check_parser_errors(parser);
+
+	char *actual = program_to_string(program);
+	assertf(strcmp(actual, tests[i].expected) == 0, "expected=%s, got=%s", tests[i].expected, actual);
+	free(actual);
+    }
+}
+
 int main(int argc, char *argv[]) {
 	TEST(test_let_statements);
 	TEST(test_return_statements);
@@ -215,4 +249,5 @@ int main(int argc, char *argv[]) {
 	TEST(test_integer);
 	TEST(test_parsing_prefix_expressions);
 	TEST(test_parsing_infix_expressions);
+	TEST(test_operator_precedence);
 }
