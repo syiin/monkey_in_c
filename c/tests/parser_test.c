@@ -3,6 +3,9 @@
 #include "../src/parser.h"
 #include <string.h>
 
+#define TEST_INT_VALUE(i) (test_value_t){.type = TEST_INT, .value.integer = i}
+#define TEST_STRING_VALUE(s) (test_value_t){.type = TEST_STRING, .value.string = s}
+
 void check_parser_errors(parser_t *parser){
 	if (parser->errors->count > 0){
 		print_errors(parser);
@@ -15,6 +18,12 @@ void check_integer_literal(expression_t *expression, int value){
 	char literal_buffer[32];
 	sprintf(literal_buffer, "%d", value);
 	assertf(strcmp(expression->token.literal, literal_buffer) == 0, "wrong literal. expected %s, got %s\n", literal_buffer, expression->token.literal);
+}
+
+void check_identifier(expression_t *expression, char *value) {
+	assertf(expression->type == IDENT_EXPR, "exp not IDENT_EXPR. got=%d\n", expression->type);
+	assertf(strcmp(expression->ident.value, value) == 0, "ident.Value not %s. got=%s\n", value, expression->ident.value);
+	assertf(strcmp(expression->token.literal, value) == 0, "ident.TokenLiteral not %s. got=%s\n", value, expression->token.literal);
 }
 
 void test_let_statements(){
@@ -47,7 +56,6 @@ void test_let_statements(){
 		assertf(statement.token.type == LET, "wrong token type. expected %s, got %s\n", "RETURN", token_type_to_string(statement.token.type));
 		assertf(strcmp(statement.token.literal, tests[i].literal) == 0, "wrong literal. expected %s, got %s\n", tests[i].name, statement.token.literal);
 		assertf(strcmp(statement.name.value, tests[i].name) == 0, "wrong name value. expected %s, got %s\n", tests[i].name, statement.name.value);
-		/*assertf(strcmp(statement.name.token.literal, tests[i].name) == 0, "wrong name literal. expected %s, got %s", tests[i].value, statement.token.literal);*/
 	}
 }
 
@@ -195,16 +203,11 @@ void test_parsing_infix_expressions() {
                "exp is not INFIX_EXPRESSION. got=%d",
                exp->type);
 
-        // Check left value
         check_integer_literal(exp->infix_expression.left, tests[i].left_value);
-
-        // Check operator
         assertf(strcmp(exp->infix_expression.op, tests[i].operator) == 0,
                "exp.Operator is not '%s'. got=%s",
                tests[i].operator,
                exp->infix_expression.op);
-
-        // Check right value  
         check_integer_literal(exp->infix_expression.right, tests[i].right_value);
     }
 }
@@ -237,7 +240,10 @@ void test_operator_precedence() {
         check_parser_errors(parser);
 
 	char *actual = program_to_string(program);
-	assertf(strcmp(actual, tests[i].expected) == 0, "expected=%s, got=%s", tests[i].expected, actual);
+	assertf(strcmp(actual, tests[i].expected) == 0,
+		"expected=%s, got=%s",
+		tests[i].expected,
+		actual);
 	free(actual);
     }
 }
