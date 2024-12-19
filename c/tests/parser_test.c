@@ -3,9 +3,6 @@
 #include "../src/parser.h"
 #include <string.h>
 
-#define TEST_INT_VALUE(i) (test_value_t){.type = TEST_INT, .value.integer = i}
-#define TEST_STRING_VALUE(s) (test_value_t){.type = TEST_STRING, .value.string = s}
-
 void check_parser_errors(parser_t *parser){
 	if (parser->errors->count > 0){
 		print_errors(parser);
@@ -157,10 +154,12 @@ void test_parsing_prefix_expressions(){
 	struct {
 		char	*input;
 		char	*operator;
-		int	integer_value;
+		int	value;
 	} tests[] = {
 		{"!5;", "!", 5},
-		/*{"-15;", "-", 15},*/
+		{"-15;", "-", 15},
+		{"!true;", "!", true},
+		{"!false;", "!", false},
 	};
 	for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++){
 		lexer_t *lexer = new_lexer(tests[i].input);
@@ -179,7 +178,16 @@ void test_parsing_prefix_expressions(){
 		assertf(statement.type == EXPRESSION_STATEMENT, "wrong token type. expected %s, got %s\n", "EXPRESSION_STATEMENT", token_type_to_string(statement.token.type));
 		assertf(statement.value->type == PREFIX_EXPR, "wrong expression type. expected %s, got %d\n", "PREFIX_EXPRESSION", statement.value->type);
 		assertf(strcmp(statement.value->prefix_expression.op, tests[i].operator) == 0, "wrong operator type. got %s, expected %s\n", statement.value->prefix_expression.op, tests[i].operator);
-		check_integer_literal(statement.value->prefix_expression.right, tests[i].integer_value);
+
+		if (statement.value->infix_expression.right->token.type == INT){
+			check_integer_literal(statement.value->prefix_expression.right, tests[i].value);
+		}
+
+
+		if (statement.value->infix_expression.right->token.type == TRUE || 
+				statement.value->infix_expression.right->token.type == FALSE){
+			check_boolean_literal(statement.value->infix_expression.right, tests[i].value);
+		}
 	}
 }
 
@@ -198,35 +206,49 @@ void test_parsing_infix_expressions() {
         {"5 < 5;", 5, "<", 5},
         {"5 == 5;", 5, "==", 5},
         {"5 != 5;", 5, "!=", 5},
+	{"true == true;", true, "==", true},
+	{"true != false;", true, "!=", false},
+	{"false == false;", false, "==" , false},
     };
+	for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+		lexer_t *lexer = new_lexer(tests[i].input);
+		parser_t *parser = new_parser(lexer);
 
-    for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
-        lexer_t *lexer = new_lexer(tests[i].input);
-        parser_t *parser = new_parser(lexer);
+		program_t *program = parse_program(parser);
+		check_parser_errors(parser);
 
-        program_t *program = parse_program(parser);
-        check_parser_errors(parser);
+		assertf(program->count == 1, 
+		       "program.Statements does not contain 1 statement. got=%d\n",
+		       program->count);
 
-        assertf(program->count == 1, 
-               "program.Statements does not contain 1 statement. got=%d\n",
-               program->count);
+		statement_t *stmt = program->statements[0];
+		assertf(stmt->type == EXPRESSION_STATEMENT,
+		       "program.Statements[0] is not EXPRESSION_STATEMENT. got=%d",
+		       stmt->type);
 
-        statement_t *stmt = program->statements[0];
-        assertf(stmt->type == EXPRESSION_STATEMENT,
-               "program.Statements[0] is not EXPRESSION_STATEMENT. got=%d",
-               stmt->type);
+		expression_t *exp = stmt->value;
+		assertf(exp->type == INFIX_EXPR,
+		       "exp is not INFIX_EXPRESSION. got=%d",
+		       exp->type);
 
-        expression_t *exp = stmt->value;
-        assertf(exp->type == INFIX_EXPR,
-               "exp is not INFIX_EXPRESSION. got=%d",
-               exp->type);
+		if (exp->infix_expression.left->token.type == INT){
+			check_integer_literal(exp->infix_expression.left, tests[i].left_value);
+			assertf(strcmp(exp->infix_expression.op, tests[i].operator) == 0,
+			       "exp.Operator is not '%s'. got=%s",
+			       tests[i].operator,
+			       exp->infix_expression.op);
+			check_integer_literal(exp->infix_expression.right, tests[i].right_value);
+		}
 
-        check_integer_literal(exp->infix_expression.left, tests[i].left_value);
-        assertf(strcmp(exp->infix_expression.op, tests[i].operator) == 0,
-               "exp.Operator is not '%s'. got=%s",
-               tests[i].operator,
-               exp->infix_expression.op);
-        check_integer_literal(exp->infix_expression.right, tests[i].right_value);
+		if (exp->infix_expression.left->token.type == TRUE || 
+				exp->infix_expression.left->token.type == FALSE){
+			check_boolean_literal(exp->infix_expression.left, tests[i].left_value);
+			assertf(strcmp(exp->infix_expression.op, tests[i].operator) == 0,
+			       "exp.Operator is not '%s'. got=%s",
+			       tests[i].operator,
+			       exp->infix_expression.op);
+			check_boolean_literal(exp->infix_expression.right, tests[i].right_value);
+		}
     }
 }
 
