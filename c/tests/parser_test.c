@@ -26,6 +26,24 @@ void check_identifier(expression_t *expression, char *value) {
 	assertf(strcmp(expression->token.literal, value) == 0, "ident.TokenLiteral not %s. got=%s\n", value, expression->token.literal);
 }
 
+void check_boolean_literal(expression_t *expression, bool value) {
+    assertf(expression->type == BOOLEAN_EXPR, 
+            "exp not BOOLEAN_EXPR. got=%d", 
+            expression->type);
+
+    assertf(expression->boolean == value, 
+            "boolean.Value not %d. got=%d", 
+            value, 
+            expression->boolean);
+
+    char literal_buffer[6];  // enough for "true" or "false"
+    sprintf(literal_buffer, "%s", value ? "true" : "false");
+    assertf(strcmp(expression->token.literal, literal_buffer) == 0,
+            "wrong literal. expected %s, got %s", 
+            literal_buffer, 
+            expression->token.literal);
+}
+
 void test_let_statements(){
 	char *input = "let x = 5;\n"
 		"let y = 10;\n"
@@ -230,6 +248,16 @@ void test_operator_precedence() {
         {"5 > 4 == 3 < 4;", "((5 > 4) == (3 < 4))"},
         {"5 < 4 != 3 > 4;", "((5 < 4) != (3 > 4))"},
         {"3 + 4 * 5 == 3 * 1 + 4 * 5;", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
+        {"true;", "true"},
+        {"false;", "false"},
+        {"3 > 5 == false;", "((3 > 5) == false)"},
+        {"3 < 5 == true;", "((3 < 5) == true)"},
+        /*{"1 + (2 + 3) + 4;", "((1 + (2 + 3)) + 4)"},*/
+        /*{"(5 + 5) * 2;", "((5 + 5) * 2)"},*/
+        /*{"2 / (5 + 5);", "(2 / (5 + 5))"},*/
+        /*{"(5 + 5) * 2 * (5 + 5);", "(((5 + 5) * 2) * (5 + 5))"},*/
+        /*{"-(5 + 5);", "(-(5 + 5))"},*/
+        /*{"!(true == true);", "(!(true == true))"},*/
     };
 
     for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
@@ -239,12 +267,13 @@ void test_operator_precedence() {
         program_t *program = parse_program(parser);
         check_parser_errors(parser);
 
-	char *actual = program_to_string(program);
-	assertf(strcmp(actual, tests[i].expected) == 0,
-		"expected=%s, got=%s",
-		tests[i].expected,
-		actual);
-	free(actual);
+        char *actual = program_to_string(program);
+        assertf(strcmp(actual, tests[i].expected) == 0, 
+               "expected=%s, got=%s", 
+               tests[i].expected, 
+               actual);
+        
+        free(actual);
     }
 }
 
@@ -272,16 +301,8 @@ void test_boolean_expression() {
         assertf(stmt->type == EXPRESSION_STATEMENT,
                "program.Statements[0] is not EXPRESSION_STATEMENT. got=%d",
                stmt->type);
-
-        expression_t *exp = stmt->value;
-        assertf(exp->type == BOOLEAN_EXPR,
-               "exp not BOOLEAN_EXPR. got=%d", 
-               exp->type);
-
-        assertf(exp->boolean == tests[i].expected_boolean,
-               "boolean.Value not %d. got=%d", 
-               tests[i].expected_boolean,
-               exp->boolean);
+	
+	check_boolean_literal(stmt->value, tests[i].expected_boolean);
     }
 }
 
