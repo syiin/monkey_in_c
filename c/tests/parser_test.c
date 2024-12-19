@@ -254,78 +254,77 @@ void test_parsing_infix_expressions() {
 
 
 void test_operator_precedence() {
-    struct {
-        char *input;
-        char *expected;
-    } tests[] = {
-        {"-a * b;", "((-a) * b)"},
-        {"!-a;", "(!(-a))"},
-        {"a + b + c;", "((a + b) + c)"},
-        {"a + b - c;", "((a + b) - c)"},
-        {"a * b * c;", "((a * b) * c)"},
-        {"a * b / c;", "((a * b) / c)"},
-        {"a + b / c;", "(a + (b / c))"},
-        {"a + b * c + d / e - f;", "(((a + (b * c)) + (d / e)) - f)"},
-        {"3 + 4; -5 * 5;", "(3 + 4)((-5) * 5)"},
-        {"5 > 4 == 3 < 4;", "((5 > 4) == (3 < 4))"},
-        {"5 < 4 != 3 > 4;", "((5 < 4) != (3 > 4))"},
-        {"3 + 4 * 5 == 3 * 1 + 4 * 5;", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
-        {"true;", "true"},
-        {"false;", "false"},
-        {"3 > 5 == false;", "((3 > 5) == false)"},
-        {"3 < 5 == true;", "((3 < 5) == true)"},
-        /*{"1 + (2 + 3) + 4;", "((1 + (2 + 3)) + 4)"},*/
-        /*{"(5 + 5) * 2;", "((5 + 5) * 2)"},*/
-        /*{"2 / (5 + 5);", "(2 / (5 + 5))"},*/
-        /*{"(5 + 5) * 2 * (5 + 5);", "(((5 + 5) * 2) * (5 + 5))"},*/
-        /*{"-(5 + 5);", "(-(5 + 5))"},*/
-        /*{"!(true == true);", "(!(true == true))"},*/
-    };
+	struct {
+		char *input;
+		char *expected;
+	} tests[] = {
+		{"-a * b;", "((-a) * b)"},
+		{"!-a;", "(!(-a))"},
+		{"a + b + c;", "((a + b) + c)"},
+		{"a + b - c;", "((a + b) - c)"},
+		{"a * b * c;", "((a * b) * c)"},
+		{"a * b / c;", "((a * b) / c)"},
+		{"a + b / c;", "(a + (b / c))"},
+		{"a + b * c + d / e - f;", "(((a + (b * c)) + (d / e)) - f)"},
+		{"3 + 4; -5 * 5;", "(3 + 4)((-5) * 5)"},
+		{"5 > 4 == 3 < 4;", "((5 > 4) == (3 < 4))"},
+		{"5 < 4 != 3 > 4;", "((5 < 4) != (3 > 4))"},
+		{"3 + 4 * 5 == 3 * 1 + 4 * 5;", "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))"},
+		{"true;", "true"},
+		{"false;", "false"},
+		{"3 > 5 == false;", "((3 > 5) == false)"},
+		{"3 < 5 == true;", "((3 < 5) == true)"},
+		/*{"1 + (2 + 3) + 4;", "((1 + (2 + 3)) + 4)"},*/
+		/*{"(5 + 5) * 2;", "((5 + 5) * 2)"},*/
+		/*{"2 / (5 + 5);", "(2 / (5 + 5))"},*/
+		/*{"(5 + 5) * 2 * (5 + 5);", "(((5 + 5) * 2) * (5 + 5))"},*/
+		/*{"-(5 + 5);", "(-(5 + 5))"},*/
+		/*{"!(true == true);", "(!(true == true))"},*/
+	};
 
-    for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
-        lexer_t *lexer = new_lexer(tests[i].input);
-        parser_t *parser = new_parser(lexer);
+	for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+		lexer_t *lexer = new_lexer(tests[i].input);
+		parser_t *parser = new_parser(lexer);
 
-        program_t *program = parse_program(parser);
-        check_parser_errors(parser);
+		program_t *program = parse_program(parser);
+		check_parser_errors(parser);
 
-        char *actual = program_to_string(program);
-        assertf(strcmp(actual, tests[i].expected) == 0, 
-               "expected=%s, got=%s", 
-               tests[i].expected, 
-               actual);
-        
-        free(actual);
-    }
+		char *actual = program_to_string(program);
+		assertf(strcmp(actual, tests[i].expected) == 0, 
+		       "expected=%s, got=%s", 
+		       tests[i].expected, 
+		       actual);
+		
+		free(actual);
+	}
 }
 
 void test_boolean_expression() {
-    struct {
-        char *input;
-        bool expected_boolean;
-    } tests[] = {
-        {"true;", true},
-        {"false;", false},
-    };
+	struct {
+		char *input;
+		bool expected_boolean;
+	} tests[] = {
+		{"true;", true},
+		{"false;", false},
+	};
+	for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+		lexer_t *lexer = new_lexer(tests[i].input);
+		parser_t *parser = new_parser(lexer);
 
-    for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
-        lexer_t *lexer = new_lexer(tests[i].input);
-        parser_t *parser = new_parser(lexer);
+		program_t *program = parse_program(parser);
+		check_parser_errors(parser);
 
-        program_t *program = parse_program(parser);
-        check_parser_errors(parser);
+		assertf(program->count == 1, 
+		       "program has not enough statements. got=%d",
+		       program->count);
 
-        assertf(program->count == 1, 
-               "program has not enough statements. got=%d",
-               program->count);
-
-        statement_t *stmt = program->statements[0];
-        assertf(stmt->type == EXPRESSION_STATEMENT,
-               "program.Statements[0] is not EXPRESSION_STATEMENT. got=%d",
-               stmt->type);
-	
-	check_boolean_literal(stmt->value, tests[i].expected_boolean);
-    }
+		statement_t *stmt = program->statements[0];
+		assertf(stmt->type == EXPRESSION_STATEMENT,
+		       "program.Statements[0] is not EXPRESSION_STATEMENT. got=%d",
+		       stmt->type);
+		
+		check_boolean_literal(stmt->value, tests[i].expected_boolean);
+	}
 }
 
 int main(int argc, char *argv[]) {
