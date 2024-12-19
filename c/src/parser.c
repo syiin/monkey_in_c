@@ -202,6 +202,10 @@ prefix_parser parse_prefix_fns(TokenType token_type){
 			return &parse_prefix_expression;
 		case MINUS:
 			return &parse_prefix_expression;
+		case TRUE:
+			return &parse_boolean;
+		case FALSE:
+			return &parse_boolean;
 		default:
 			return NULL;
 	}
@@ -246,6 +250,22 @@ expression_t *parse_prefix_expression(parser_t *parser){
 
 }
 
+expression_t *parse_boolean(parser_t *parser){
+	token_t token = {
+			.type = parser->curr_token.type,
+			.literal = strdup(parser->curr_token.literal)
+	};
+
+	expression_t *expression = new_expression(BOOLEAN_EXPR, token);
+	if (strcmp(expression->token.literal, "true") == 0){
+		expression->boolean = true;
+	} else {
+		expression->boolean = false;
+	}
+	return expression;
+
+}
+
 expression_t *parse_infix_expression(parser_t *parser, expression_t *left){
 	token_t token = {
 			.type = parser->curr_token.type,
@@ -259,6 +279,8 @@ expression_t *parse_infix_expression(parser_t *parser, expression_t *left){
 	expression->infix_expression.right = parse_expression(parser, precedence);
 	return expression;
 }
+
+
 
 Precedence peek_precedence(parser_t *parser){
 	return get_precedence(parser->peek_token.type);

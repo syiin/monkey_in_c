@@ -15,6 +15,7 @@ typedef enum {
 	INTEGER_LITERAL,
 	PREFIX_EXPR,
 	INFIX_EXPR,
+	BOOLEAN_EXPR,
 } ExpressionType;
 
 typedef struct Identifier {
@@ -40,6 +41,7 @@ typedef struct Expression {
 	token_t token;
 	union {
 		int integer;
+		bool boolean;
 		identifier_t ident;
 		prefix_expression_t prefix_expression;
 		infix_expression_t infix_expression;

@@ -248,6 +248,43 @@ void test_operator_precedence() {
     }
 }
 
+void test_boolean_expression() {
+    struct {
+        char *input;
+        bool expected_boolean;
+    } tests[] = {
+        {"true;", true},
+        {"false;", false},
+    };
+
+    for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+        lexer_t *lexer = new_lexer(tests[i].input);
+        parser_t *parser = new_parser(lexer);
+
+        program_t *program = parse_program(parser);
+        check_parser_errors(parser);
+
+        assertf(program->count == 1, 
+               "program has not enough statements. got=%d",
+               program->count);
+
+        statement_t *stmt = program->statements[0];
+        assertf(stmt->type == EXPRESSION_STATEMENT,
+               "program.Statements[0] is not EXPRESSION_STATEMENT. got=%d",
+               stmt->type);
+
+        expression_t *exp = stmt->value;
+        assertf(exp->type == BOOLEAN_EXPR,
+               "exp not BOOLEAN_EXPR. got=%d", 
+               exp->type);
+
+        assertf(exp->boolean == tests[i].expected_boolean,
+               "boolean.Value not %d. got=%d", 
+               tests[i].expected_boolean,
+               exp->boolean);
+    }
+}
+
 int main(int argc, char *argv[]) {
 	TEST(test_let_statements);
 	TEST(test_return_statements);
@@ -256,4 +293,5 @@ int main(int argc, char *argv[]) {
 	TEST(test_parsing_prefix_expressions);
 	TEST(test_parsing_infix_expressions);
 	TEST(test_operator_precedence);
+	TEST(test_boolean_expression);
 }

@@ -44,6 +44,7 @@ infix_parser parser_infix_fns(TokenType token_type);
 expression_t *parse_expression(parser_t *parser, Precedence precedence);
 expression_t *parse_identifier(parser_t *parser);
 expression_t *parse_integer_literal(parser_t *parser);
+expression_t *parse_boolean(parser_t *parser);
 expression_t *parse_prefix_expression(parser_t *parser);
 expression_t *parse_infix_expression(parser_t *parser, expression_t *left);
 Precedence get_precedence(TokenType token_type);

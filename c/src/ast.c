@@ -87,6 +87,9 @@ void format_expression_statement(string_t *str, expression_t *expression) {
             format_expression_statement(str, expression->infix_expression.right);
             string_append(str, ")");
             break;
+        case BOOLEAN_EXPR:
+            string_append(str, expression->token.literal);
+            break;
     }
 }
 
