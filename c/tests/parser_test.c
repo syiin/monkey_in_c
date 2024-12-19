@@ -192,24 +192,24 @@ void test_parsing_prefix_expressions(){
 }
 
 void test_parsing_infix_expressions() {
-    struct {
-        char *input;
-        int left_value;
-        char *operator;
-        int right_value;
-    } tests[] = {
-        {"5 + 5;", 5, "+", 5},
-        {"5 - 5;", 5, "-", 5},
-        {"5 * 5;", 5, "*", 5},
-        {"5 / 5;", 5, "/", 5},
-        {"5 > 5;", 5, ">", 5},
-        {"5 < 5;", 5, "<", 5},
-        {"5 == 5;", 5, "==", 5},
-        {"5 != 5;", 5, "!=", 5},
-	{"true == true;", true, "==", true},
-	{"true != false;", true, "!=", false},
-	{"false == false;", false, "==" , false},
-    };
+	struct {
+		char *input;
+		int left_value;
+		char *operator;
+		int right_value;
+	} tests[] = {
+		{"5 + 5;", 5, "+", 5},
+		{"5 - 5;", 5, "-", 5},
+		{"5 * 5;", 5, "*", 5},
+		{"5 / 5;", 5, "/", 5},
+		{"5 > 5;", 5, ">", 5},
+		{"5 < 5;", 5, "<", 5},
+		{"5 == 5;", 5, "==", 5},
+		{"5 != 5;", 5, "!=", 5},
+		{"true == true;", true, "==", true},
+		{"true != false;", true, "!=", false},
+		{"false == false;", false, "==" , false},
+	};
 	for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
 		lexer_t *lexer = new_lexer(tests[i].input);
 		parser_t *parser = new_parser(lexer);
