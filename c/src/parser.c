@@ -206,6 +206,8 @@ prefix_parser parse_prefix_fns(TokenType token_type){
 			return &parse_boolean;
 		case FALSE:
 			return &parse_boolean;
+		case LPAREN:
+			return &parse_group_expression;
 		default:
 			return NULL;
 	}
@@ -280,7 +282,14 @@ expression_t *parse_infix_expression(parser_t *parser, expression_t *left){
 	return expression;
 }
 
-
+expression_t *parse_group_expression(parser_t *parser){
+	parser_next_token(parser);
+	expression_t *expression = parse_expression(parser, PRECEDENCE_LOWEST);
+	if (!expect_peek(parser, RPAREN)){
+		return NULL;
+	}
+	return expression;
+}
 
 Precedence peek_precedence(parser_t *parser){
 	return get_precedence(parser->peek_token.type);
