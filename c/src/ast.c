@@ -90,7 +90,24 @@ void format_expression_statement(string_t *str, expression_t *expression) {
         case BOOLEAN_EXPR:
             string_append(str, expression->token.literal);
             break;
+        case IF_EXPR:
+            string_append(str, "if");
+            format_expression_statement(str, expression->if_expression.condition);
+            string_append(str, " ");
+            format_block_statement(str, expression->if_expression.consequence);
+            if (expression->if_expression.alternative != NULL) {
+                string_append(str, "else ");
+                format_block_statement(str, expression->if_expression.alternative);
+            }
     }
+}
+
+void format_block_statement(string_t *str, block_statement_t *block) {
+    string_append(str, "{");
+    for (int i = 0; i < block->statements->count; i++) {
+        format_statement(str, block->statements->data[i]);
+    }
+    string_append(str, "}");
 }
 
 expression_t *new_expression(ExpressionType type, token_t token){

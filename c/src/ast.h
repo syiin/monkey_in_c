@@ -3,11 +3,13 @@
 
 #include "token.h"
 #include "custom_string.h"
+#include "vector.h"
 
 typedef enum {
 	LET_STATEMENT,
 	RETURN_STATEMENT,
 	EXPRESSION_STATEMENT,
+	BLOCK_STATEMENT,
 } StatementType;
 
 typedef enum {
@@ -16,6 +18,7 @@ typedef enum {
 	PREFIX_EXPR,
 	INFIX_EXPR,
 	BOOLEAN_EXPR,
+	IF_EXPR,
 } ExpressionType;
 
 typedef struct Identifier {
@@ -36,6 +39,14 @@ typedef struct InfixExpression {
 	expression_t *left;
 } infix_expression_t;
 
+typedef struct BlockStatement block_statement_t;
+
+typedef struct IfExpression {
+	expression_t *condition;
+	block_statement_t *consequence;
+	block_statement_t *alternative;
+} if_expression_t;
+
 typedef struct Expression {
 	ExpressionType type;
 	token_t token;
@@ -45,6 +56,7 @@ typedef struct Expression {
 		identifier_t ident;
 		prefix_expression_t prefix_expression;
 		infix_expression_t infix_expression;
+		if_expression_t if_expression;
 	};
 } expression_t;
 
@@ -54,6 +66,11 @@ typedef struct Statement {
 	identifier_t name;
 	expression_t *value;
 } statement_t;
+
+typedef struct BlockStatement {
+	token_t token;
+	vector_t *statements;
+} block_statement_t;
 
 typedef struct Program{
 	int statement_cap;
@@ -65,6 +82,7 @@ void token_literal(program_t *program);
 void print_ast(program_t *program);
 void format_statement(string_t *str_buffer, statement_t *statement);
 void format_expression_statement(string_t *str, expression_t *expression);
+void format_block_statement(string_t *str, block_statement_t *block);
 void ast_string(string_t *format_buffer, program_t *program);
 char *program_to_string(program_t *program);
 expression_t *new_expression(ExpressionType type, token_t token);
