@@ -183,7 +183,6 @@ void test_parsing_prefix_expressions(){
 			check_integer_literal(statement.value->prefix_expression.right, tests[i].value);
 		}
 
-
 		if (statement.value->infix_expression.right->token.type == TRUE || 
 				statement.value->infix_expression.right->token.type == FALSE){
 			check_boolean_literal(statement.value->infix_expression.right, tests[i].value);

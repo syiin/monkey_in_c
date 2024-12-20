@@ -93,8 +93,8 @@ statement_t *parse_expression_statement(parser_t *parser){
 	statement->token = parser->curr_token;
 	statement->value = parse_expression(parser, PRECEDENCE_LOWEST);
 
-	if (!(expect_peek(parser, SEMICOLON))){
-		return NULL;
+	if (peek_token_is(parser, SEMICOLON)) {
+		parser_next_token(parser);
 	}
 	return statement;
 }
@@ -317,7 +317,24 @@ expression_t *parse_if_expression(parser_t *parser){
 }
 
 block_statement_t *parse_block_statement(parser_t *parser){
+	token_t token = {
+			.type = parser->curr_token.type,
+			.literal = strdup(parser->curr_token.literal)
+		};
+	block_statement_t *block_statement = malloc(sizeof(block_statement_t));
+	block_statement->token = token;
+	block_statement->statements = create_vector();
 
+	parser_next_token(parser);
+
+	while(!curr_token_is(parser, RBRACE) && !curr_token_is(parser, EOF_TOKEN)){
+		statement_t *statement = parse_statement(parser);
+		if (statement != NULL){
+			append_vector(block_statement->statements, statement);
+		}
+	parser_next_token(parser);
+	}
+	return block_statement;
 }
 
 Precedence peek_precedence(parser_t *parser){
