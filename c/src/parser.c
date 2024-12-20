@@ -313,6 +313,15 @@ expression_t *parse_if_expression(parser_t *parser){
 	}
 
 	expression->if_expression.consequence = parse_block_statement(parser);
+
+	if (peek_token_is(parser, ELSE)){
+		parser_next_token(parser);
+
+		if (!expect_peek(parser, LBRACE)){
+			return NULL;
+		}
+		expression->if_expression.alternative = parse_block_statement(parser);
+	}
 	return expression;
 }
 
