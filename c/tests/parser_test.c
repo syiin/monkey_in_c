@@ -373,6 +373,63 @@ void test_if_expression(void) {
 	"alternative was not NULL");
 }
 
+void test_if_else_expression(void) {
+	char *input = "if (x < y) { x } else { y }";
+	lexer_t *lexer = new_lexer(input);
+	parser_t *parser = new_parser(lexer);
+	program_t *program = parse_program(parser);
+
+	check_parser_errors(parser);
+
+	assertf(program->count == 1,
+		"program does not contain 1 statement. got=%d\n",
+		program->count);
+
+	statement_t *stmt = program->statements[0];
+	assertf(stmt->type == EXPRESSION_STATEMENT,
+		"statement is not expression statement. got=%d",
+		stmt->type);
+
+	expression_t *exp = stmt->value;
+	assertf(exp->type == IF_EXPR,
+		"expression is not if expression. got=%d",
+		exp->type);
+
+	// Test condition
+	expression_t *condition = exp->if_expression.condition;
+	assertf(condition->type == INFIX_EXPR,
+	"condition is not infix expression. got=%d",
+	condition->type);
+	check_identifier(condition->infix_expression.left, "x");
+	assertf(strcmp(condition->infix_expression.op, "<") == 0,
+		"condition operator is not '<'. got=%s",
+		condition->infix_expression.op);
+	check_identifier(condition->infix_expression.right, "y");
+
+	// Test consequence
+	block_statement_t *consequence = exp->if_expression.consequence;
+	assertf(consequence->statements->count == 1,
+		"consequence does not contain 1 statement. got=%d",
+		consequence->statements->count);
+
+	statement_t *consequence_stmt = consequence->statements->data[0];
+	assertf(consequence_stmt->type == EXPRESSION_STATEMENT,
+		"consequence statement is not expression statement. got=%d",
+		consequence_stmt->type);
+	check_identifier(consequence_stmt->value, "x");
+
+	block_statement_t *alternative = exp->if_expression.alternative;
+	assertf(alternative->statements->count == 1,
+		"alternative does not contain 1 statement. got=%d\n",
+		alternative->statements->count);
+
+	statement_t *alternative_stmt = alternative->statements->data[0];
+	assertf(alternative_stmt->type == EXPRESSION_STATEMENT,
+		"alternative statement is not expression statement. got=%d",
+		alternative_stmt->type);
+	check_identifier(alternative_stmt->value, "y");
+}
+
 int main(int argc, char *argv[]) {
 	TEST(test_let_statements);
 	TEST(test_return_statements);
@@ -383,4 +440,5 @@ int main(int argc, char *argv[]) {
 	TEST(test_operator_precedence);
 	TEST(test_boolean_expression);
 	TEST(test_if_expression);
+	TEST(test_if_else_expression);
 }
