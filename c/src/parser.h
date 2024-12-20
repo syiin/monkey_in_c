@@ -36,6 +36,8 @@ statement_t *parse_let_statement(parser_t *parser);
 statement_t *parse_return_statement(parser_t *parser);
 statement_t *parse_expression_statement(parser_t *parser);
 statement_t *parse_statement(parser_t *parser);
+expression_t *parse_if_expression(parser_t *parser);
+block_statement_t *parse_block_statement(parser_t *parser);
 
 typedef expression_t *(*prefix_parser)(parser_t*);
 typedef expression_t *(*infix_parser)(parser_t *, expression_t*);

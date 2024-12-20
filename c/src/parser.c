@@ -208,6 +208,8 @@ prefix_parser parse_prefix_fns(TokenType token_type){
 			return &parse_boolean;
 		case LPAREN:
 			return &parse_group_expression;
+		case IF:
+			return &parse_if_expression;
 		default:
 			return NULL;
 	}
@@ -291,10 +293,36 @@ expression_t *parse_group_expression(parser_t *parser){
 	return expression;
 }
 
+expression_t *parse_if_expression(parser_t *parser){
+	token_t token = {
+			.type = parser->curr_token.type,
+			.literal = strdup(parser->curr_token.literal)
+		};
+	expression_t *expression = new_expression(IF_EXPR, token);
+	if (!expect_peek(parser, LPAREN)){
+		return NULL;
+	}
+	parser_next_token(parser);
+	expression->if_expression.condition = parse_expression(parser, PRECEDENCE_LOWEST);
+
+	if (!expect_peek(parser, RPAREN)){
+		return NULL;
+	}
+	if (!expect_peek(parser, LBRACE)){
+		return NULL;
+	}
+
+	expression->if_expression.consequence = parse_block_statement(parser);
+	return expression;
+}
+
+block_statement_t *parse_block_statement(parser_t *parser){
+
+}
+
 Precedence peek_precedence(parser_t *parser){
 	return get_precedence(parser->peek_token.type);
 }
-
 
 Precedence curr_precedence(parser_t *parser){
 	return get_precedence(parser->curr_token.type);
