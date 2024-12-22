@@ -51,8 +51,7 @@ typedef struct IfExpression {
 typedef struct FunctionLiteral {
 	token_t token;
 	block_statement_t *body;
-	size_t parameter_count;
-	identifier_t parameters[];
+	vector_t *parameters;
 } function_literal_t;
 
 typedef struct Expression {

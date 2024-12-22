@@ -210,6 +210,8 @@ prefix_parser parse_prefix_fns(TokenType token_type){
 			return &parse_group_expression;
 		case IF:
 			return &parse_if_expression;
+		case FUNCTION:
+			return &parse_function_literal;
 		default:
 			return NULL;
 	}
@@ -323,6 +325,60 @@ expression_t *parse_if_expression(parser_t *parser){
 		expression->if_expression.alternative = parse_block_statement(parser);
 	}
 	return expression;
+}
+
+expression_t *parse_function_literal(parser_t *parser){
+	token_t token = {
+			.type = parser->curr_token.type,
+			.literal = strdup(parser->curr_token.literal)
+		};
+	expression_t *expression = new_expression(FUNCTION_LITERAL, token);
+	if (!expect_peek(parser, LPAREN)){
+		return NULL;
+	}
+
+	expression->function_literal.parameters = parse_function_parameters(parser);
+	if (!expect_peek(parser, LBRACE)){
+		return NULL;
+	}
+
+	expression->function_literal.body = parse_block_statement(parser);
+	return expression;
+}
+
+vector_t *parse_function_parameters(parser_t *parser) {
+	vector_t *parameters = create_vector();  // Initialize vector if not already done
+
+	if (peek_token_is(parser, RPAREN)) {
+		parser_next_token(parser);
+		return parameters;
+	}
+
+	parser_next_token(parser);
+
+	// Allocate identifier and add to vector
+	identifier_t *identifier = malloc(sizeof(identifier_t));
+	identifier->value = strdup(parser->curr_token.literal);
+	identifier->token.type = parser->curr_token.type;
+	identifier->token.literal = strdup(parser->curr_token.literal);
+	append_vector(parameters, identifier);
+
+	// Parse any additional parameters
+	while (peek_token_is(parser, COMMA)) {
+		parser_next_token(parser);  // consume comma
+		parser_next_token(parser);  // consume comma
+
+		identifier_t *identifier = malloc(sizeof(identifier_t));
+		identifier->value = strdup(parser->curr_token.literal);
+		identifier->token.type = parser->curr_token.type;
+		identifier->token.literal = strdup(parser->curr_token.literal);
+		append_vector(parameters, identifier);
+	}
+
+	if (!expect_peek(parser, RPAREN)) {
+		return parameters;
+	}
+	return parameters;
 }
 
 block_statement_t *parse_block_statement(parser_t *parser){

@@ -431,59 +431,61 @@ void test_if_else_expression(void) {
 }
 
 void test_function_literal_parsing(void) {
-	char *input = "fn(x, y) { x + y; }";
-	lexer_t *lexer = new_lexer(input);
-	parser_t *parser = new_parser(lexer);
-	program_t *program = parse_program(parser);
+   	char *input = "fn(x, y) { x + y; }";
+   	lexer_t *lexer = new_lexer(input);
+   	parser_t *parser = new_parser(lexer);
+   	program_t *program = parse_program(parser);
+   	
+   	check_parser_errors(parser);
 
-	check_parser_errors(parser);
+   	assertf(program->count == 1, 
+   			"program does not contain 1 statement. got=%d\n",
+   			program->count);
 
-	assertf(program->count == 1, 
-		"program does not contain 1 statement. got=%d\n",
-		program->count);
+   	statement_t *stmt = program->statements[0];
+   	assertf(stmt->type == EXPRESSION_STATEMENT,
+   			"program.statements[0] is not expression statement. got=%d",
+   			stmt->type);
 
-	statement_t *stmt = program->statements[0];
-	assertf(stmt->type == EXPRESSION_STATEMENT,
-		"program.statements[0] is not expression statement. got=%d",
-		stmt->type);
+   	expression_t *expression = stmt->value;
+   	assertf(expression->type == FUNCTION_LITERAL,
+   			"statement.expression is not function literal. got=%d",
+   			expression->type);
 
-	expression_t *function = stmt->value;
-	assertf(function->type == FUNCTION_LITERAL,
-		"statement.expression is not function literal. got=%d",
-		function->type);
+   	function_literal_t *function = &expression->function_literal;
+   	assertf(function->parameters->count == 2,
+   			"function literal parameters wrong. want 2, got=%d\n",
+   			function->parameters->count);
 
-	assertf(function->function_literal.parameter_count == 2,
-		"function literal parameters wrong. want 2, got=%d\n",
-		function->function_literal.parameter_count);
+   	// Test function parameters  
+   	identifier_t *param1 = function->parameters->data[0];
+   	identifier_t *param2 = function->parameters->data[1];
+	assertf(strcmp(param1->value, "x") == 0, "expected %s, got %s", "x", param1->value);
+	assertf(strcmp(param2->value, "y") == 0, "expected %s, got %s", "y", param1->value);
 
-	// Test function parameters
-	identifier_t param1 = function->function_literal.parameters[0];
-	identifier_t param2 = function->function_literal.parameters[1];
-	assertf(strcmp(param1.value, "x"), "expected identifier with %s, got %s", "x", param1.value);
-	assertf(strcmp(param1.value, "y"), "expected identifier with %s, got %s", "x", param2.value);
+   	// Test function body
+   	block_statement_t *body = function->body;
+   	assertf(body->statements->count == 1,
+   			"function body has wrong number of statements. got=%d\n",
+   			body->statements->count);
 
-	// Test function body
-	block_statement_t *body = function->function_literal.body;
-	assertf(body->statements->count == 1,
-		"function body has wrong number of statements. got=%d\n",
-		body->statements->count);
+   	statement_t *body_stmt = body->statements->data[0];
+   	assertf(body_stmt->type == EXPRESSION_STATEMENT, 
+   			"function body stmt is not expression statement. got=%d",
+   			body_stmt->type);
 
-	statement_t *body_stmt = body->statements->data[0];
-	assertf(body_stmt->type == EXPRESSION_STATEMENT,
-		"function body stmt is not expression statement. got=%d",
-		body_stmt->type);
+   	expression_t *body_expr = body_stmt->value;
+   	assertf(body_expr->type == INFIX_EXPR,
+   			"body statement value is not infix expression. got=%d",
+   			body_expr->type);
 
-	expression_t *body_expr = body_stmt->value;
-	assertf(body_expr->type == INFIX_EXPR,
-		"body statement value is not infix expression. got=%d",
-		body_expr->type);
-
-	check_identifier(body_expr->infix_expression.left, "x");
-	assertf(strcmp(body_expr->infix_expression.op, "+") == 0,
-		"wrong operator. expected=+, got=%s", 
-		body_expr->infix_expression.op);
-	check_identifier(body_expr->infix_expression.right, "y");
+   	check_identifier(body_expr->infix_expression.left, "x");
+   	assertf(strcmp(body_expr->infix_expression.op, "+") == 0,
+   			"wrong operator. expected=+, got=%s", 
+   			body_expr->infix_expression.op);
+   	check_identifier(body_expr->infix_expression.right, "y");
 }
+
 int main(int argc, char *argv[]) {
 	TEST(test_let_statements);
 	TEST(test_return_statements);

@@ -102,9 +102,10 @@ void format_expression_statement(string_t *str, expression_t *expression) {
         case FUNCTION_LITERAL:
             string_append(str, expression->function_literal.token.literal);
             string_append(str, "(");
-            for (size_t i = 0; i < expression->function_literal.parameter_count; i++) {
-                string_append(str, expression->function_literal.parameters[i].token.literal);
-                if (i < expression->function_literal.parameter_count - 1) {
+            for (size_t i = 0; i < expression->function_literal.parameters->count; i++) {
+                identifier_t *ident = (identifier_t *)expression->function_literal.parameters->data[i];
+                string_append(str, ident->token.literal);
+                if (i < expression->function_literal.parameters->count - 1) {
                     string_append(str, ", ");
                 }
             }
