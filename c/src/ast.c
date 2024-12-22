@@ -99,6 +99,18 @@ void format_expression_statement(string_t *str, expression_t *expression) {
                 string_append(str, "else ");
                 format_block_statement(str, expression->if_expression.alternative);
             }
+        case FUNCTION_LITERAL:
+            string_append(str, expression->function_literal.token.literal);
+            string_append(str, "(");
+            for (size_t i = 0; i < expression->function_literal.parameter_count; i++) {
+                string_append(str, expression->function_literal.parameters[i].token.literal);
+                if (i < expression->function_literal.parameter_count - 1) {
+                    string_append(str, ", ");
+                }
+            }
+            string_append(str, ") ");
+            format_block_statement(str, expression->function_literal.body);
+            break;
     }
 }
 
