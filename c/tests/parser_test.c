@@ -486,6 +486,50 @@ void test_function_literal_parsing(void) {
    	check_identifier(body_expr->infix_expression.right, "y");
 }
 
+void test_call_expression_parsing(void) {
+       char *input = "add(1, 2 * 3, 4 + 5);";
+       lexer_t *lexer = new_lexer(input);
+       parser_t *parser = new_parser(lexer);
+       program_t *program = parse_program(parser);
+
+       check_parser_errors(parser);
+
+       assertf(program->count == 1,
+               "program does not contain 1 statement. got=%d\n",
+               program->count);
+
+       statement_t *stmt = program->statements[0];
+       assertf(stmt->type == EXPRESSION_STATEMENT,
+               "statement is not expression statement. got=%d",
+               stmt->type);
+
+       expression_t *exp = stmt->value;
+       assertf(exp->type == CALL_EXPRESSION,
+               "expression is not call expression. got=%d", 
+               exp->type);
+
+       check_identifier(exp->call_expression.function, "add");
+
+       assertf(exp->call_expression.arguments->count == 3,
+               "wrong length of arguments. got=%d",
+               exp->call_expression.arguments->count);
+
+       expression_t *arg0 = exp->call_expression.arguments->data[0];
+       check_integer_literal(arg0, 1);
+
+       expression_t *arg1 = exp->call_expression.arguments->data[1];
+       assertf(arg1->type == INFIX_EXPR, "arg1 not infix expression");
+       check_integer_literal(arg1->infix_expression.left, 2);
+       assertf(strcmp(arg1->infix_expression.op, "*") == 0, "wrong operator");
+       check_integer_literal(arg1->infix_expression.right, 3);
+
+       expression_t *arg2 = exp->call_expression.arguments->data[2];
+       assertf(arg2->type == INFIX_EXPR, "arg2 not infix expression");
+       check_integer_literal(arg2->infix_expression.left, 4);
+       assertf(strcmp(arg2->infix_expression.op, "+") == 0, "wrong operator");
+       check_integer_literal(arg2->infix_expression.right, 5);
+}
+
 int main(int argc, char *argv[]) {
 	TEST(test_let_statements);
 	TEST(test_return_statements);
@@ -498,4 +542,5 @@ int main(int argc, char *argv[]) {
 	TEST(test_if_expression);
 	TEST(test_if_else_expression);
 	TEST(test_function_literal_parsing);
+	TEST(test_call_expression_parsing);
 }

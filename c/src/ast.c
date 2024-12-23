@@ -100,7 +100,7 @@ void format_expression_statement(string_t *str, expression_t *expression) {
                 format_block_statement(str, expression->if_expression.alternative);
             }
         case FUNCTION_LITERAL:
-            string_append(str, expression->function_literal.token.literal);
+            string_append(str, expression->token.literal);
             string_append(str, "(");
             for (size_t i = 0; i < expression->function_literal.parameters->count; i++) {
                 identifier_t *ident = (identifier_t *)expression->function_literal.parameters->data[i];
@@ -111,6 +111,18 @@ void format_expression_statement(string_t *str, expression_t *expression) {
             }
             string_append(str, ") ");
             format_block_statement(str, expression->function_literal.body);
+            break;
+        case CALL_EXPRESSION:
+            string_append(str, expression->token.literal);
+            string_append(str, "(");
+            for (size_t i = 0; i < expression->call_expression.arguments->count; i++){
+                expression_t *expr = (expression_t *)expression->call_expression.arguments->data[i];
+                if (i > 0) {
+                    string_append(str, ", ");
+                }
+                format_expression_statement(str, expr);
+            }
+            string_append(str, ")");
             break;
     }
 }

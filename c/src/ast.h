@@ -20,6 +20,7 @@ typedef enum {
 	BOOLEAN_EXPR,
 	IF_EXPR,
 	FUNCTION_LITERAL,
+	CALL_EXPRESSION
 } ExpressionType;
 
 typedef struct Identifier {
@@ -41,6 +42,7 @@ typedef struct InfixExpression {
 } infix_expression_t;
 
 typedef struct BlockStatement block_statement_t;
+typedef struct Expression expression_t;
 
 typedef struct IfExpression {
 	expression_t *condition;
@@ -49,10 +51,14 @@ typedef struct IfExpression {
 } if_expression_t;
 
 typedef struct FunctionLiteral {
-	token_t token;
 	block_statement_t *body;
 	vector_t *parameters;
 } function_literal_t;
+
+typedef struct CallExpression {
+	expression_t *function;
+	vector_t *arguments;
+} call_expression_t;
 
 typedef struct Expression {
 	ExpressionType type;
@@ -65,6 +71,7 @@ typedef struct Expression {
 		infix_expression_t infix_expression;
 		if_expression_t if_expression;
 		function_literal_t function_literal;
+		call_expression_t call_expression;
 	};
 } expression_t;
 
