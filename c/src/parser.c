@@ -218,7 +218,12 @@ prefix_parser parse_prefix_fns(TokenType token_type){
 }
 
 infix_parser parser_infix_fns(TokenType token_type){
-	return &parse_infix_expression;
+	switch (token_type) {
+		case LPAREN:
+			return &parse_call_expression;
+		default:
+			return &parse_infix_expression;
+	}
 }
 
 expression_t *parse_identifier(parser_t *parser){
@@ -284,6 +289,41 @@ expression_t *parse_infix_expression(parser_t *parser, expression_t *left){
 	parser_next_token(parser);
 	expression->infix_expression.right = parse_expression(parser, precedence);
 	return expression;
+}
+
+expression_t *parse_call_expression(parser_t *parser, expression_t *left){
+	token_t token = {
+			.type = parser->curr_token.type,
+			.literal = strdup(parser->curr_token.literal)
+		};
+	expression_t *expression = new_expression(CALL_EXPRESSION, token);
+	expression->call_expression.function = left;
+	expression->call_expression.arguments = parse_call_arguments(parser);
+	return expression;
+}
+
+vector_t *parse_call_arguments(parser_t *parser){
+	vector_t *arguments = create_vector();
+
+	if (peek_token_is(parser, RPAREN)){
+		parser_next_token(parser);
+		return arguments;
+	}
+
+	parser_next_token(parser);
+	append_vector(arguments, parse_expression(parser, PRECEDENCE_LOWEST));
+
+	while(peek_token_is(parser, COMMA)){
+		parser_next_token(parser);
+		parser_next_token(parser);
+		append_vector(arguments, parse_expression(parser, PRECEDENCE_LOWEST));
+	}
+
+	if (!expect_peek(parser, RPAREN)){
+		return NULL;
+	}
+
+	return arguments;
 }
 
 expression_t *parse_group_expression(parser_t *parser){
