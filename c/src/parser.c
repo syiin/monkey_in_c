@@ -68,13 +68,17 @@ statement_t *parse_let_statement(parser_t *parser){
 	if (!(expect_peek(parser, IDENT))){
 		return NULL;
 	}
-
+	
 	statement->name.token = parser->curr_token;
 	statement->name.value = parser->curr_token.literal;
 
 	if (!(expect_peek(parser, ASSIGN))){
 		return NULL;
 	}
+
+	parser_next_token(parser);
+
+	statement->value = parse_expression(parser, PRECEDENCE_LOWEST);
 
 	if (!(curr_token_is(parser, SEMICOLON))){
 		parser_next_token(parser);
