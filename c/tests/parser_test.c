@@ -1,7 +1,6 @@
 #include "test_helpers.h"
 #include "../src/lexer.h"
 #include "../src/parser.h"
-#include <cstdio>
 #include <string.h>
 
 void check_parser_errors(parser_t *parser){
@@ -67,11 +66,11 @@ void test_let_statements() {
 		program_t *program = parse_program(parser);
 		check_parser_errors(parser);
 
-		assertf(program->count == 1, 
+		assertf(program->statements->count == 1, 
 		   "Program does not contain 1 statement. got=%d", 
-		   program->count);
+		   program->statements->count);
 
-		statement_t *statement = program->statements[0];
+		statement_t *statement = program->statements->data[0];
 		assertf(statement->type == LET_STATEMENT,
 		   "wrong statement type. expected LET_STATEMENT, got=%d",
 		   statement->type);
@@ -122,7 +121,7 @@ void test_return_statements(){
 		exit(1);
 	}
 
-	assertf(program->count == 3, "Program does not container 3 statements");
+	assertf(program->statements->count == 3, "Program does not container 3 statements");
 	
 	struct {
 		char *literal;
@@ -133,7 +132,7 @@ void test_return_statements(){
 		{"return", "993322"},
 	};
 	for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++){
-		statement_t statement = *program->statements[i];
+		statement_t statement = *(statement_t *)program->statements->data[i];
 		assertf(statement.token.type == RETURN, "wrong token type. expected %s, got %s\n", "RETURN", token_type_to_string(statement.token.type));
 		assertf(strcmp(statement.token.literal, tests[i].literal) == 0, "wrong literal. expected %s, got %s\n", tests[i].name, statement.token.literal);
 	}
@@ -152,9 +151,9 @@ void test_identifier(){
 		printf("Parse program failed \n");
 		exit(1);
 	}
-	assertf(program->count == 1, "Program does not container 1 statements");
+	assertf(program->statements->count == 1, "Program does not container 1 statements");
 
-	statement_t statement = *program->statements[0];
+	statement_t statement = *(statement_t *)program->statements->data[0];
 
 	assertf(statement.type == EXPRESSION_STATEMENT, "wrong token type. expected %s, got %s\n", "EXPRESSION_STATEMENT", token_type_to_string(statement.token.type));
 	assertf(statement.value->type == IDENT_EXPR, "wrong expression type. expected %s, got %d\n", "IDENT_EXPR", statement.value->type);
@@ -174,8 +173,8 @@ void test_integer(){
 		printf("Parse program failed \n");
 		exit(1);
 	}
-	assertf(program->count == 1, "Program does not container 1 statement");
-	statement_t statement = *program->statements[0];
+	assertf(program->statements->count == 1, "Program does not container 1 statement");
+	statement_t statement = *(statement_t *)program->statements->data[0];
 
 	assertf(statement.type == EXPRESSION_STATEMENT, "wrong token type. expected %s, got %s\n", "EXPRESSION_STATEMENT", token_type_to_string(statement.token.type));
 	assertf(statement.value->type == INTEGER_LITERAL, "wrong expression type. expected %s, got %d\n", "INTEGER_LITERAL", statement.value->type);
@@ -204,8 +203,8 @@ void test_parsing_prefix_expressions(){
 			printf("Parse program failed \n");
 			exit(1);
 		}
-		assertf(program->count == 1, "Program does not container 1 statement");
-		statement_t statement = *program->statements[0];
+		assertf(program->statements->count == 1, "Program does not container 1 statement");
+		statement_t statement = *(statement_t *)program->statements->data[0];
 
 		assertf(statement.type == EXPRESSION_STATEMENT, "wrong token type. expected %s, got %s\n", "EXPRESSION_STATEMENT", token_type_to_string(statement.token.type));
 		assertf(statement.value->type == PREFIX_EXPR, "wrong expression type. expected %s, got %d\n", "PREFIX_EXPRESSION", statement.value->type);
@@ -248,11 +247,11 @@ void test_parsing_infix_expressions() {
 		program_t *program = parse_program(parser);
 		check_parser_errors(parser);
 
-		assertf(program->count == 1, 
+		assertf(program->statements->count == 1, 
 		       "program.Statements does not contain 1 statement. got=%d\n",
-		       program->count);
+		       program->statements->count);
 
-		statement_t *stmt = program->statements[0];
+		statement_t *stmt = program->statements->data[0];
 		assertf(stmt->type == EXPRESSION_STATEMENT,
 		       "program.Statements[0] is not EXPRESSION_STATEMENT. got=%d",
 		       stmt->type);
@@ -349,11 +348,11 @@ void test_boolean_expression() {
 		program_t *program = parse_program(parser);
 		check_parser_errors(parser);
 
-		assertf(program->count == 1, 
+		assertf(program->statements->count == 1, 
 		       "program has not enough statements. got=%d",
-		       program->count);
+		       program->statements->count);
 
-		statement_t *stmt = program->statements[0];
+		statement_t *stmt = program->statements->data[0];
 		assertf(stmt->type == EXPRESSION_STATEMENT,
 		       "program.Statements[0] is not EXPRESSION_STATEMENT. got=%d",
 		       stmt->type);
@@ -370,11 +369,11 @@ void test_if_expression(void) {
 
 	check_parser_errors(parser);
 
-	assertf(program->count == 1, 
+	assertf(program->statements->count == 1, 
 	"program does not contain 1 statement. got=%d\n",
-	program->count);
+	program->statements->count);
 
-	statement_t *stmt = program->statements[0];
+	statement_t *stmt = program->statements->data[0];
 	assertf(stmt->type == EXPRESSION_STATEMENT,
 	"statement is not expression statement. got=%d",
 	stmt->type);
@@ -418,11 +417,11 @@ void test_if_else_expression(void) {
 
 	check_parser_errors(parser);
 
-	assertf(program->count == 1,
+	assertf(program->statements->count == 1,
 		"program does not contain 1 statement. got=%d\n",
-		program->count);
+		program->statements->count);
 
-	statement_t *stmt = program->statements[0];
+	statement_t *stmt = program->statements->data[0];
 	assertf(stmt->type == EXPRESSION_STATEMENT,
 		"statement is not expression statement. got=%d",
 		stmt->type);
@@ -475,11 +474,11 @@ void test_function_literal_parsing(void) {
    	
    	check_parser_errors(parser);
 
-   	assertf(program->count == 1, 
+   	assertf(program->statements->count == 1, 
    			"program does not contain 1 statement. got=%d\n",
-   			program->count);
+   			program->statements->count);
 
-   	statement_t *stmt = program->statements[0];
+   	statement_t *stmt = program->statements->data[0];
    	assertf(stmt->type == EXPRESSION_STATEMENT,
    			"program.statements[0] is not expression statement. got=%d",
    			stmt->type);
@@ -531,11 +530,11 @@ void test_call_expression_parsing(void) {
 
        check_parser_errors(parser);
 
-       assertf(program->count == 1,
+       assertf(program->statements->count == 1,
                "program does not contain 1 statement. got=%d\n",
-               program->count);
+               program->statements->count);
 
-       statement_t *stmt = program->statements[0];
+       statement_t *stmt = program->statements->data[0];
        assertf(stmt->type == EXPRESSION_STATEMENT,
                "statement is not expression statement. got=%d",
                stmt->type);

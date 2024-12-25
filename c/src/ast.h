@@ -88,9 +88,7 @@ typedef struct BlockStatement {
 } block_statement_t;
 
 typedef struct Program{
-	int statement_cap;
-	int count;
-	statement_t *statements[];
+	vector_t *statements;
 } program_t;
 
 void token_literal(program_t *program);

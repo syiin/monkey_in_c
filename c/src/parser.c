@@ -167,10 +167,8 @@ void print_errors(parser_t *parser){
 }
 
 program_t *parse_program(parser_t *parser){
-	int initial_cap = 2;
-	program_t *program = malloc(sizeof(program_t) + sizeof(statement_t) * initial_cap);
-	program->statement_cap = initial_cap;
-	program->count = 0;
+	program_t *program = malloc(sizeof(program_t));
+	program->statements = create_vector();
 
 	while (parser->curr_token.type != EOF_TOKEN){
 		statement_t *statement = parse_statement(parser);
@@ -183,15 +181,7 @@ program_t *parse_program(parser_t *parser){
 }
 
 program_t *push_to_program(statement_t *statement, program_t *program){
-	if (program->count >= program->statement_cap){
-		program->statement_cap = program->statement_cap * 2;
-		size_t to_allocate = sizeof(program_t) + program->statement_cap * sizeof(statement_t);
-		program_t *new_program = realloc(program, to_allocate);
-		assert(new_program != NULL);
-		program = new_program;
-	}
-	program->statements[program->count] = statement;
-	program->count++;
+	append_vector(program->statements, statement);
 	return program;
 }
 

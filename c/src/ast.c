@@ -19,14 +19,14 @@ char *program_to_string(program_t *program) {
 }
 
 void token_literal(program_t *program){
-	for (int i = 0; i < program->count; i++){
-		print_token(&program->statements[i]->token);
+	for (int i = 0; i < program->statements->count; i++){
+		print_token(&((statement_t *)program->statements->data[i])->token);
 	};
 }
 
 void ast_string(string_t *format_buffer, program_t *program){
-	for (int i = 0; i < program->count; i++){
-		statement_t *statement = program->statements[i];
+	for (int i = 0; i < program->statements->count; i++){
+		statement_t *statement = program->statements->data[i];
 		format_statement(format_buffer, statement);
 	};
 }
