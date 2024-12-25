@@ -41,36 +41,70 @@ void check_boolean_literal(expression_t *expression, bool value) {
             expression->token.literal);
 }
 
-void test_let_statements(){
-	char *input = "let x = 5;\n"
-		"let y = 10;\n"
-		"let foobar = 838383;\n";
-	lexer_t *lexer = new_lexer(input);
-	parser_t *parser = new_parser(lexer);
+void test_let_statements() {
+	typedef union {
+		char *ident;
+		int integer;
+		bool boolean;
+	} value_t;
 
-	program_t *program = parse_program(parser);
-	check_parser_errors(parser);
-
-	if (program == NULL){
-		printf("Parse program failed \n");
-		exit(1);
-	}
-
-	assertf(program->count == 3, "Program does not container 3 statements");
-	
 	struct {
-		char *literal;
+		char *input;
+		ExpressionType exp_type;
+		value_t value;
 		char *name;
-		} tests[] = {
-		{"let", "x" },
-		{"let", "y"},
-		{"let", "foobar"},
+	} tests[] = {
+		{"let x = 5;", INTEGER_LITERAL, {.integer = 5}, "x"},
+		{"let y = true;", BOOLEAN_EXPR, {.boolean = true}, "y"},
+		{"let foobar = y;", IDENT_EXPR, {.ident = "y"}, "foobar"},
 	};
-	for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++){
-		statement_t statement = *program->statements[i];
-		assertf(statement.token.type == LET, "wrong token type. expected %s, got %s\n", "RETURN", token_type_to_string(statement.token.type));
-		assertf(strcmp(statement.token.literal, tests[i].literal) == 0, "wrong literal. expected %s, got %s\n", tests[i].name, statement.token.literal);
-		assertf(strcmp(statement.name.value, tests[i].name) == 0, "wrong name value. expected %s, got %s\n", tests[i].name, statement.name.value);
+
+	for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+		lexer_t *lexer = new_lexer(tests[i].input);
+		parser_t *parser = new_parser(lexer);
+
+		program_t *program = parse_program(parser);
+		check_parser_errors(parser);
+
+		assertf(program->count == 1, 
+		   "Program does not contain 1 statement. got=%d", 
+		   program->count);
+
+		statement_t *statement = program->statements[0];
+		assertf(statement->type == LET_STATEMENT,
+		   "wrong statement type. expected LET_STATEMENT, got=%d",
+		   statement->type);
+
+		assertf(statement->value != NULL, 
+		   "statement value is null");
+
+		assertf(statement->value->type == tests[i].exp_type,
+		   "wrong expression type. expected=%d, got=%d",
+		   tests[i].exp_type, statement->value->type);
+
+		switch(tests[i].exp_type) {
+			case INTEGER_LITERAL:
+				assertf(tests[i].value.integer == statement->value->integer,
+				   "wrong integer, expected %d, got %d",
+				   tests[i].value.integer, statement->value->integer);
+				break;
+			case BOOLEAN_EXPR:  
+				assertf(tests[i].value.boolean == statement->value->boolean,
+				   "wrong boolean, expected %d, got %d",
+				   tests[i].value.boolean, statement->value->boolean);
+				break;
+			case IDENT_EXPR:
+				assertf(strcmp(statement->value->ident.value, tests[i].value.ident) == 0,
+				   "wrong identifier, expected %s, got %s",
+				   tests[i].value.ident, statement->value->ident.value);
+				break;
+			default:
+				break;
+		}
+
+		assertf(strcmp(statement->name.value, tests[i].name) == 0,
+		   "wrong name value. expected %s, got %s",
+		   tests[i].name, statement->name.value);
 	}
 }
 

@@ -113,7 +113,6 @@ void format_expression_statement(string_t *str, expression_t *expression) {
             format_block_statement(str, expression->function_literal.body);
             break;
         case CALL_EXPRESSION:
-            // Don't wrap function calls in extra parentheses
             format_expression_statement(str, expression->call_expression.function);
             string_append(str, "(");
             for (size_t i = 0; i < expression->call_expression.arguments->count; i++){
