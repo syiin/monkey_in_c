@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "lexer.h"
-#include "token.h"
+#include "parser.h"
+#include "ast.h"
+
 
 void repl_start(FILE *in, FILE *out){
 	char input[1024] = { '\0' };
@@ -11,11 +13,18 @@ void repl_start(FILE *in, FILE *out){
 		}
 
 		lexer_t *lexer = new_lexer(input);
-		token_t *token = lexer_next_token(lexer);
-		while(token->type != EOF_TOKEN){
-			print_token(token);
-			token = lexer_next_token(lexer);
+		parser_t *parser = new_parser(lexer);
+		program_t *program = parse_program(parser);
+
+		if (parser->errors->count > 0){
+			print_errors(parser);
+			continue;
 		}
+
+		printf(
+			"%s\n",
+			program_to_string(program)
+		);
 	}
 	
 }

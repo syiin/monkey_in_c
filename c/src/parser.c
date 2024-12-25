@@ -77,7 +77,6 @@ statement_t *parse_let_statement(parser_t *parser){
 	}
 
 	parser_next_token(parser);
-
 	statement->value = parse_expression(parser, PRECEDENCE_LOWEST);
 
 	if (!(curr_token_is(parser, SEMICOLON))){

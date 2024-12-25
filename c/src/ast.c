@@ -46,7 +46,7 @@ void format_statement(string_t *str_buffer, statement_t *statement) {
             string_append(str_buffer, " ");
             string_append(str_buffer, statement->name.value);
             string_append(str_buffer, " = ");
-            string_append(str_buffer, statement->value->ident.value);
+            format_expression_statement(str_buffer, statement->value);
             break;
         }
         case RETURN_STATEMENT: {
@@ -99,6 +99,7 @@ void format_expression_statement(string_t *str, expression_t *expression) {
                 string_append(str, "else ");
                 format_block_statement(str, expression->if_expression.alternative);
             }
+            break;
         case FUNCTION_LITERAL:
             string_append(str, expression->token.literal);
             string_append(str, "(");

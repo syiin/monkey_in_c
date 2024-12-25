@@ -1,6 +1,7 @@
 #include "test_helpers.h"
 #include "../src/lexer.h"
 #include "../src/parser.h"
+#include <cstdio>
 #include <string.h>
 
 void check_parser_errors(parser_t *parser){
@@ -12,7 +13,7 @@ void check_parser_errors(parser_t *parser){
 
 void check_integer_literal(expression_t *expression, int value){
 	assertf(expression->integer == value, "wrong value. expected %d, got %d\n", value, expression->integer);
-	char literal_buffer[32];
+	char literal_buffer[BUFSIZ];
 	sprintf(literal_buffer, "%d", value);
 	assertf(strcmp(expression->token.literal, literal_buffer) == 0, "wrong literal. expected %s, got %s\n", literal_buffer, expression->token.literal);
 }
