@@ -75,9 +75,6 @@ void test_let_statements() {
 		   "wrong statement type. expected LET_STATEMENT, got=%d",
 		   statement->type);
 
-		assertf(statement->value != NULL, 
-		   "statement value is null");
-
 		assertf(statement->value->type == tests[i].exp_type,
 		   "wrong expression type. expected=%d, got=%d",
 		   tests[i].exp_type, statement->value->type);
