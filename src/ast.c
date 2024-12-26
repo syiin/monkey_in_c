@@ -136,7 +136,7 @@ void format_block_statement(string_t *str, block_statement_t *block) {
     string_append(str, "}");
 }
 
-expression_t *new_expression(ExpressionType type, token_t token){
+expression_t *new_expression(expression_type_t type, token_t token){
 	expression_t *expression = malloc(sizeof(expression_t));
 	expression->token = token;
 	expression->type = type;

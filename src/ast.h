@@ -10,7 +10,7 @@ typedef enum {
 	RETURN_STATEMENT,
 	EXPRESSION_STATEMENT,
 	BLOCK_STATEMENT,
-} StatementType;
+} statement_type_t;
 
 typedef enum {
 	IDENT_EXPR,
@@ -21,7 +21,7 @@ typedef enum {
 	IF_EXPR,
 	FUNCTION_LITERAL,
 	CALL_EXPRESSION
-} ExpressionType;
+} expression_type_t;
 
 typedef struct Identifier {
 	token_t token;
@@ -61,7 +61,7 @@ typedef struct CallExpression {
 } call_expression_t;
 
 typedef struct Expression {
-	ExpressionType type;
+	expression_type_t type;
 	token_t token;
 	union {
 		int integer;
@@ -76,7 +76,7 @@ typedef struct Expression {
 } expression_t;
 
 typedef struct Statement {
-	StatementType type;
+	statement_type_t type;
 	token_t token;
 	identifier_t name;
 	expression_t *value;
@@ -98,6 +98,6 @@ void format_expression_statement(string_t *str, expression_t *expression);
 void format_block_statement(string_t *str, block_statement_t *block);
 void ast_string(string_t *format_buffer, program_t *program);
 char *program_to_string(program_t *program);
-expression_t *new_expression(ExpressionType type, token_t token);
+expression_t *new_expression(expression_type_t type, token_t token);
 
 #endif

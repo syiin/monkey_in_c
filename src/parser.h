@@ -26,7 +26,7 @@ typedef enum {
 	PRECEDENCE_PRODUCT, // *
 	PRECEDENCE_PREFIX ,// -X or !X
 	PRECEDENCE_CALL, // myFunction(X)
-} Precedence;
+} precedence_t;
 
 void parser_next_token(parser_t *parser);
 program_t *parse_program(parser_t *parser);
@@ -45,7 +45,7 @@ typedef expression_t *(*prefix_parser)(parser_t*);
 typedef expression_t *(*infix_parser)(parser_t *, expression_t*);
 prefix_parser parse_prefix_fns(TokenType token_type);
 infix_parser parser_infix_fns(TokenType token_type);
-expression_t *parse_expression(parser_t *parser, Precedence precedence);
+expression_t *parse_expression(parser_t *parser, precedence_t precedence);
 expression_t *parse_identifier(parser_t *parser);
 expression_t *parse_integer_literal(parser_t *parser);
 expression_t *parse_boolean(parser_t *parser);
@@ -55,9 +55,9 @@ expression_t *parse_infix_expression(parser_t *parser, expression_t *left);
 expression_t *parse_call_expression(parser_t *parser, expression_t *left);
 vector_t *parse_call_arguments(parser_t *parser);
 
-Precedence get_precedence(TokenType token_type);
-Precedence curr_precedence(parser_t *parser);
-Precedence peek_precedence(parser_t *parser);
+precedence_t get_precedence(TokenType token_type);
+precedence_t curr_precedence(parser_t *parser);
+precedence_t peek_precedence(parser_t *parser);
 
 bool expect_peek(parser_t *parser, TokenType token_type);
 bool peek_token_is(parser_t *parser, TokenType token_type);

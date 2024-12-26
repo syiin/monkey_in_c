@@ -102,7 +102,7 @@ statement_t *parse_expression_statement(parser_t *parser){
 	return statement;
 }
 
-expression_t *parse_expression(parser_t *parser, Precedence precedence){
+expression_t *parse_expression(parser_t *parser, precedence_t precedence){
 	prefix_parser prefix_fn = parse_prefix_fns(parser->curr_token.type);
 	if (prefix_fn == NULL) {
 		char error[100];
@@ -161,6 +161,8 @@ void append_error(parser_t *parser, const char *error){
 
 void print_errors(parser_t *parser){
 	vector_t *errors = parser->errors;
+	printf("Whoops, we ran into some monkey business here!\n");
+	printf("Parser Errors:\n");
 	for (int i = 0; i < errors->count; i++){
 		printf("%s\n", (char *)errors->data[i]);
 	}
@@ -278,7 +280,7 @@ expression_t *parse_infix_expression(parser_t *parser, expression_t *left){
 	expression_t *expression = new_expression(INFIX_EXPR, token);
 	expression->infix_expression.op = token.literal;
 	expression->infix_expression.left = left;
-	Precedence precedence = curr_precedence(parser);
+	precedence_t precedence = curr_precedence(parser);
 	parser_next_token(parser);
 	expression->infix_expression.right = parse_expression(parser, precedence);
 	return expression;
@@ -435,15 +437,15 @@ block_statement_t *parse_block_statement(parser_t *parser){
 	return block_statement;
 }
 
-Precedence peek_precedence(parser_t *parser){
+precedence_t peek_precedence(parser_t *parser){
 	return get_precedence(parser->peek_token.type);
 }
 
-Precedence curr_precedence(parser_t *parser){
+precedence_t curr_precedence(parser_t *parser){
 	return get_precedence(parser->curr_token.type);
 }
 
-Precedence get_precedence(TokenType token_type) {
+precedence_t get_precedence(TokenType token_type) {
     switch (token_type) {
         case EQ:
             return PRECEDENCE_EQUALS;

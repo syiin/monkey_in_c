@@ -50,7 +50,7 @@ void test_let_statements() {
 
 	struct {
 		char *input;
-		ExpressionType exp_type;
+		expression_type_t exp_type;
 		value_t value;
 		char *name;
 	} tests[] = {
