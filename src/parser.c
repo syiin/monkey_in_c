@@ -45,9 +45,17 @@ statement_t *parse_return_statement(parser_t *parser){
 	}
 
 	statement->type = RETURN_STATEMENT;
-	statement->token = parser->curr_token;
+	token_t token = {
+			.type = parser->curr_token.type,
+			.literal = strdup(parser->curr_token.literal)
+		};
+	statement->token = token;
 
 	parser_next_token(parser);
+
+	if (!curr_token_is(parser, SEMICOLON)) {
+		statement->value = parse_expression(parser, PRECEDENCE_LOWEST);
+	}
 
 	if (!(curr_token_is(parser, SEMICOLON))){
 		parser_next_token(parser);

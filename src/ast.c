@@ -52,7 +52,9 @@ void format_statement(string_t *str_buffer, statement_t *statement) {
         case RETURN_STATEMENT: {
             string_append(str_buffer, statement->token.literal);
             string_append(str_buffer, " ");
-            string_append(str_buffer, statement->value->ident.value);
+            if (statement->value != NULL){
+                format_expression_statement(str_buffer, statement->value);
+            }
             break;
         }
         case EXPRESSION_STATEMENT: {
