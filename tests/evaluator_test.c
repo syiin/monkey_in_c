@@ -3,14 +3,14 @@
 #include "../src/lexer.h"
 #include "../src/parser.h"
 
-void check_integer_object(object_t *evaluated, int expected){
-        assertf(evaluated->type == OBJECT_INTEGER,
+void check_integer_object(object_t evaluated, int expected){
+        assertf(evaluated.type == OBJECT_INTEGER,
                 "wrong type, expected OBJECT_INTEGER, got %s\n",
-                object_type_to_string(evaluated->integer));
-        assertf(evaluated->integer == expected,
+                object_type_to_string(evaluated.integer));
+        assertf(evaluated.integer == expected,
                 "wrong value, expected %d, got %d\n",
                 expected,
-                evaluated->integer);
+                evaluated.integer);
 }
 
 void test_eval_integer_expression(){
@@ -28,7 +28,7 @@ void test_eval_integer_expression(){
 
 		program_t *program = parse_program(parser);
                 statement_t *statement = program->statements->data[0];
-                object_t *evaluated = eval(*statement->value);
+                object_t evaluated = eval(statement->value);
                 check_integer_object(evaluated, tests[i].expected);
         }
 }
