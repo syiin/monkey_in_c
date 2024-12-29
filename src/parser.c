@@ -39,12 +39,11 @@ statement_t *parse_statement(parser_t *parser){
 }
 
 statement_t *parse_return_statement(parser_t *parser){
-	statement_t *statement = malloc(sizeof(statement_t));
+	statement_t * statement = new_statement(RETURN_STATEMENT);
 	if (statement == NULL){
 		return NULL;
 	}
 
-	statement->type = RETURN_STATEMENT;
 	token_t token = {
 			.type = parser->curr_token.type,
 			.literal = strdup(parser->curr_token.literal)
@@ -65,7 +64,7 @@ statement_t *parse_return_statement(parser_t *parser){
 }
 
 statement_t *parse_let_statement(parser_t *parser){
-	statement_t *statement = malloc(sizeof(statement_t));
+	statement_t *statement = new_statement(EXPRESSION_STATEMENT);
 	if (statement == NULL){
 		return NULL;
 	}
@@ -95,12 +94,11 @@ statement_t *parse_let_statement(parser_t *parser){
 }
 
 statement_t *parse_expression_statement(parser_t *parser){
-	statement_t *statement = malloc(sizeof(statement_t));
+	statement_t *statement = new_statement(EXPRESSION_STATEMENT);
 	if (statement == NULL){
 		return NULL;
 	}
 
-	statement->type = EXPRESSION_STATEMENT;
 	statement->token = parser->curr_token;
 	statement->value = parse_expression(parser, PRECEDENCE_LOWEST);
 

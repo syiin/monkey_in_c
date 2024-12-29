@@ -139,8 +139,19 @@ void format_block_statement(string_t *str, block_statement_t *block) {
 }
 
 expression_t *new_expression(expression_type_t type, token_t token){
-	expression_t *expression = malloc(sizeof(expression_t));
-	expression->token = token;
-	expression->type = type;
-	return expression;
+    expression_t *expression = malloc(sizeof(expression_t));
+    expression->token = token;
+    expression->type = type;
+    expression->node_type = NODE_EXPRESSION;
+    return expression;
+}
+
+statement_t *new_statement(statement_type_t type){
+    statement_t *statement = malloc(sizeof(statement_t));
+    if (statement == NULL){
+        return NULL;
+    }
+    statement->node_type = NODE_STATEMENT;
+    statement->type = type;
+    return statement;
 }

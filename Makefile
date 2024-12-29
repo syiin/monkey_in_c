@@ -6,7 +6,7 @@ TOKEN_SRC= token.c $(VECTOR_SRC)
 LEXER_SRC= lexer.c $(TOKEN_SRC)
 REPL_SRC = repl.c ${LEXER_SRC}
 PARSER_SRC = parser.c ast.c ${REPL_SRC}
-EVAL_SRC = object.c ${PARSER_SRC}
+EVAL_SRC = evaluator.c ${PARSER_SRC}
 TESTS= bin/lexer_test bin/parser_test bin/ast_test bin/evaluator_test
 
 all: bin/monkey

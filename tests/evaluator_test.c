@@ -1,5 +1,5 @@
 #include "test_helpers.h"
-#include "../src/object.h"
+#include "../src/evaluator.h"
 #include "../src/lexer.h"
 #include "../src/parser.h"
 
@@ -32,8 +32,6 @@ void test_eval_integer_expression(){
                 check_integer_object(evaluated, tests[i].expected);
         }
 }
-
-
 
 int main(int argc, char *argv[]) {
         TEST(test_eval_integer_expression);

@@ -1,5 +1,5 @@
-#ifndef OBJECT_H
-#define OBJECT_H
+#ifndef EVALUATOR_H
+#define EVALUATOR_H
 
 #include <stdbool.h>
 #include "ast.h"

@@ -6,6 +6,11 @@
 #include "vector.h"
 
 typedef enum {
+	NODE_EXPRESSION,
+	NODE_STATEMENT,
+} node_type_t;
+
+typedef enum {
 	LET_STATEMENT,
 	RETURN_STATEMENT,
 	EXPRESSION_STATEMENT,
@@ -61,6 +66,7 @@ typedef struct CallExpression {
 } call_expression_t;
 
 typedef struct Expression {
+	node_type_t node_type;
 	expression_type_t type;
 	token_t token;
 	union {
@@ -76,6 +82,7 @@ typedef struct Expression {
 } expression_t;
 
 typedef struct Statement {
+	node_type_t node_type;
 	statement_type_t type;
 	token_t token;
 	identifier_t name;
@@ -99,5 +106,6 @@ void format_block_statement(string_t *str, block_statement_t *block);
 void ast_string(string_t *format_buffer, program_t *program);
 char *program_to_string(program_t *program);
 expression_t *new_expression(expression_type_t type, token_t token);
+statement_t *new_statement(statement_type_t type);
 
 #endif
