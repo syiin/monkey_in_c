@@ -8,6 +8,7 @@
 typedef enum {
 	NODE_EXPRESSION,
 	NODE_STATEMENT,
+	NODE_PROGRAM,
 } node_type_t;
 
 typedef enum {
@@ -95,6 +96,7 @@ typedef struct BlockStatement {
 } block_statement_t;
 
 typedef struct Program{
+	node_type_t node_type;
 	vector_t *statements;
 } program_t;
 

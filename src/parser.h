@@ -29,6 +29,7 @@ typedef enum {
 } precedence_t;
 
 void parser_next_token(parser_t *parser);
+program_t *new_program();
 program_t *parse_program(parser_t *parser);
 parser_t *new_parser(lexer_t *lexer);
 program_t *push_to_program(statement_t *statement, program_t *program);

@@ -174,9 +174,15 @@ void print_errors(parser_t *parser){
 	}
 }
 
-program_t *parse_program(parser_t *parser){
+program_t *new_program(){
 	program_t *program = malloc(sizeof(program_t));
 	program->statements = create_vector();
+	program->node_type = NODE_PROGRAM;
+	return program;
+}
+
+program_t *parse_program(parser_t *parser){
+	program_t *program = new_program();
 
 	while (parser->curr_token.type != EOF_TOKEN){
 		statement_t *statement = parse_statement(parser);

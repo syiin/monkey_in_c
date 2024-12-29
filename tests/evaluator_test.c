@@ -28,7 +28,7 @@ void test_eval_integer_expression(){
 
 		program_t *program = parse_program(parser);
                 statement_t *statement = program->statements->data[0];
-                object_t evaluated = eval(statement->value);
+                object_t evaluated = eval(statement, NODE_STATEMENT);
                 check_integer_object(evaluated, tests[i].expected);
         }
 }
