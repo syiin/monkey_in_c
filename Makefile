@@ -16,9 +16,9 @@ bin/monkey: main.c $(EVAL_SRC) | bin/
 	$(CC) $(CFLAGS) $^ -Ofast -march=native -o $@
 bin/lexer_test: tests/lexer_test.c $(LEXER_SRC) | bin/
 	$(CC) $(CFLAGS) $^ -o $@
-bin/parser_test: tests/parser_test.c $(PARSER_SRC) | bin/
+bin/parser_test: tests/parser_test.c $(EVAL_SRC) | bin/
 	$(CC) $(CFLAGS) $^ -o $@
-bin/ast_test: tests/ast_test.c $(PARSER_SRC) | bin/
+bin/ast_test: tests/ast_test.c $(EVAL_SRC) | bin/
 	$(CC) $(CFLAGS) $^ -o $@
 bin/evaluator_test: tests/evaluator_test.c $(EVAL_SRC) | bin/
 	$(CC) $(CFLAGS) $^ -o $@
