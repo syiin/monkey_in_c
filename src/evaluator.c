@@ -2,6 +2,10 @@
 #include "evaluator.h"
 #include "ast.h"
 
+
+object_t global_true = { .type = OBJECT_BOOLEAN, .boolean = true };
+object_t global_false = { .type = OBJECT_BOOLEAN, .boolean = false };
+
 char *object_type_to_string(object_type_t object_type){
     switch(object_type){
         case OBJECT_INTEGER:
@@ -48,10 +52,7 @@ object_t eval_expression_node(expression_t *expression){
                 .integer = expression->integer
             };
         case BOOLEAN_EXPR:
-            return (object_t){
-                .type = OBJECT_BOOLEAN,
-                .boolean = expression->boolean
-            };
+            return expression->boolean ? global_true : global_false;
         default:
             return (object_t){};
     }
