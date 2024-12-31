@@ -52,3 +52,12 @@ object_t eval_expression_node(expression_t *expression){
     }
 }
 
+void inspect_object(object_t object, char *buff_out){
+    switch(object.type){
+        case OBJECT_INTEGER:
+            snprintf(buff_out, BUFSIZ, "%d\n", object.integer);
+        default:
+            break;
+    }
+}
+

@@ -23,4 +23,6 @@ char *object_type_to_string(object_type_t object_type);
 object_t eval(void *node, node_type_t node_type);
 object_t eval_expression_node(expression_t *expression);
 object_t eval_program_node(program_t *program);
+void inspect_object(object_t object, char *buff_out);
+
 #endif

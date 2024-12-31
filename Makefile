@@ -12,7 +12,7 @@ TESTS= bin/lexer_test bin/parser_test bin/ast_test bin/evaluator_test
 all: bin/monkey
 bin/:
 	mkdir -p bin/
-bin/monkey: main.c $(PARSER_SRC) | bin/
+bin/monkey: main.c $(EVAL_SRC) | bin/
 	$(CC) $(CFLAGS) $^ -Ofast -march=native -o $@
 bin/lexer_test: tests/lexer_test.c $(LEXER_SRC) | bin/
 	$(CC) $(CFLAGS) $^ -o $@
