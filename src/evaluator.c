@@ -61,7 +61,12 @@ void inspect_object(object_t object, char *buff_out){
     switch(object.type){
         case OBJECT_INTEGER:
             snprintf(buff_out, BUFSIZ, "%d\n", object.integer);
+            break;
+        case OBJECT_BOOLEAN:
+            snprintf(buff_out, BUFSIZ, "%s\n", object.boolean ? "true" : "false");
+            break;
         default:
+            snprintf(buff_out, BUFSIZ, "Unknown object type\n");
             break;
     }
 }
