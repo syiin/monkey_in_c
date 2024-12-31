@@ -12,6 +12,8 @@ char *object_type_to_string(object_type_t object_type){
             return "OBJECT_INTEGER";
         case OBJECT_BOOLEAN:
             return "OBJECT_BOOLEAN";
+        case OBJECT_NULL:
+            return "OBJECT_NULL";
         default:
             return "";
     }
