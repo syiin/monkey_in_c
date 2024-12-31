@@ -47,6 +47,11 @@ object_t eval_expression_node(expression_t *expression){
                 .type = OBJECT_INTEGER,
                 .integer = expression->integer
             };
+        case BOOLEAN_EXPR:
+            return (object_t){
+                .type = OBJECT_BOOLEAN,
+                .boolean = expression->boolean
+            };
         default:
             return (object_t){};
     }
