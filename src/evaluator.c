@@ -5,6 +5,7 @@
 
 object_t global_true = { .type = OBJECT_BOOLEAN, .boolean = true };
 object_t global_false = { .type = OBJECT_BOOLEAN, .boolean = false };
+object_t global_null = { .type = OBJECT_NULL, .boolean = false};
 
 char *object_type_to_string(object_type_t object_type){
     switch(object_type){
@@ -67,6 +68,9 @@ void inspect_object(object_t object, char *buff_out){
             break;
         case OBJECT_BOOLEAN:
             snprintf(buff_out, BUFSIZ, "%s\n", object.boolean ? "true" : "false");
+            break;
+        case OBJECT_NULL:
+            snprintf(buff_out, BUFSIZ, "NULL\n");
             break;
         default:
             snprintf(buff_out, BUFSIZ, "Unknown object type\n");
