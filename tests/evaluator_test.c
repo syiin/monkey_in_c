@@ -64,7 +64,31 @@ void test_eval_boolean_expression(){
         }
 }
 
+void test_eval_bang_operator(){
+        struct {
+                char *input;
+                bool expected;
+        } tests[] = {
+                {"!true", false},
+                {"!false", true},
+                {"!5", false},
+                {"!!true", true},
+                {"!!false", false},
+                {"!!5", true},
+        };
+
+        for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++){
+                lexer_t *lexer = new_lexer(tests[i].input);
+                parser_t *parser = new_parser(lexer);
+
+                program_t *program = parse_program(parser);
+                statement_t *statement = program->statements->data[0];
+                object_t evaluated = eval(statement, NODE_STATEMENT);
+                check_boolean_object(evaluated, tests[i].expected);
+        }
+}
 int main(int argc, char *argv[]) {
         TEST(test_eval_boolean_expression);
         TEST(test_eval_integer_expression);
+        TEST(test_eval_bang_operator);
 }

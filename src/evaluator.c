@@ -1,11 +1,12 @@
 #include <stdio.h>
+#include <string.h>
 #include "evaluator.h"
 #include "ast.h"
 
 
-object_t global_true = { .type = OBJECT_BOOLEAN, .boolean = true };
-object_t global_false = { .type = OBJECT_BOOLEAN, .boolean = false };
-object_t global_null = { .type = OBJECT_NULL, .boolean = false};
+static const object_t global_true = { .type = OBJECT_BOOLEAN, .boolean = true };
+static const object_t global_false = { .type = OBJECT_BOOLEAN, .boolean = false };
+static const object_t global_null = { .type = OBJECT_NULL, .null = NULL};
 
 char *object_type_to_string(object_type_t object_type){
     switch(object_type){
@@ -56,9 +57,27 @@ object_t eval_expression_node(expression_t *expression){
             };
         case BOOLEAN_EXPR:
             return expression->boolean ? global_true : global_false;
+        case PREFIX_EXPR: {
+            object_t right = eval(expression->prefix_expression.right, NODE_EXPRESSION);
+            return eval_prefix_expression(expression->prefix_expression.op, right);
+        }
         default:
             return (object_t){};
     }
+}
+
+object_t eval_prefix_expression(char *op, object_t right){
+    if(strcmp(op, "!") == 0) {
+        return eval_bang_operator(right);
+    }
+    return global_null;
+}
+
+object_t eval_bang_operator(object_t right){
+    if(right.type == OBJECT_NULL){ return global_true; }
+    if(!right.boolean){ return global_true; }
+    return global_false;
+
 }
 
 void inspect_object(object_t object, char *buff_out){
