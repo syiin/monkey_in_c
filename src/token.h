@@ -60,7 +60,9 @@ static const char *TOKEN_TYPE_STRINGS[TOKEN_TYPE_COUNT] = {
 	[LBRACE]    = "LBRACE",
 	[RBRACE]    = "RBRACE",
 	[FUNCTION]  = "FUNCTION",
-	[LET]       = "LET"
+	[LET]       = "LET",
+	[FALSE] = "FALSE",
+	[TRUE] = "TRUE"
 };
 
 typedef struct Token {

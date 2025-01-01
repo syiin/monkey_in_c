@@ -59,7 +59,8 @@ object_t eval_expression_node(expression_t *expression){
             return expression->boolean ? global_true : global_false;
         case PREFIX_EXPR: {
             object_t right = eval(expression->prefix_expression.right, NODE_EXPRESSION);
-            return eval_prefix_expression(expression->prefix_expression.op, right);
+            object_t result = eval_prefix_expression(expression->prefix_expression.op, right);
+            return result;
         }
         default:
             return (object_t){};
@@ -68,7 +69,8 @@ object_t eval_expression_node(expression_t *expression){
 
 object_t eval_prefix_expression(char *op, object_t right){
     if(strcmp(op, "!") == 0) {
-        return eval_bang_operator(right);
+        object_t result = eval_bang_operator(right);
+        return result;
     }
     if(strcmp(op, "-") == 0) {
         return eval_minus_operator(right);
@@ -77,10 +79,13 @@ object_t eval_prefix_expression(char *op, object_t right){
 }
 
 object_t eval_bang_operator(object_t right){
-    if(right.type == OBJECT_NULL){ return global_true; }
-    if(!right.boolean){ return global_true; }
+    if (right.type == OBJECT_NULL) {
+        return global_true;
+    }
+    else if (right.type == OBJECT_BOOLEAN && !right.boolean) {
+        return global_true; 
+    }
     return global_false;
-
 }
 
 object_t eval_minus_operator(object_t right){
@@ -88,8 +93,7 @@ object_t eval_minus_operator(object_t right){
     int value = right.integer;
     return (object_t){
         .type = OBJECT_INTEGER,
-        .integer = -value
-    };
+        .integer = -value };
 }
 
 void inspect_object(object_t object, char *buff_out){

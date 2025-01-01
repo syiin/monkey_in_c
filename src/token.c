@@ -41,6 +41,6 @@ void copy_token(token_t *dest, token_t *src) {
     if (src->literal != NULL) {
         dest->literal = strdup(src->literal);
     } else {
-        dest->literal = NULL;
+	dest->literal = NULL;
     }
 }

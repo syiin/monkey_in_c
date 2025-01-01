@@ -101,7 +101,6 @@ typedef struct Program{
 } program_t;
 
 void token_literal(program_t *program);
-void print_ast(program_t *program);
 void format_statement(string_t *str_buffer, statement_t *statement);
 void format_expression_statement(string_t *str, expression_t *expression);
 void format_block_statement(string_t *str, block_statement_t *block);

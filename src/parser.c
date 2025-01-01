@@ -14,7 +14,8 @@ parser_t *new_parser(lexer_t *lexer){
 	}
 	parser->lexer = lexer;
 	parser->errors = create_vector();
-	parser_next_token(parser);
+	parser->curr_token = *lexer_next_token(parser->lexer);
+	parser->peek_token = *lexer_next_token(parser->lexer);
 	return parser;
 }
 
@@ -64,12 +65,11 @@ statement_t *parse_return_statement(parser_t *parser){
 }
 
 statement_t *parse_let_statement(parser_t *parser){
-	statement_t *statement = new_statement(EXPRESSION_STATEMENT);
+	statement_t *statement = new_statement(LET_STATEMENT);
 	if (statement == NULL){
 		return NULL;
 	}
 
-	statement->type = LET_STATEMENT;
 	statement->token = parser->curr_token;
 	
 	if (!(expect_peek(parser, IDENT))){
@@ -117,6 +117,7 @@ expression_t *parse_expression(parser_t *parser, precedence_t precedence){
 		append_error(parser, error);
 		return NULL;
 	}
+
 	expression_t *left = prefix_fn(parser);	
 	if (left == NULL) {
 		return NULL;

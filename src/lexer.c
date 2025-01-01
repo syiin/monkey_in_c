@@ -178,6 +178,7 @@ lexer_t *new_lexer(char *input){
 		return NULL;
 	}
 	lexer->input = strdup(input);
+	lexer->read_position = 0;
 	read_char(lexer);
 	return lexer;
 }

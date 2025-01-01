@@ -1,4 +1,7 @@
+#include "string.h"
+
 #include <stdio.h>
+#include "custom_string.h"
 #include "lexer.h"
 #include "parser.h"
 #include "ast.h"
@@ -14,6 +17,7 @@ void repl_start(FILE *in, FILE *out){
 		if (input[0] == '\n' || input[0] == '\0') {
 			continue;
 		}
+
 		lexer_t *lexer = new_lexer(input);
 		parser_t *parser = new_parser(lexer);
 		program_t *program = parse_program(parser);

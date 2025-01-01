@@ -31,8 +31,11 @@ void test_eval_integer_expression(){
 		parser_t *parser = new_parser(lexer);
 
 		program_t *program = parse_program(parser);
-                statement_t *statement = program->statements->data[0];
-                object_t evaluated = eval(statement, NODE_STATEMENT);
+
+		/*string_t *prog_str = string_new();*/
+		/*ast_string(prog_str, program);*/
+		/*string_print(prog_str, stdout);*/
+                object_t evaluated = eval(program, NODE_PROGRAM);
                 check_integer_object(evaluated, tests[i].expected);
 
         }
@@ -62,6 +65,7 @@ void test_eval_boolean_expression(){
                 parser_t *parser = new_parser(lexer);
 
                 program_t *program = parse_program(parser);
+
                 statement_t *statement = program->statements->data[0];
                 object_t evaluated = eval(statement, NODE_STATEMENT);
                 check_boolean_object(evaluated, tests[i].expected);
@@ -86,11 +90,16 @@ void test_eval_bang_operator(){
                 parser_t *parser = new_parser(lexer);
 
                 program_t *program = parse_program(parser);
-                statement_t *statement = program->statements->data[0];
-                object_t evaluated = eval(statement, NODE_STATEMENT);
+
+		/*string_t *prog_str = string_new();*/
+		/*ast_string(prog_str, program);*/
+		/*string_print(prog_str, stdout);*/
+
+                object_t evaluated = eval(program, NODE_PROGRAM);
                 check_boolean_object(evaluated, tests[i].expected);
         }
 }
+
 int main(int argc, char *argv[]) {
         TEST(test_eval_boolean_expression);
         TEST(test_eval_integer_expression);
