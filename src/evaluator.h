@@ -26,5 +26,5 @@ object_t eval_program_node(program_t *program);
 object_t eval_prefix_expression(char *op, object_t right);
 object_t eval_bang_operator(object_t right);
 void inspect_object(object_t object, char *buff_out);
-
+object_t eval_minus_operator(object_t right);
 #endif

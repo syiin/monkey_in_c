@@ -20,6 +20,10 @@ void test_eval_integer_expression(){
         } tests[] = {
                 {"5", 5},
                 {"10", 10},
+                {"5", 5},
+                {"10", 10},
+                {"-5", -5},
+                {"-10", -10},
         };
 
         for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++){

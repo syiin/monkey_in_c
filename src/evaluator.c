@@ -70,6 +70,9 @@ object_t eval_prefix_expression(char *op, object_t right){
     if(strcmp(op, "!") == 0) {
         return eval_bang_operator(right);
     }
+    if(strcmp(op, "-") == 0) {
+        return eval_minus_operator(right);
+    }
     return global_null;
 }
 
@@ -78,6 +81,15 @@ object_t eval_bang_operator(object_t right){
     if(!right.boolean){ return global_true; }
     return global_false;
 
+}
+
+object_t eval_minus_operator(object_t right){
+    if(right.type != OBJECT_INTEGER){ return global_null; }
+    int value = right.integer;
+    return (object_t){
+        .type = OBJECT_INTEGER,
+        .integer = -value
+    };
 }
 
 void inspect_object(object_t object, char *buff_out){
