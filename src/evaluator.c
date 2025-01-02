@@ -3,7 +3,6 @@
 #include "evaluator.h"
 #include "ast.h"
 
-
 static const object_t global_true = { .type = OBJECT_BOOLEAN, .boolean = true };
 static const object_t global_false = { .type = OBJECT_BOOLEAN, .boolean = false };
 static const object_t global_null = { .type = OBJECT_NULL, .null = NULL};
@@ -56,7 +55,7 @@ object_t eval_expression_node(expression_t *expression){
                 .integer = expression->integer
             };
         case BOOLEAN_EXPR:
-            return expression->boolean ? global_true : global_false;
+            return native_bool_to_boolean(expression->boolean);
         case PREFIX_EXPR: {
             object_t right = eval(expression->prefix_expression.right, NODE_EXPRESSION);
             return eval_prefix_expression(expression->prefix_expression.op, right);
@@ -69,6 +68,10 @@ object_t eval_expression_node(expression_t *expression){
         default:
             return (object_t){};
     }
+}
+
+object_t native_bool_to_boolean(bool input){
+    return input ? global_true : global_false;
 }
 
 object_t eval_prefix_expression(char *op, object_t right){
@@ -92,7 +95,6 @@ object_t eval_integer_infix_expression(char *op, object_t left, object_t right){
     int left_value = left.integer;
     int right_value = right.integer;
 
-    // TODO: Considering converting op to a char so we can switch case here
     if(strcmp(op, "+") == 0){
             return (object_t){
                 .type = OBJECT_INTEGER,
@@ -113,6 +115,14 @@ object_t eval_integer_infix_expression(char *op, object_t left, object_t right){
                 .type = OBJECT_INTEGER,
                 .integer = left_value / right_value
             };
+    } else if(strcmp(op, "<") == 0){
+            return native_bool_to_boolean(left_value < right_value);
+    } else if(strcmp(op, ">") == 0){
+            return native_bool_to_boolean(left_value > right_value);
+    } else if(strcmp(op, "==") == 0){
+            return native_bool_to_boolean(left_value == right_value);
+    } else if(strcmp(op, "!=") == 0){
+            return native_bool_to_boolean(left_value != right_value);
     }
 
     return global_null;
