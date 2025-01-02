@@ -85,8 +85,15 @@ object_t eval_prefix_expression(char *op, object_t right){
 }
 
 object_t eval_infix_expression(char *op, object_t left, object_t right){
-    if (left.type == OBJECT_INTEGER && right.type == OBJECT_INTEGER){
+    if(left.type == OBJECT_INTEGER && right.type == OBJECT_INTEGER){
         return eval_integer_infix_expression(op, left, right);
+    }
+    // TODO: this coincidentally works for both bools and integers - does this need to be disambiguiated?
+    if(strcmp(op, "==") == 0){
+        return native_bool_to_boolean(left.integer == right.integer);
+    }
+    if(strcmp(op, "!=") == 0){
+        return native_bool_to_boolean(left.integer != right.integer);
     }
     return global_null;
 
