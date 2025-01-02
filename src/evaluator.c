@@ -59,8 +59,12 @@ object_t eval_expression_node(expression_t *expression){
             return expression->boolean ? global_true : global_false;
         case PREFIX_EXPR: {
             object_t right = eval(expression->prefix_expression.right, NODE_EXPRESSION);
-            object_t result = eval_prefix_expression(expression->prefix_expression.op, right);
-            return result;
+            return eval_prefix_expression(expression->prefix_expression.op, right);
+        }
+        case INFIX_EXPR:{
+            object_t right = eval(expression->infix_expression.right, NODE_EXPRESSION);
+            object_t left = eval(expression->infix_expression.left, NODE_EXPRESSION);
+            return eval_infix_expression(expression->infix_expression.op, left, right);
         }
         default:
             return (object_t){};
@@ -69,12 +73,48 @@ object_t eval_expression_node(expression_t *expression){
 
 object_t eval_prefix_expression(char *op, object_t right){
     if(strcmp(op, "!") == 0) {
-        object_t result = eval_bang_operator(right);
-        return result;
+        return eval_bang_operator(right);
     }
     if(strcmp(op, "-") == 0) {
         return eval_minus_operator(right);
     }
+    return global_null;
+}
+
+object_t eval_infix_expression(char *op, object_t left, object_t right){
+    if (left.type == OBJECT_INTEGER && right.type == OBJECT_INTEGER){
+        return eval_integer_infix_expression(op, left, right);
+    }
+    return global_null;
+
+}
+object_t eval_integer_infix_expression(char *op, object_t left, object_t right){
+    int left_value = left.integer;
+    int right_value = right.integer;
+
+    // TODO: Considering converting op to a char so we can switch case here
+    if(strcmp(op, "+") == 0){
+            return (object_t){
+                .type = OBJECT_INTEGER,
+                .integer = left_value + right_value
+            };
+    } else if(strcmp(op, "-") == 0){
+            return (object_t){
+                .type = OBJECT_INTEGER,
+                .integer = left_value - right_value
+            };
+    } else if(strcmp(op, "*") == 0){
+            return (object_t){
+                .type = OBJECT_INTEGER,
+                .integer = left_value * right_value
+            };
+    } else if(strcmp(op, "/") == 0){
+            return (object_t){
+                .type = OBJECT_INTEGER,
+                .integer = left_value / right_value
+            };
+    }
+
     return global_null;
 }
 
