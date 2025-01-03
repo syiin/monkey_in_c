@@ -39,6 +39,10 @@ object_t eval_statements(vector_t *statements){
     object_t result;
     for(int i = 0; i < statements->count; i++){
          result = eval(statements->data[i], NODE_STATEMENT);
+         statement_t *statement = (statement_t *)statements->data[i];
+         if (statement->type == RETURN_STATEMENT){
+            return result;
+        }
     }
     return result;
 }

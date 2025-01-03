@@ -159,9 +159,31 @@ void test_eval_if_else_expressions() {
         }
 }
 
+void test_eval_return_statements() {
+        struct {
+                char *input;
+                int expected;
+        } tests[] = {
+                {"return 10;", 10},
+                {"return 10; 9;", 10},
+                {"return 2 * 5; 9;", 10},
+                {"9; return 2 * 5; 9;", 10},
+        };
+
+        for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+                lexer_t *lexer = new_lexer(tests[i].input);
+                parser_t *parser = new_parser(lexer);
+                program_t *program = parse_program(parser);
+
+                object_t evaluated = eval(program, NODE_PROGRAM);
+                check_integer_object(evaluated, tests[i].expected);
+        }
+}
+
 int main(int argc, char *argv[]) {
         TEST(test_eval_boolean_expression);
         TEST(test_eval_integer_expression);
         TEST(test_eval_bang_operator);
         TEST(test_eval_if_else_expressions);
+        TEST(test_eval_return_statements);
 }

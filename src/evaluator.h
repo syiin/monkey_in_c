@@ -8,6 +8,7 @@ typedef enum ObjectType {
 	OBJECT_INTEGER,
 	OBJECT_BOOLEAN,
 	OBJECT_NULL,
+	OBJECT_RETURN,
 } object_type_t;
 
 typedef struct Object {
