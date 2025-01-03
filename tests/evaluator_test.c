@@ -121,8 +121,47 @@ void test_eval_bang_operator(){
         }
 }
 
+bool check_null_object(object_t obj) {
+    if (obj.type != OBJECT_NULL) {
+        printf("Error: object is not NULL. got=%s \n", 
+               object_type_to_string(obj.type));
+        return false;
+    }
+    return true;
+}
+
+void test_eval_if_else_expressions() {
+        struct {
+                char *input;
+                int expected;
+                bool has_value;  // to differentiate between null and integer cases
+        } tests[] = {
+                {"if (true) { 10 }", 10, true},
+                {"if (false) { 10 }", 0, false},  // null case
+                {"if (1) { 10 }", 10, true},
+                {"if (1 < 2) { 10 }", 10, true},
+                {"if (1 > 2) { 10 }", 0, false},  // null case
+                {"if (1 > 2) { 10 } else { 20 }", 20, true},
+                {"if (1 < 2) { 10 } else { 20 }", 10, true},
+        };
+
+        for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+                lexer_t *lexer = new_lexer(tests[i].input);
+                parser_t *parser = new_parser(lexer);
+                program_t *program = parse_program(parser);
+
+                object_t evaluated = eval(program, NODE_PROGRAM);
+                if (tests[i].has_value) {
+                        check_integer_object(evaluated, tests[i].expected);
+                } else {
+                        check_null_object(evaluated);
+                }
+        }
+}
+
 int main(int argc, char *argv[]) {
         TEST(test_eval_boolean_expression);
         TEST(test_eval_integer_expression);
         TEST(test_eval_bang_operator);
+        TEST(test_eval_if_else_expressions);
 }

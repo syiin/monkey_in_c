@@ -3,10 +3,6 @@
 #include "evaluator.h"
 #include "ast.h"
 
-static const object_t global_true = { .type = OBJECT_BOOLEAN, .boolean = true };
-static const object_t global_false = { .type = OBJECT_BOOLEAN, .boolean = false };
-static const object_t global_null = { .type = OBJECT_NULL, .null = NULL};
-
 char *object_type_to_string(object_type_t object_type){
     switch(object_type){
         case OBJECT_INTEGER:
@@ -24,7 +20,7 @@ object_t eval(void *node, node_type_t node_type){
     switch(node_type){
         case NODE_PROGRAM:{
             program_t *program = (program_t *)node;
-            return eval_program_node(program);
+            return eval_statements(program->statements);
         }
         case NODE_EXPRESSION:{
             expression_t *expr = (expression_t *)node;
@@ -39,10 +35,10 @@ object_t eval(void *node, node_type_t node_type){
     }
 }
 
-object_t eval_program_node(program_t *program){
+object_t eval_statements(vector_t *statements){
     object_t result;
-    for(int i = 0; i < program->statements->count; i++){
-         result = eval(program->statements->data[i], NODE_STATEMENT);
+    for(int i = 0; i < statements->count; i++){
+         result = eval(statements->data[i], NODE_STATEMENT);
     }
     return result;
 }
@@ -65,9 +61,25 @@ object_t eval_expression_node(expression_t *expression){
             object_t left = eval(expression->infix_expression.left, NODE_EXPRESSION);
             return eval_infix_expression(expression->infix_expression.op, left, right);
         }
+        case IF_EXPR:{
+            object_t condition = eval(expression->if_expression.condition, NODE_EXPRESSION);
+
+            if (is_truthy(condition)){
+                return eval_statements(expression->if_expression.consequence->statements);
+            } else if (expression->if_expression.alternative != NULL){
+                return eval_statements(expression->if_expression.alternative->statements);
+            } else {
+                return global_null;
+            }
+        }
         default:
             return (object_t){};
     }
+}
+
+bool is_truthy(object_t object){
+    if (object.type == OBJECT_NULL) return NULL;
+    return object.boolean;
 }
 
 object_t native_bool_to_boolean(bool input){
@@ -88,7 +100,7 @@ object_t eval_infix_expression(char *op, object_t left, object_t right){
     if(left.type == OBJECT_INTEGER && right.type == OBJECT_INTEGER){
         return eval_integer_infix_expression(op, left, right);
     }
-    // TODO: this coincidentally works for both bools and integers - does this need to be disambiguiated?
+    // TODO: this coincidentally works for both bools and integers - does this need to be disambiguiated? are there platforms where integers and booleans are encoded differently in the union?
     if(strcmp(op, "==") == 0){
         return native_bool_to_boolean(left.integer == right.integer);
     }
