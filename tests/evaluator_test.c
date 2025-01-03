@@ -168,7 +168,13 @@ void test_eval_return_statements() {
                 {"return 10; 9;", 10},
                 {"return 2 * 5; 9;", 10},
                 {"9; return 2 * 5; 9;", 10},
-        };
+                {"if (10 > 1) { \
+                        if (10 > 1) { \
+                                return 10; \
+                        } \
+                        return 1; \
+                }", 10},
+                };
 
         for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
                 lexer_t *lexer = new_lexer(tests[i].input);
