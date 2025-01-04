@@ -213,40 +213,44 @@ void test_eval_error_handling() {
                 char *input;
                 char *expected_message;
         } tests[] = {
-        {
-           "5 + true;",
-           "type mismatch: OBJECT_INTEGER + OBJECT_BOOLEAN"
-        },
-        {
-           "5 + true; 5;", 
-           "type mismatch: OBJECT_INTEGER + OBJECT_BOOLEAN"
-        },
-        {
-           "-true",
-           "unknown operator: -OBJECT_BOOLEAN"
-        },
-        {
-           "true + false;",
-           "unknown operator: OBJECT_BOOLEAN + OBJECT_BOOLEAN"
-        },
-        {
-           "5; true + false; 5",
-           "unknown operator: OBJECT_BOOLEAN + OBJECT_BOOLEAN"
-        },
-        {
-           "if (10 > 1) { true + false; }",
-           "unknown operator: OBJECT_BOOLEAN + OBJECT_BOOLEAN"
-        },
-        {
-           "if (10 > 1) {\n"
-           "  if (10 > 1) {\n"
-           "    return true + false;\n"
-           "  }\n"
-           "  return 1;\n"
-           "}",
-           "unknown operator: OBJECT_BOOLEAN + OBJECT_BOOLEAN"
-        },
-};
+                {
+                   "5 + true;",
+                   "type mismatch: OBJECT_INTEGER + OBJECT_BOOLEAN"
+                },
+                {
+                   "5 + true; 5;", 
+                   "type mismatch: OBJECT_INTEGER + OBJECT_BOOLEAN"
+                },
+                {
+                   "-true",
+                   "unknown operator: -OBJECT_BOOLEAN"
+                },
+                {
+                   "true + false;",
+                   "unknown operator: OBJECT_BOOLEAN + OBJECT_BOOLEAN"
+                },
+                {
+                   "5; true + false; 5",
+                   "unknown operator: OBJECT_BOOLEAN + OBJECT_BOOLEAN"
+                },
+                {
+                   "if (10 > 1) { true + false; }",
+                   "unknown operator: OBJECT_BOOLEAN + OBJECT_BOOLEAN"
+                },
+                {
+                   "if (10 > 1) {\n"
+                   "  if (10 > 1) {\n"
+                   "    return true + false;\n"
+                   "  }\n"
+                   "  return 1;\n"
+                   "}",
+                   "unknown operator: OBJECT_BOOLEAN + OBJECT_BOOLEAN"
+                },
+                {
+                "foobar",
+                "identifier not found: foobar",
+                },
+        };
 
         for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
                 lexer_t *lexer = new_lexer(tests[i].input);
