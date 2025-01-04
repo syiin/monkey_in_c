@@ -258,6 +258,27 @@ void test_eval_error_handling() {
         }
 }
 
+void test_eval_let_statements() {
+        struct {
+                char *input;
+                int expected;
+        } tests[] = {
+               {"let a = 5; a;", 5},
+               {"let a = 5 * 5; a;", 25},
+               {"let a = 5; let b = a; b;", 5},
+               {"let a = 5; let b = a; let c = a + b + 5; c;", 15}
+        };
+
+        for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+               lexer_t *lexer = new_lexer(tests[i].input);
+               parser_t *parser = new_parser(lexer);
+               program_t *program = parse_program(parser);
+
+               object_t evaluated = eval(program, NODE_PROGRAM);
+               check_integer_object(evaluated, tests[i].expected);
+        }
+}
+
 int main(int argc, char *argv[]) {
         TEST(test_eval_boolean_expression);
         TEST(test_eval_integer_expression);
@@ -265,4 +286,5 @@ int main(int argc, char *argv[]) {
         TEST(test_eval_if_else_expressions);
         TEST(test_eval_return_statements);
         TEST(test_eval_error_handling);
+        TEST(test_eval_let_statements);
 }
