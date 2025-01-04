@@ -101,6 +101,7 @@ object_t eval_expression_node(expression_t *expression){
         }
         case IF_EXPR:{
             object_t condition = eval(expression->if_expression.condition, NODE_EXPRESSION);
+            if(condition.type == OBJECT_ERROR){ return condition; }
 
             if (is_truthy(condition)){
                 object_t result = eval(expression->if_expression.consequence, NODE_BLOCK_STATEMENT);
