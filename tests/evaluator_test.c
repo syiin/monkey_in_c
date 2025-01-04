@@ -13,6 +13,27 @@ void check_integer_object(object_t evaluated, int expected){
                 evaluated.integer);
 }
 
+void check_return_integer(object_t evaluated, int expected){
+        assertf(evaluated.type == OBJECT_RETURN,
+                "wrong type, expected OBJECT_INTEGER, got %s\n",
+                object_type_to_string(evaluated.integer));
+        assertf(evaluated.integer == expected,
+                "wrong value, expected %d, got %d\n",
+                expected,
+                evaluated.integer);
+}
+
+
+void check_error(object_t evaluated, char *expected_msg){
+        assertf(evaluated.type == OBJECT_ERROR,
+                "wrong type, expected OBJECT_ERROR, got %s\n",
+                object_type_to_string(evaluated.integer));
+        assertf(strcmp(evaluated.error_message, expected_msg) != 0,
+               "wrong error message, expected %s, got %s\n",
+               expected_msg,
+               evaluated.error_message);
+}
+
 void test_eval_integer_expression(){
         struct {
                 char *input;
@@ -182,7 +203,58 @@ void test_eval_return_statements() {
                 program_t *program = parse_program(parser);
 
                 object_t evaluated = eval(program, NODE_PROGRAM);
-                check_integer_object(evaluated, tests[i].expected);
+                check_return_integer(evaluated, tests[i].expected);
+        }
+}
+
+void test_eval_error_handling() {
+        struct {
+                char *input;
+                char *expected_message;
+        } tests[] = {
+        {
+           "5 + true;",
+           "type mismatch: INTEGER + BOOLEAN"
+        },
+        {
+           "5 + true; 5;", 
+           "type mismatch: INTEGER + BOOLEAN"
+        },
+        {
+           "-true",
+           "unknown operator: -BOOLEAN"
+        },
+        {
+           "true + false;",
+           "unknown operator: BOOLEAN + BOOLEAN"
+        },
+        {
+           "5; true + false; 5",
+           "unknown operator: BOOLEAN + BOOLEAN"
+        },
+        {
+           "if (10 > 1) { true + false; }",
+           "unknown operator: BOOLEAN + BOOLEAN"
+        },
+        {
+           "if (10 > 1) {\n"
+           "  if (10 > 1) {\n"
+           "    return true + false;\n"
+           "  }\n"
+           "  return 1;\n"
+           "}",
+           "unknown operator: BOOLEAN + BOOLEAN"
+        },
+};
+
+        for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+                lexer_t *lexer = new_lexer(tests[i].input);
+                parser_t *parser = new_parser(lexer);
+                program_t *program = parse_program(parser);
+
+                object_t evaluated = eval(program, NODE_PROGRAM);
+
+                check_error(evaluated, tests[i].expected_message);
         }
 }
 
@@ -192,4 +264,5 @@ int main(int argc, char *argv[]) {
         TEST(test_eval_bang_operator);
         TEST(test_eval_if_else_expressions);
         TEST(test_eval_return_statements);
+        TEST(test_eval_error_handling);
 }

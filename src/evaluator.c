@@ -2,6 +2,7 @@
 #include <string.h>
 #include "evaluator.h"
 #include "ast.h"
+#include "vector.h"
 
 char *object_type_to_string(object_type_t object_type){
     switch(object_type){
@@ -20,7 +21,7 @@ object_t eval(void *node, node_type_t node_type){
     switch(node_type){
         case NODE_PROGRAM:{
             program_t *program = (program_t *)node;
-            return eval_statements(program->statements);
+            return eval_program(program);
         }
         case NODE_EXPRESSION:{
             expression_t *expr = (expression_t *)node;
@@ -28,21 +29,45 @@ object_t eval(void *node, node_type_t node_type){
         }
         case NODE_STATEMENT:{
             statement_t *sttmnt = (statement_t *)node;
-            return eval_expression_node(sttmnt->value);
+            return eval_statement(sttmnt);
+        }
+        case NODE_BLOCK_STATEMENT:{
+            block_statement_t *block_statement = (block_statement_t *)node;
+            return eval_block_statement(block_statement);
         }
         default:
             return (object_t){};
     }
 }
 
-object_t eval_statements(vector_t *statements){
+object_t eval_program(program_t *program){
     object_t result;
-    for(int i = 0; i < statements->count; i++){
-         result = eval(statements->data[i], NODE_STATEMENT);
-         statement_t *statement = (statement_t *)statements->data[i];
-         if (statement->type == RETURN_STATEMENT){
+    for(int i = 0; i < program->statements->count; i++){
+         result = eval(program->statements->data[i], NODE_STATEMENT);
+         if (result.type == OBJECT_RETURN){
             return result;
-        }
+         }
+    }
+    return result;
+}
+
+object_t eval_statement(statement_t *statement){
+    object_t result = eval(statement->value, NODE_EXPRESSION);
+    if (statement->type == RETURN_STATEMENT){
+        result.type = OBJECT_RETURN;
+        return result;
+    }
+    return result;
+}
+
+object_t eval_block_statement(block_statement_t *block_statement){
+    object_t result;
+    vector_t *statements = block_statement->statements;
+    for(int i = 0; i < statements->count; i++){
+         result = eval_statement(statements->data[i]);
+         if (result.type == OBJECT_RETURN){
+            return result;
+         }
     }
     return result;
 }
@@ -69,9 +94,11 @@ object_t eval_expression_node(expression_t *expression){
             object_t condition = eval(expression->if_expression.condition, NODE_EXPRESSION);
 
             if (is_truthy(condition)){
-                return eval_statements(expression->if_expression.consequence->statements);
+                /*return eval_statements(expression->if_expression.consequence->statements);*/
+                return eval(expression->if_expression.consequence, NODE_BLOCK_STATEMENT);
             } else if (expression->if_expression.alternative != NULL){
-                return eval_statements(expression->if_expression.alternative->statements);
+                /*return eval_statements(expression->if_expression.alternative->statements);*/
+                return eval(expression->if_expression.alternative, NODE_BLOCK_STATEMENT);
             } else {
                 return global_null;
             }

@@ -8,6 +8,7 @@
 typedef enum {
 	NODE_EXPRESSION,
 	NODE_STATEMENT,
+	NODE_BLOCK_STATEMENT,
 	NODE_PROGRAM,
 } node_type_t;
 
@@ -15,7 +16,6 @@ typedef enum {
 	LET_STATEMENT,
 	RETURN_STATEMENT,
 	EXPRESSION_STATEMENT,
-	BLOCK_STATEMENT,
 } statement_type_t;
 
 typedef enum {
@@ -91,6 +91,7 @@ typedef struct Statement {
 } statement_t;
 
 typedef struct BlockStatement {
+	node_type_t node_type;
 	token_t token;
 	vector_t *statements;
 } block_statement_t;
@@ -108,5 +109,5 @@ void ast_string(string_t *format_buffer, program_t *program);
 char *program_to_string(program_t *program);
 expression_t *new_expression(expression_type_t type, token_t token);
 statement_t *new_statement(statement_type_t type);
-
+block_statement_t *new_block_statement();
 #endif

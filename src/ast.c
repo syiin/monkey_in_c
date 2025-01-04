@@ -155,3 +155,10 @@ statement_t *new_statement(statement_type_t type){
     statement->type = type;
     return statement;
 }
+
+block_statement_t *new_block_statement(){
+    block_statement_t *block_statement = malloc(sizeof(block_statement_t));
+    block_statement->statements = create_vector();
+    block_statement->node_type = NODE_BLOCK_STATEMENT;
+    return block_statement;
+}

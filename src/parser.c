@@ -430,13 +430,12 @@ vector_t *parse_function_parameters(parser_t *parser) {
 }
 
 block_statement_t *parse_block_statement(parser_t *parser){
+	block_statement_t *block_statement = new_block_statement();
 	token_t token = {
 			.type = parser->curr_token.type,
 			.literal = strdup(parser->curr_token.literal)
 		};
-	block_statement_t *block_statement = malloc(sizeof(block_statement_t));
 	block_statement->token = token;
-	block_statement->statements = create_vector();
 
 	parser_next_token(parser);
 
