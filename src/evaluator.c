@@ -2,6 +2,7 @@
 #include <string.h>
 #include "evaluator.h"
 #include "ast.h"
+#include "custom_string.h"
 #include "vector.h"
 
 char *object_type_to_string(object_type_t object_type){
@@ -43,16 +44,19 @@ object_t eval(void *node, node_type_t node_type){
 object_t eval_program(program_t *program){
     object_t result;
     for(int i = 0; i < program->statements->count; i++){
-         result = eval(program->statements->data[i], NODE_STATEMENT);
-         if (result.type == OBJECT_RETURN){
+        result = eval(program->statements->data[i], NODE_STATEMENT);
+        if (result.type == OBJECT_RETURN || result.type == OBJECT_ERROR){
             return result;
-         }
+        }
     }
     return result;
 }
 
 object_t eval_statement(statement_t *statement){
     object_t result = eval(statement->value, NODE_EXPRESSION);
+    if (result.type == OBJECT_ERROR){
+        return result;
+    }
     if (statement->type == RETURN_STATEMENT){
         result.type = OBJECT_RETURN;
         return result;
@@ -65,7 +69,7 @@ object_t eval_block_statement(block_statement_t *block_statement){
     vector_t *statements = block_statement->statements;
     for(int i = 0; i < statements->count; i++){
          result = eval_statement(statements->data[i]);
-         if (result.type == OBJECT_RETURN){
+         if (result.type == OBJECT_RETURN || result.type == OBJECT_ERROR){
             return result;
          }
     }
@@ -94,10 +98,10 @@ object_t eval_expression_node(expression_t *expression){
             object_t condition = eval(expression->if_expression.condition, NODE_EXPRESSION);
 
             if (is_truthy(condition)){
-                /*return eval_statements(expression->if_expression.consequence->statements);*/
-                return eval(expression->if_expression.consequence, NODE_BLOCK_STATEMENT);
+                object_t result = eval(expression->if_expression.consequence, NODE_BLOCK_STATEMENT);
+                if (result.type == OBJECT_ERROR){ return result; }
+                return result;
             } else if (expression->if_expression.alternative != NULL){
-                /*return eval_statements(expression->if_expression.alternative->statements);*/
                 return eval(expression->if_expression.alternative, NODE_BLOCK_STATEMENT);
             } else {
                 return global_null;
@@ -118,16 +122,25 @@ object_t native_bool_to_boolean(bool input){
 }
 
 object_t eval_prefix_expression(char *op, object_t right){
-    if(strcmp(op, "!") == 0) {
-        return eval_bang_operator(right);
+    switch(op[0]){
+        case '!':
+            return eval_bang_operator(right);
+        case '-':
+            return eval_minus_operator(right);
+        default:{
+            char error_msg[BUFSIZ];
+            snprintf(error_msg, BUFSIZ, "unknown operator: %s%s", op, object_type_to_string(right.type));
+            return new_error(error_msg);
+        }
     }
-    if(strcmp(op, "-") == 0) {
-        return eval_minus_operator(right);
-    }
-    return global_null;
 }
 
 object_t eval_infix_expression(char *op, object_t left, object_t right){
+    if (left.type != right.type){
+        char error_msg[BUFSIZ];
+        snprintf(error_msg, BUFSIZ, "type mismatched: %s %s %s",object_type_to_string(right.type), op, object_type_to_string(right.type));
+        return new_error(error_msg);
+    }
     if(left.type == OBJECT_INTEGER && right.type == OBJECT_INTEGER){
         return eval_integer_infix_expression(op, left, right);
     }
@@ -138,13 +151,15 @@ object_t eval_infix_expression(char *op, object_t left, object_t right){
     if(strcmp(op, "!=") == 0){
         return native_bool_to_boolean(left.integer != right.integer);
     }
-    return global_null;
 
+    char error_msg[BUFSIZ];
+    snprintf(error_msg, BUFSIZ, "unknown operator: %s%s%s",object_type_to_string(right.type), op, object_type_to_string(right.type));
+    return new_error(error_msg);
 }
 object_t eval_integer_infix_expression(char *op, object_t left, object_t right){
     int left_value = left.integer;
     int right_value = right.integer;
-
+    
     if(strcmp(op, "+") == 0){
             return (object_t){
                 .type = OBJECT_INTEGER,
@@ -175,7 +190,9 @@ object_t eval_integer_infix_expression(char *op, object_t left, object_t right){
             return native_bool_to_boolean(left_value != right_value);
     }
 
-    return global_null;
+    char error_msg[BUFSIZ];
+    snprintf(error_msg, BUFSIZ, "unknown operator: %s %s %s",object_type_to_string(right.type), op, object_type_to_string(right.type));
+    return new_error(error_msg);
 }
 
 object_t eval_bang_operator(object_t right){
@@ -189,11 +206,22 @@ object_t eval_bang_operator(object_t right){
 }
 
 object_t eval_minus_operator(object_t right){
-    if(right.type != OBJECT_INTEGER){ return global_null; }
+    if(right.type != OBJECT_INTEGER){
+        char error_msg[BUFSIZ];
+        snprintf(error_msg, BUFSIZ, "unknown operator: -%s ",object_type_to_string(right.type));
+        return new_error(error_msg);
+    }
     int value = right.integer;
     return (object_t){
         .type = OBJECT_INTEGER,
         .integer = -value };
+}
+
+object_t new_error(char *format){
+    return (object_t){
+        .type = OBJECT_ERROR,
+        .error_message = string_from(format),
+    };
 }
 
 void inspect_object(object_t object, char *buff_out){

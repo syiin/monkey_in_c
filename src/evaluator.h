@@ -19,7 +19,7 @@ typedef struct Object {
 		int integer;
 		bool boolean;
 		void *null;
-		char *error_message;
+		string_t *error_message;
 	};
 } object_t;
 
@@ -41,4 +41,6 @@ object_t eval_minus_operator(object_t right);
 bool is_truthy(object_t object);
 object_t eval_statement(statement_t *statement);
 object_t eval_block_statement(block_statement_t *statement);
+object_t new_error(char *format);
+
 #endif

@@ -28,10 +28,11 @@ void check_error(object_t evaluated, char *expected_msg){
         assertf(evaluated.type == OBJECT_ERROR,
                 "wrong type, expected OBJECT_ERROR, got %s\n",
                 object_type_to_string(evaluated.integer));
-        assertf(strcmp(evaluated.error_message, expected_msg) != 0,
+        char *error_msg = string_get_data(evaluated.error_message);
+        assertf(strcmp(error_msg, expected_msg) != 0,
                "wrong error message, expected %s, got %s\n",
                expected_msg,
-               evaluated.error_message);
+               error_msg);
 }
 
 void test_eval_integer_expression(){
@@ -214,27 +215,27 @@ void test_eval_error_handling() {
         } tests[] = {
         {
            "5 + true;",
-           "type mismatch: INTEGER + BOOLEAN"
+           "type mismatch: OBJECT_INTEGER + OBJECT_BOOLEAN"
         },
         {
            "5 + true; 5;", 
-           "type mismatch: INTEGER + BOOLEAN"
+           "type mismatch: OBJECT_INTEGER + OBJECT_BOOLEAN"
         },
         {
            "-true",
-           "unknown operator: -BOOLEAN"
+           "unknown operator: -OBJECT_BOOLEAN"
         },
         {
            "true + false;",
-           "unknown operator: BOOLEAN + BOOLEAN"
+           "unknown operator: OBJECT_BOOLEAN + OBJECT_BOOLEAN"
         },
         {
            "5; true + false; 5",
-           "unknown operator: BOOLEAN + BOOLEAN"
+           "unknown operator: OBJECT_BOOLEAN + OBJECT_BOOLEAN"
         },
         {
            "if (10 > 1) { true + false; }",
-           "unknown operator: BOOLEAN + BOOLEAN"
+           "unknown operator: OBJECT_BOOLEAN + OBJECT_BOOLEAN"
         },
         {
            "if (10 > 1) {\n"
@@ -243,7 +244,7 @@ void test_eval_error_handling() {
            "  }\n"
            "  return 1;\n"
            "}",
-           "unknown operator: BOOLEAN + BOOLEAN"
+           "unknown operator: OBJECT_BOOLEAN + OBJECT_BOOLEAN"
         },
 };
 
@@ -253,7 +254,6 @@ void test_eval_error_handling() {
                 program_t *program = parse_program(parser);
 
                 object_t evaluated = eval(program, NODE_PROGRAM);
-
                 check_error(evaluated, tests[i].expected_message);
         }
 }
