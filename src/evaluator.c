@@ -87,11 +87,16 @@ object_t eval_expression_node(expression_t *expression){
             return native_bool_to_boolean(expression->boolean);
         case PREFIX_EXPR: {
             object_t right = eval(expression->prefix_expression.right, NODE_EXPRESSION);
+            if(right.type == OBJECT_ERROR){ return right; }
             return eval_prefix_expression(expression->prefix_expression.op, right);
         }
         case INFIX_EXPR:{
             object_t right = eval(expression->infix_expression.right, NODE_EXPRESSION);
+            if(right.type == OBJECT_ERROR){ return right; }
+
             object_t left = eval(expression->infix_expression.left, NODE_EXPRESSION);
+            if(left.type == OBJECT_ERROR){ return left; }
+
             return eval_infix_expression(expression->infix_expression.op, left, right);
         }
         case IF_EXPR:{
