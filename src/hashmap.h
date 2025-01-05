@@ -1,4 +1,5 @@
 #include <stdlib.h>
+// TODO: Implement dynamic sizing here too
 #define TABLE_SIZE 128
 
 typedef struct HashEntry hash_entry_t;
@@ -18,3 +19,4 @@ hash_map_t *new_hash_table(free_value_t free_fn);
 void hash_set(hash_map_t *hash_map, char *key, void *value);
 void *hash_get(hash_map_t *hash_map, char *key);
 uint64_t fnv1a_hash(const char* str);
+

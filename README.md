@@ -6,3 +6,5 @@
     2. Sharpening memory management intuitions
     3. Because it's fun
     4. To make me think more deeply about what I'm writing ie. resist just copying the code examples
+3. What this is not:
+    1. The most performant safest C code you can write - this is a playground for me, I am deliberately trying different things that could be inconsistent with each other just because I can.
