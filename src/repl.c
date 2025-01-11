@@ -1,7 +1,6 @@
 #include "string.h"
 
 #include <stdio.h>
-#include "custom_string.h"
 #include "lexer.h"
 #include "parser.h"
 #include "ast.h"
@@ -26,7 +25,7 @@ void repl_start(FILE *in, FILE *out){
 			print_errors(parser);
 			continue;
 		}
-		
+	
 		char buff_out[BUFSIZ] = {'\0'};
 		object_t evaluated = eval(program, NODE_PROGRAM);
 		inspect_object(evaluated, buff_out);

@@ -1,8 +1,8 @@
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H
 
-#include "evaluator.h"
 #include "hashmap.h"
+#include "object.h"
 
 typedef struct Environment environment_t;
 typedef struct Environment {

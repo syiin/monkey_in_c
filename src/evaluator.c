@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include "environment.h"
 #include "evaluator.h"
 #include "ast.h"
 #include "custom_string.h"
@@ -18,33 +19,33 @@ char *object_type_to_string(object_type_t object_type){
     }
 }
 
-object_t eval(void *node, node_type_t node_type){
+object_t eval(void *node, node_type_t node_type, environment_t env){
     switch(node_type){
         case NODE_PROGRAM:{
             program_t *program = (program_t *)node;
-            return eval_program(program);
+            return eval_program(program, env);
         }
         case NODE_EXPRESSION:{
             expression_t *expr = (expression_t *)node;
-            return eval_expression_node(expr);
+            return eval_expression_node(expr, env);
         }
         case NODE_STATEMENT:{
             statement_t *sttmnt = (statement_t *)node;
-            return eval_statement(sttmnt);
+            return eval_statement(sttmnt, env);
         }
         case NODE_BLOCK_STATEMENT:{
             block_statement_t *block_statement = (block_statement_t *)node;
-            return eval_block_statement(block_statement);
+            return eval_block_statement(block_statement, env);
         }
         default:
             return (object_t){};
     }
 }
 
-object_t eval_program(program_t *program){
+object_t eval_program(program_t *program, environment_t env){
     object_t result;
     for(int i = 0; i < program->statements->count; i++){
-        result = eval(program->statements->data[i], NODE_STATEMENT);
+        result = eval(program->statements->data[i], NODE_STATEMENT, env);
         if (result.type == OBJECT_RETURN || result.type == OBJECT_ERROR){
             return result;
         }
@@ -52,8 +53,8 @@ object_t eval_program(program_t *program){
     return result;
 }
 
-object_t eval_statement(statement_t *statement){
-    object_t result = eval(statement->value, NODE_EXPRESSION);
+object_t eval_statement(statement_t *statement, environment_t env){
+    object_t result = eval(statement->value, NODE_EXPRESSION, env);
     if (result.type == OBJECT_ERROR){
         return result;
     }
@@ -64,11 +65,11 @@ object_t eval_statement(statement_t *statement){
     return result;
 }
 
-object_t eval_block_statement(block_statement_t *block_statement){
+object_t eval_block_statement(block_statement_t *block_statement, environment_t env){
     object_t result;
     vector_t *statements = block_statement->statements;
     for(int i = 0; i < statements->count; i++){
-         result = eval_statement(statements->data[i]);
+         result = eval_statement(statements->data[i], env);
          if (result.type == OBJECT_RETURN || result.type == OBJECT_ERROR){
             return result;
          }
@@ -76,7 +77,7 @@ object_t eval_block_statement(block_statement_t *block_statement){
     return result;
 }
 
-object_t eval_expression_node(expression_t *expression){
+object_t eval_expression_node(expression_t *expression, environment_t env){
     switch(expression->type){
         case INTEGER_LITERAL:
             return (object_t){
@@ -100,15 +101,15 @@ object_t eval_expression_node(expression_t *expression){
             return eval_infix_expression(expression->infix_expression.op, left, right);
         }
         case IF_EXPR:{
-            object_t condition = eval(expression->if_expression.condition, NODE_EXPRESSION);
+            object_t condition = eval(expression->if_expression.condition, NODE_EXPRESSION, env);
             if(condition.type == OBJECT_ERROR){ return condition; }
 
             if (is_truthy(condition)){
-                object_t result = eval(expression->if_expression.consequence, NODE_BLOCK_STATEMENT);
+                object_t result = eval(expression->if_expression.consequence, NODE_BLOCK_STATEMENT, env);
                 if (result.type == OBJECT_ERROR){ return result; }
                 return result;
             } else if (expression->if_expression.alternative != NULL){
-                return eval(expression->if_expression.alternative, NODE_BLOCK_STATEMENT);
+                return eval(expression->if_expression.alternative, NODE_BLOCK_STATEMENT, env);
             } else {
                 return global_null;
             }
