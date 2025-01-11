@@ -285,6 +285,36 @@ void test_eval_let_statements() {
         }
 }
 
+void test_eval_function_object() {
+        char *input = "fn(x) { x + 2; };";
+
+        lexer_t *lexer = new_lexer(input);
+        parser_t *parser = new_parser(lexer);
+        program_t *program = parse_program(parser);
+        environment_t *env = new_environment();
+
+        object_t evaluated = eval(program, NODE_PROGRAM, env);
+
+        assertf(evaluated.type == OBJECT_FUNCTION, 
+        "object is not Function. got=%s",
+        object_type_to_string(evaluated.type));
+
+        assertf(evaluated.function.parameters->count == 1,
+        "function has wrong parameters. got=%d", 
+        evaluated.function.parameters->count);
+
+        identifier_t *param = evaluated.function.parameters->data[0];
+        assertf(strcmp(param->value, "x") == 0,
+        "parameter is not 'x'. got=%s", 
+        param->value);
+
+        string_t *body_str = string_new();
+        format_block_statement(body_str, evaluated.function.body);
+        assertf(strcmp(string_get_data(body_str), "(x + 2)") == 0,
+        "body is not '(x + 2)'. got=%s",
+        body_str);
+}
+
 int main(int argc, char *argv[]) {
         TEST(test_eval_boolean_expression);
         TEST(test_eval_integer_expression);
@@ -293,4 +323,5 @@ int main(int argc, char *argv[]) {
         TEST(test_eval_return_statements);
         TEST(test_eval_error_handling);
         TEST(test_eval_let_statements);
+        TEST(test_eval_function_object);
 }
