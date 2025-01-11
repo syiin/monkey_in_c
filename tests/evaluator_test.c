@@ -296,23 +296,23 @@ void test_eval_function_object() {
         object_t evaluated = eval(program, NODE_PROGRAM, env);
 
         assertf(evaluated.type == OBJECT_FUNCTION, 
-        "object is not Function. got=%s",
-        object_type_to_string(evaluated.type));
+                "object is not Function. got=%s",
+                object_type_to_string(evaluated.type));
 
         assertf(evaluated.function.parameters->count == 1,
-        "function has wrong parameters. got=%d", 
-        evaluated.function.parameters->count);
+                "function has wrong parameters. got=%d", 
+                evaluated.function.parameters->count);
 
         identifier_t *param = evaluated.function.parameters->data[0];
         assertf(strcmp(param->value, "x") == 0,
-        "parameter is not 'x'. got=%s", 
-        param->value);
+                "parameter is not 'x'. got=%s", 
+                param->value);
 
         string_t *body_str = string_new();
         format_block_statement(body_str, evaluated.function.body);
         assertf(strcmp(string_get_data(body_str), "(x + 2)") == 0,
-        "body is not '(x + 2)'. got=%s",
-        body_str);
+                "body is not '(x + 2)'. got=%s",
+                body_str);
 }
 
 int main(int argc, char *argv[]) {

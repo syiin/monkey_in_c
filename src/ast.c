@@ -131,11 +131,9 @@ void format_expression_statement(string_t *str, expression_t *expression) {
 }
 
 void format_block_statement(string_t *str, block_statement_t *block) {
-    string_append(str, "{");
     for (int i = 0; i < block->statements->count; i++) {
         format_statement(str, block->statements->data[i]);
     }
-    string_append(str, "}");
 }
 
 expression_t *new_expression(expression_type_t type, token_t token){

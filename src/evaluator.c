@@ -130,6 +130,17 @@ object_t eval_expression_node(expression_t *expression, environment_t *env){
             }
             return *value;
         }
+        case FUNCTION_LITERAL: {
+            object_t obj = {
+                .type = OBJECT_FUNCTION,
+                .function = {
+                    .parameters = expression->function_literal.parameters,
+                    .body = expression->function_literal.body,
+                    .env = env
+                }
+            };
+            return obj;
+        }
         default:
             return (object_t){};
     }
