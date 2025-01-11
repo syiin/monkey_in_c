@@ -14,6 +14,10 @@ char *object_type_to_string(object_type_t object_type){
             return "OBJECT_BOOLEAN";
         case OBJECT_NULL:
             return "OBJECT_NULL";
+        case OBJECT_RETURN:
+            return "RETURN";
+        case OBJECT_ERROR:
+            return "ERROR";
         default:
             return "";
     }
