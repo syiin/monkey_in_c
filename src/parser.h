@@ -1,3 +1,6 @@
+#ifndef PARSER_H
+#define PARSER_H
+
 #include "ast.h"
 #include "token.h"
 #include "lexer.h"
@@ -67,3 +70,4 @@ void append_error(parser_t *parser, const char *error);
 void peek_error(parser_t *parser, TokenType token_type);
 void print_errors(parser_t *parser);
 
+#endif
