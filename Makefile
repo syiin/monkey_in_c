@@ -15,7 +15,7 @@ bin/:
 	mkdir -p bin/
 bin/monkey: main.c $(EVAL_SRC) | bin/
 	$(CC) $(CFLAGS) $^ -Ofast -march=native -o $@
-bin/lexer_test: tests/lexer_test.c $(LEXER_SRC) | bin/
+bin/lexer_test: tests/lexer_test.c $(EVAL_SRC) | bin/
 	$(CC) $(CFLAGS) $^ -o $@
 bin/parser_test: tests/parser_test.c $(EVAL_SRC) | bin/
 	$(CC) $(CFLAGS) $^ -o $@

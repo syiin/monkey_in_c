@@ -2,7 +2,9 @@
 #define OBJECT_H
 
 #include <stdbool.h>
+#include "ast.h"
 #include "custom_string.h"
+#include "vector.h"
 #include "environment.h"
 
 typedef enum ObjectType {
@@ -16,6 +18,8 @@ typedef enum ObjectType {
 
 typedef struct Function{
 	environment_t *env;
+	vector_t *parameters;
+	block_statement_t *body;
 } function_object_t;
 
 typedef struct Object object_t;
@@ -26,6 +30,7 @@ typedef struct Object {
 		bool boolean;
 		void *null;
 		string_t *error_message;
+		function_object_t function;	
 	};
 } object_t;
 
