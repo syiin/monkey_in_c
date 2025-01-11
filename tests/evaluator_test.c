@@ -2,6 +2,7 @@
 #include "../src/evaluator.h"
 #include "../src/lexer.h"
 #include "../src/parser.h"
+#include "../src/environment.h"
 
 void check_integer_object(object_t evaluated, int expected){
         assertf(evaluated.type == OBJECT_INTEGER,
@@ -64,8 +65,8 @@ void test_eval_integer_expression(){
 		parser_t *parser = new_parser(lexer);
 
 		program_t *program = parse_program(parser);
-
-                object_t evaluated = eval(program, NODE_PROGRAM);
+		environment_t *env = new_environment();
+                object_t evaluated = eval(program, NODE_PROGRAM, env);
                 check_integer_object(evaluated, tests[i].expected);
 
         }
@@ -112,9 +113,9 @@ void test_eval_boolean_expression(){
                 parser_t *parser = new_parser(lexer);
 
                 program_t *program = parse_program(parser);
-
+		environment_t *env = new_environment();
                 statement_t *statement = program->statements->data[0];
-                object_t evaluated = eval(statement, NODE_STATEMENT);
+                object_t evaluated = eval(statement, NODE_STATEMENT, env);
                 check_boolean_object(evaluated, tests[i].expected);
         }
 }
@@ -137,8 +138,9 @@ void test_eval_bang_operator(){
                 parser_t *parser = new_parser(lexer);
 
                 program_t *program = parse_program(parser);
+		environment_t *env = new_environment();
 
-                object_t evaluated = eval(program, NODE_PROGRAM);
+                object_t evaluated = eval(program, NODE_PROGRAM, env);
                 check_boolean_object(evaluated, tests[i].expected);
         }
 }
@@ -171,8 +173,8 @@ void test_eval_if_else_expressions() {
                 lexer_t *lexer = new_lexer(tests[i].input);
                 parser_t *parser = new_parser(lexer);
                 program_t *program = parse_program(parser);
-
-                object_t evaluated = eval(program, NODE_PROGRAM);
+		environment_t *env = new_environment();
+                object_t evaluated = eval(program, NODE_PROGRAM, env);
                 if (tests[i].has_value) {
                         check_integer_object(evaluated, tests[i].expected);
                 } else {
@@ -202,8 +204,8 @@ void test_eval_return_statements() {
                 lexer_t *lexer = new_lexer(tests[i].input);
                 parser_t *parser = new_parser(lexer);
                 program_t *program = parse_program(parser);
-
-                object_t evaluated = eval(program, NODE_PROGRAM);
+		environment_t *env = new_environment();
+                object_t evaluated = eval(program, NODE_PROGRAM, env);
                 check_return_integer(evaluated, tests[i].expected);
         }
 }
@@ -256,8 +258,8 @@ void test_eval_error_handling() {
                 lexer_t *lexer = new_lexer(tests[i].input);
                 parser_t *parser = new_parser(lexer);
                 program_t *program = parse_program(parser);
-
-                object_t evaluated = eval(program, NODE_PROGRAM);
+		environment_t *env = new_environment();
+                object_t evaluated = eval(program, NODE_PROGRAM, env);
                 check_error(evaluated, tests[i].expected_message);
         }
 }
@@ -277,8 +279,8 @@ void test_eval_let_statements() {
                lexer_t *lexer = new_lexer(tests[i].input);
                parser_t *parser = new_parser(lexer);
                program_t *program = parse_program(parser);
-
-               object_t evaluated = eval(program, NODE_PROGRAM);
+                environment_t *env = new_environment();
+               object_t evaluated = eval(program, NODE_PROGRAM, env);
                check_integer_object(evaluated, tests[i].expected);
         }
 }

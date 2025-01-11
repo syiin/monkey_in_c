@@ -19,7 +19,7 @@ char *object_type_to_string(object_type_t object_type){
     }
 }
 
-object_t eval(void *node, node_type_t node_type, environment_t env){
+object_t eval(void *node, node_type_t node_type, environment_t *env){
     switch(node_type){
         case NODE_PROGRAM:{
             program_t *program = (program_t *)node;
@@ -42,7 +42,7 @@ object_t eval(void *node, node_type_t node_type, environment_t env){
     }
 }
 
-object_t eval_program(program_t *program, environment_t env){
+object_t eval_program(program_t *program, environment_t *env){
     object_t result;
     for(int i = 0; i < program->statements->count; i++){
         result = eval(program->statements->data[i], NODE_STATEMENT, env);
@@ -53,7 +53,7 @@ object_t eval_program(program_t *program, environment_t env){
     return result;
 }
 
-object_t eval_statement(statement_t *statement, environment_t env){
+object_t eval_statement(statement_t *statement, environment_t *env){
     object_t result = eval(statement->value, NODE_EXPRESSION, env);
     if (result.type == OBJECT_ERROR){
         return result;
@@ -65,7 +65,7 @@ object_t eval_statement(statement_t *statement, environment_t env){
     return result;
 }
 
-object_t eval_block_statement(block_statement_t *block_statement, environment_t env){
+object_t eval_block_statement(block_statement_t *block_statement, environment_t *env){
     object_t result;
     vector_t *statements = block_statement->statements;
     for(int i = 0; i < statements->count; i++){
@@ -77,7 +77,7 @@ object_t eval_block_statement(block_statement_t *block_statement, environment_t 
     return result;
 }
 
-object_t eval_expression_node(expression_t *expression, environment_t env){
+object_t eval_expression_node(expression_t *expression, environment_t *env){
     switch(expression->type){
         case INTEGER_LITERAL:
             return (object_t){
@@ -87,15 +87,15 @@ object_t eval_expression_node(expression_t *expression, environment_t env){
         case BOOLEAN_EXPR:
             return native_bool_to_boolean(expression->boolean);
         case PREFIX_EXPR: {
-            object_t right = eval(expression->prefix_expression.right, NODE_EXPRESSION);
+            object_t right = eval(expression->prefix_expression.right, NODE_EXPRESSION, env);
             if(right.type == OBJECT_ERROR){ return right; }
             return eval_prefix_expression(expression->prefix_expression.op, right);
         }
         case INFIX_EXPR:{
-            object_t right = eval(expression->infix_expression.right, NODE_EXPRESSION);
+            object_t right = eval(expression->infix_expression.right, NODE_EXPRESSION, env);
             if(right.type == OBJECT_ERROR){ return right; }
 
-            object_t left = eval(expression->infix_expression.left, NODE_EXPRESSION);
+            object_t left = eval(expression->infix_expression.left, NODE_EXPRESSION, env);
             if(left.type == OBJECT_ERROR){ return left; }
 
             return eval_infix_expression(expression->infix_expression.op, left, right);
