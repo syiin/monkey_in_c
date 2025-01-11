@@ -61,6 +61,8 @@ object_t eval_statement(statement_t *statement, environment_t *env){
     if (statement->type == RETURN_STATEMENT){
         result.type = OBJECT_RETURN;
         return result;
+    } else if (statement->type == LET_STATEMENT){
+        env_set(env, statement->name.value, &result);
     }
     return result;
 }
@@ -113,6 +115,16 @@ object_t eval_expression_node(expression_t *expression, environment_t *env){
             } else {
                 return global_null;
             }
+        }
+        case IDENT_EXPR:{
+            object_t *value = env_get(env, expression->ident.value);
+            if (value == NULL){
+                return (object_t){
+                    .type = OBJECT_ERROR,
+                    .error_message = string_from("identifier not found")
+                };
+            }
+            return *value;
         }
         default:
             return (object_t){};

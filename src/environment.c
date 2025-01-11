@@ -1,6 +1,7 @@
 #include "environment.h"
 #include "evaluator.h"
 #include "hashmap.h"
+#include "object.h"
 
 environment_t *new_environment(){
     environment_t *environment = malloc(sizeof(environment_t));
@@ -9,7 +10,8 @@ environment_t *new_environment(){
 }
 
 bool env_set(environment_t *env, char *key, object_t *object){
-    return hash_set(env->table, key, object);
+    object_t *copy = object_heap_copy(object);
+    return hash_set(env->table, key, copy);
 }
 
 object_t *env_get(environment_t *env, char *key){

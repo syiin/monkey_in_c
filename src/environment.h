@@ -11,6 +11,8 @@ typedef struct Environment {
 } environment_t;
 
 environment_t *new_environment();
+bool env_set(environment_t *env, char *key, object_t *object);
+object_t *env_get(environment_t *env, char *key);
 void free_object(void *object);
 
 #endif

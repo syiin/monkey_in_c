@@ -27,4 +27,5 @@ static const object_t global_true = { .type = OBJECT_BOOLEAN, .boolean = true };
 static const object_t global_false = { .type = OBJECT_BOOLEAN, .boolean = false };
 static const object_t global_null = { .type = OBJECT_NULL, .null = NULL};
 
+object_t *object_heap_copy(const object_t *source);
 #endif
