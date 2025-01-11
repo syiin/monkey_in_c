@@ -32,6 +32,7 @@ typedef struct Object {
 static const object_t global_true = { .type = OBJECT_BOOLEAN, .boolean = true };
 static const object_t global_false = { .type = OBJECT_BOOLEAN, .boolean = false };
 static const object_t global_null = { .type = OBJECT_NULL, .null = NULL};
+void inspect_object(object_t object, char *buff_out);
 
 object_t *object_heap_copy(const object_t *source);
 #endif
