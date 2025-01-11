@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include "custom_string.h"
+#include "environment.h"
 
 typedef enum ObjectType {
 	OBJECT_INTEGER,
@@ -10,7 +11,12 @@ typedef enum ObjectType {
 	OBJECT_NULL,
 	OBJECT_RETURN,
 	OBJECT_ERROR,
+	OBJECT_FUNCTION,
 } object_type_t;
+
+typedef struct Function{
+	environment_t *env;
+} function_object_t;
 
 typedef struct Object object_t;
 typedef struct Object {

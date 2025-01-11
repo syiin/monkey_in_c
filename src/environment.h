@@ -2,7 +2,10 @@
 #define ENVIRONMENT_H
 
 #include "hashmap.h"
-#include "object.h"
+
+// Forward declaration - see object.h
+struct Object;
+typedef struct Object object_t;
 
 typedef struct Environment environment_t;
 typedef struct Environment {
