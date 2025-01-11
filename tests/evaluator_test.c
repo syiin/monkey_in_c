@@ -315,6 +315,29 @@ void test_eval_function_object() {
                 body_str);
 }
 
+void test_eval_function_application() {
+        struct {
+                char *input;
+                int expected;
+        } tests[] = {
+                {"let identity = fn(x) { x; }; identity(5);", 5},
+                {"let identity = fn(x) { return x; }; identity(5);", 5},
+                {"let double = fn(x) { x * 2; }; double(5);", 10},
+                {"let add = fn(x, y) { x + y; }; add(5, 5);", 10}, 
+                {"let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20},
+                {"fn(x) { x; }(5)", 5}
+        };
+
+        for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+                lexer_t *lexer = new_lexer(tests[i].input);
+                parser_t *parser = new_parser(lexer);
+                program_t *program = parse_program(parser);
+                environment_t *env = new_environment();
+                object_t evaluated = eval(program, NODE_PROGRAM, env);
+                check_integer_object(evaluated, tests[i].expected);
+        }
+}
+
 int main(int argc, char *argv[]) {
         TEST(test_eval_boolean_expression);
         TEST(test_eval_integer_expression);
@@ -324,4 +347,5 @@ int main(int argc, char *argv[]) {
         TEST(test_eval_error_handling);
         TEST(test_eval_let_statements);
         TEST(test_eval_function_object);
+        TEST(test_eval_function_application);
 }
