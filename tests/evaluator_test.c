@@ -340,6 +340,31 @@ void test_eval_function_application() {
         }
 }
 
+void test_closures() {
+        struct {
+                char *input;
+                int expected;
+        } tests[] = {
+                {
+                    "let newAdder = fn(x) {\n"
+                    "   fn(y) { x + y };\n"
+                    "};\n"
+                    "let addTwo = newAdder(2);\n"
+                    "addTwo(2);",
+                    4
+                }
+        };
+
+        for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+                lexer_t *lexer = new_lexer(tests[i].input);
+                parser_t *parser = new_parser(lexer);
+                program_t *program = parse_program(parser);
+                environment_t *env = new_environment();
+                object_t evaluated = eval(program, NODE_PROGRAM, env);
+                check_integer_object(evaluated, tests[i].expected);
+        }
+}
+
 int main(int argc, char *argv[]) {
         TEST(test_eval_boolean_expression);
         TEST(test_eval_integer_expression);
@@ -350,4 +375,5 @@ int main(int argc, char *argv[]) {
         TEST(test_eval_let_statements);
         TEST(test_eval_function_object);
         TEST(test_eval_function_application);
+        TEST(test_closures);
 }
