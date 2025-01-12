@@ -10,6 +10,7 @@ typedef struct Object object_t;
 typedef struct Environment environment_t;
 typedef struct Environment {
 	hash_map_t *table;
+	/*So that we can accomodate for closures*/
 	environment_t *outer;
 } environment_t;
 

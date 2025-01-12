@@ -31,6 +31,7 @@ typedef struct Object {
 		void *null;
 		string_t *error_message;
 		function_object_t function;	
+		object_t *return_obj;
 	};
 } object_t;
 

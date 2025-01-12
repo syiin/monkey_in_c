@@ -4,6 +4,7 @@
 #include "evaluator.h"
 #include "ast.h"
 #include "custom_string.h"
+#include "object.h"
 #include "vector.h"
 
 char *object_type_to_string(object_type_t object_type){
@@ -15,9 +16,11 @@ char *object_type_to_string(object_type_t object_type){
         case OBJECT_NULL:
             return "OBJECT_NULL";
         case OBJECT_RETURN:
-            return "RETURN";
+            return "OBJECT_RETURN";
         case OBJECT_ERROR:
-            return "ERROR";
+            return "OBJECT_ERROR";
+        case OBJECT_FUNCTION:
+            return "OBJECT_FUNCTION";
         default:
             return "";
     }
@@ -50,8 +53,11 @@ object_t eval_program(program_t *program, environment_t *env){
     object_t result;
     for(int i = 0; i < program->statements->count; i++){
         result = eval(program->statements->data[i], NODE_STATEMENT, env);
-        if (result.type == OBJECT_RETURN || result.type == OBJECT_ERROR){
+        if (result.type == OBJECT_ERROR){
             return result;
+        }
+        if (result.type == OBJECT_RETURN){
+            return *result.return_obj;
         }
     }
     return result;
@@ -63,8 +69,12 @@ object_t eval_statement(statement_t *statement, environment_t *env){
         return result;
     }
     if (statement->type == RETURN_STATEMENT){
-        result.type = OBJECT_RETURN;
-        return result;
+        object_t *return_value = malloc(sizeof(object_t));
+        *return_value = result;  // Store the original result with its type
+        return (object_t){
+            .type = OBJECT_RETURN,
+            .return_obj = return_value
+        };
     } else if (statement->type == LET_STATEMENT){
         env_set(env, statement->name.value, &result);
     }
@@ -77,7 +87,7 @@ object_t eval_block_statement(block_statement_t *block_statement, environment_t 
     for(int i = 0; i < statements->count; i++){
          result = eval_statement(statements->data[i], env);
          if (result.type == OBJECT_RETURN || result.type == OBJECT_ERROR){
-            return result;
+            return *result.return_obj;
          }
     }
     return result;
@@ -140,6 +150,47 @@ object_t eval_expression_node(expression_t *expression, environment_t *env){
                 }
             };
             return obj;
+        }
+        case CALL_EXPRESSION: {
+            object_t function = eval_expression_node(expression->call_expression.function, env);
+            if (function.type == OBJECT_ERROR){ return function; }
+            if (function.type != OBJECT_FUNCTION){
+                return (object_t){
+                    .type = OBJECT_ERROR,
+                    .error_message = string_from("not a function")
+                };
+            }
+
+            vector_t *args = create_vector();
+            for (int i = 0; i < expression->call_expression.arguments->count; i++){
+                object_t arg = eval_expression_node(expression->call_expression.arguments->data[i], env);
+
+                if (arg.type == OBJECT_ERROR){ return arg; }
+
+                // Note, we only use the vector inside this method
+                append_vector(args, &arg);
+            }
+
+            if (args->count != function.function.parameters->count) {
+                return new_error("wrong number of arguments");
+            }
+
+            environment_t *inner = new_environment();
+            inner->outer = function.function.env;
+            for (int i = 0; i < function.function.parameters->count; i ++){
+                identifier_t *param = function.function.parameters->data[i];
+                object_t *arg = args->data[i];
+                env_set(inner, param->value, arg);
+            }
+
+            object_t result = eval(function.function.body, NODE_BLOCK_STATEMENT, inner);
+            if (result.type == OBJECT_RETURN) {
+                object_t unwrapped = *result.return_obj;
+                return unwrapped;
+            }
+            //TODO: free the args vector
+            return result;
+
         }
         default:
             return (object_t){};
