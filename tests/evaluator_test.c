@@ -325,7 +325,9 @@ void test_eval_function_application() {
                 {"let double = fn(x) { x * 2; }; double(5);", 10},
                 {"let add = fn(x, y) { x + y; }; add(5, 5);", 10}, 
                 {"let add = fn(x, y) { x + y; }; add(5 + 5, add(5, 5));", 20},
-                {"fn(x) { x; }(5)", 5}
+                {"fn(x) { x; }(5)", 5},
+                {"let multiply = fn(x, y) { x * y }; multiply(2,3)", 6},
+                {"let multiply = fn(x, y) { x * y }; multiply(50 / 2, 1 * 2)", 50}
         };
 
         for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {

@@ -166,8 +166,9 @@ object_t eval_expression_node(expression_t *expression, environment_t *env){
 
                 if (arg.type == OBJECT_ERROR){ return arg; }
 
-                // Note, we only use the vector inside this method
-                append_vector(args, &arg);
+                object_t *arg_copy = malloc(sizeof(object_t));
+                *arg_copy = arg;
+                append_vector(args, arg_copy);
             }
 
             if (args->count != function.function.parameters->count) {
@@ -180,7 +181,7 @@ object_t eval_expression_node(expression_t *expression, environment_t *env){
                 identifier_t *param = function.function.parameters->data[i];
                 object_t *arg = args->data[i];
                 env_set(inner, param->value, arg);
-            }
+                }
 
             object_t result = eval(function.function.body, NODE_BLOCK_STATEMENT, inner);
             if (result.type == OBJECT_RETURN) {
