@@ -67,8 +67,7 @@ object_t eval_statement(statement_t *statement, environment_t *env){
     object_t result = eval(statement->value, NODE_EXPRESSION, env);
     if (result.type == OBJECT_ERROR){
         return result;
-    }
-    if (statement->type == RETURN_STATEMENT){
+    } else if (statement->type == RETURN_STATEMENT){
         object_t *return_value = malloc(sizeof(object_t));
         *return_value = result;  // Store the original result with its type
         return (object_t){
@@ -87,7 +86,7 @@ object_t eval_block_statement(block_statement_t *block_statement, environment_t 
     for(int i = 0; i < statements->count; i++){
          result = eval_statement(statements->data[i], env);
          if (result.type == OBJECT_RETURN || result.type == OBJECT_ERROR){
-            return *result.return_obj;
+            return result;
          }
     }
     return result;
@@ -185,8 +184,7 @@ object_t eval_expression_node(expression_t *expression, environment_t *env){
 
             object_t result = eval(function.function.body, NODE_BLOCK_STATEMENT, inner);
             if (result.type == OBJECT_RETURN) {
-                object_t unwrapped = *result.return_obj;
-                return unwrapped;
+                return *result.return_obj;
             }
             //TODO: free the args vector
             return result;
