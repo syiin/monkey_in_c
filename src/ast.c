@@ -127,6 +127,9 @@ void format_expression_statement(string_t *str, expression_t *expression) {
             }
             string_append(str, ")");
             break;
+        case STRING_LITERAL:
+            string_concat(str, expression->string_literal.string);
+            break;
     }
 }
 

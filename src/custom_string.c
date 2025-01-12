@@ -55,6 +55,19 @@ void string_append(string_t *str, const char *append) {
     str->len += append_len;
 }
 
+string_t *string_concat(string_t *str1, string_t *str2){
+    size_t concated_len = str1->len + str2->len + 1;
+    string_t *concated = string_new();
+    if (concated_len > concated->cap){
+        string_grow(concated, concated_len);
+    }
+    strcpy(concated->data, str1->data);
+    strcpy(concated->data + str1->len, str2->data);
+
+    concated->len = concated_len - 1; //without NULL term
+    return concated;
+}
+
 void string_append_char(string_t *str, char ch) {
     size_t needed_cap = str->len + 2; // +1 for char, +1 for null
     

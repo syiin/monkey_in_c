@@ -467,12 +467,12 @@ void test_if_else_expression(void) {
 }
 
 void test_function_literal_parsing(void) {
-   	char *input = "fn(x, y) { x + y; }";
-   	lexer_t *lexer = new_lexer(input);
-   	parser_t *parser = new_parser(lexer);
-   	program_t *program = parse_program(parser);
-   	
-   	check_parser_errors(parser);
+	char *input = "fn(x, y) { x + y; }";
+	lexer_t *lexer = new_lexer(input);
+	parser_t *parser = new_parser(lexer);
+	program_t *program = parse_program(parser);
+
+	check_parser_errors(parser);
 
    	assertf(program->statements->count == 1, 
    			"program does not contain 1 statement. got=%d\n",
@@ -564,6 +564,33 @@ void test_call_expression_parsing(void) {
        check_integer_literal(arg2->infix_expression.left, 4);
        assertf(strcmp(arg2->infix_expression.op, "+") == 0, "wrong operator");
        check_integer_literal(arg2->infix_expression.right, 5);
+}
+
+void test_string_literal_expression(void) {
+	char *input = "\"hello world\";";
+	lexer_t *lexer = new_lexer(input);
+	parser_t *parser = new_parser(lexer);
+	program_t *program = parse_program(parser);
+
+	check_parser_errors(parser);
+
+	assertf(program->statements->count == 1,
+	    "program does not contain 1 statement. got=%d\n",
+	    program->statements->count);
+
+	statement_t *stmt = program->statements->data[0];
+	assertf(stmt->type == EXPRESSION_STATEMENT,
+	    "program.statements[0] is not expression statement. got=%d",
+	    stmt->type);
+
+	expression_t *expression = stmt->value;
+	assertf(expression->type == STRING_LITERAL,
+	    "expression is not string literal. got=%d",
+	    expression->type);
+
+	assertf(strcmp(string_get_data(expression->string_literal.string), "hello world") == 0,
+	    "literal.value not %s. got=%s",
+	    "hello world", string_get_data(expression->string_literal.string));
 }
 
 int main(int argc, char *argv[]) {

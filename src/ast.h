@@ -26,7 +26,8 @@ typedef enum {
 	BOOLEAN_EXPR,
 	IF_EXPR,
 	FUNCTION_LITERAL,
-	CALL_EXPRESSION
+	CALL_EXPRESSION,
+	STRING_LITERAL
 } expression_type_t;
 
 typedef struct Identifier {
@@ -66,6 +67,10 @@ typedef struct CallExpression {
 	vector_t *arguments;
 } call_expression_t;
 
+typedef struct StringLiteral {
+	string_t *string;
+} string_literal_t;
+
 typedef struct Expression {
 	node_type_t node_type;
 	expression_type_t type;
@@ -79,6 +84,7 @@ typedef struct Expression {
 		if_expression_t if_expression;
 		function_literal_t function_literal;
 		call_expression_t call_expression;
+		string_literal_t string_literal;
 	};
 } expression_t;
 

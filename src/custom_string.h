@@ -21,6 +21,7 @@ void string_free(string_t *str);
 void string_append(string_t *str, const char *append);
 void string_append_char(string_t *str, char ch);
 void string_clear(string_t *str);
+string_t *string_concat(string_t *str1, string_t *str2);
 char *string_get_data(string_t *str); //Transferring ownership
 
 // Utility methods
