@@ -6,6 +6,7 @@
 environment_t *new_environment(){
     environment_t *environment = malloc(sizeof(environment_t));
     environment->table = new_hash_table(free_object);
+    environment->outer = NULL;
     return environment;
 }
 
@@ -15,7 +16,11 @@ bool env_set(environment_t *env, char *key, object_t *object){
 }
 
 object_t *env_get(environment_t *env, char *key){
-    return (object_t *)hash_get(env->table, key);
+    object_t *object = (object_t *)hash_get(env->table, key); 
+    if (object == NULL && env->outer != NULL){
+        object = env_get(env->outer, key);
+    }
+    return object;
 }
 
 void free_object(void *object){
