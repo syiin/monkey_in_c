@@ -8,3 +8,4 @@
     4. To make me think more deeply about what I'm writing ie. resist just copying the code examples
 3. What this is not:
     1. The most performant safest C code you can write - this is a playground for me, I am deliberately trying different things that could be inconsistent with each other just because I can.
+    2. It's not even good - there are mallocs hanging out everywhere because it helps me follow along the book (ie. I don't really know what the appropriate lifetimes are so I just heap allocate when in doubt)
