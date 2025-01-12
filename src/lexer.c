@@ -63,6 +63,9 @@ token_t *lexer_next_token(lexer_t *lexer){
 		case '}':
 			tok = new_token(RBRACE, "}");
 			break;
+		case '"':
+			tok = new_token(STRING, read_string(lexer));
+			break;
 		case 0:
 			tok = new_token(EOF_TOKEN, "");
 			break;
@@ -82,6 +85,24 @@ token_t *lexer_next_token(lexer_t *lexer){
 	}
 	read_char(lexer);
 	return tok;
+}
+
+char *read_string(lexer_t *l){
+	int position = l->position+1;
+	read_char(l);
+	while(l->ch != '"' && l->ch != 0){
+		read_char(l);
+	}
+	size_t length = l->position - position;
+	char *result_string = malloc(length + 1);
+	if (result_string == NULL) {
+		return NULL;
+	}
+
+	strncpy(result_string, l->input + position, length);
+	result_string[length] = '\0';
+	read_char(l);
+	return result_string;
 }
 
 char *read_identifier(lexer_t *l){

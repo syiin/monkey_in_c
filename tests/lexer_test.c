@@ -40,7 +40,9 @@ void test_next_token(){
 		"\treturn false;\n"
 		"}\n"
 		"10 == 10;\n"
-		"10 != 9;\n";
+		"10 != 9;\n"
+		"\"foobar\"\n"          // Add string literal test cases
+		"\"foo bar\"\n";        // With escaped quotes
 	
 	token_t tests[] = {
 		{LET, "let"},
@@ -116,6 +118,8 @@ void test_next_token(){
 		{NOT_EQ, "!="},
 		{INT, "9"},
 		{SEMICOLON, ";"},
+		{STRING, "foobar"},
+		{STRING, "foo bar"},
 		{EOF_TOKEN, ""},
 	};
 	lexer_t *l = new_lexer(input);

@@ -35,6 +35,9 @@ typedef enum {
 	ELSE,
 	RETURN,
 
+	// Compound Types
+	STRING,
+
 	TOKEN_TYPE_COUNT,
 } TokenType;
 
@@ -62,7 +65,8 @@ static const char *TOKEN_TYPE_STRINGS[TOKEN_TYPE_COUNT] = {
 	[FUNCTION]  = "FUNCTION",
 	[LET]       = "LET",
 	[FALSE] = "FALSE",
-	[TRUE] = "TRUE"
+	[TRUE] = "TRUE",
+	[STRING] = "STRING"
 };
 
 typedef struct Token {
