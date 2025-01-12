@@ -220,6 +220,8 @@ prefix_parser parse_prefix_fns(TokenType token_type){
 			return &parse_if_expression;
 		case FUNCTION:
 			return &parse_function_literal;
+		case STRING:
+			return &parse_string_literal;
 		default:
 			return NULL;
 	}
@@ -391,6 +393,12 @@ expression_t *parse_function_literal(parser_t *parser){
 	}
 
 	expression->function_literal.body = parse_block_statement(parser);
+	return expression;
+}
+
+expression_t *parse_string_literal(parser_t*parser){
+	expression_t *expression = new_expression(STRING_LITERAL, parser->curr_token);
+	expression->string_literal = string_from(parser->curr_token.literal);
 	return expression;
 }
 

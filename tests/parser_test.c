@@ -573,7 +573,6 @@ void test_string_literal_expression(void) {
 	program_t *program = parse_program(parser);
 
 	check_parser_errors(parser);
-
 	assertf(program->statements->count == 1,
 	    "program does not contain 1 statement. got=%d\n",
 	    program->statements->count);
@@ -588,9 +587,10 @@ void test_string_literal_expression(void) {
 	    "expression is not string literal. got=%d",
 	    expression->type);
 
-	assertf(strcmp(string_get_data(expression->string_literal.string), "hello world") == 0,
+	char *string_literal = string_get_data(expression->string_literal);
+	assertf(strcmp(string_literal, "hello world") == 0,
 	    "literal.value not %s. got=%s",
-	    "hello world", string_get_data(expression->string_literal.string));
+	    "hello world", string_literal);
 }
 
 int main(int argc, char *argv[]) {
@@ -606,4 +606,5 @@ int main(int argc, char *argv[]) {
 	TEST(test_if_else_expression);
 	TEST(test_function_literal_parsing);
 	TEST(test_call_expression_parsing);
+	TEST(test_string_literal_expression);
 }

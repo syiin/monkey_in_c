@@ -58,7 +58,7 @@ expression_t *parse_group_expression(parser_t *parser);
 expression_t *parse_infix_expression(parser_t *parser, expression_t *left);
 expression_t *parse_call_expression(parser_t *parser, expression_t *left);
 vector_t *parse_call_arguments(parser_t *parser);
-
+expression_t *parse_string_literal(parser_t*parser);
 precedence_t get_precedence(TokenType token_type);
 precedence_t curr_precedence(parser_t *parser);
 precedence_t peek_precedence(parser_t *parser);
