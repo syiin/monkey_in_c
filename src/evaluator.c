@@ -181,7 +181,7 @@ object_t eval_expression_node(expression_t *expression, environment_t *env){
                 identifier_t *param = function.function.parameters->data[i];
                 object_t *arg = args->data[i];
                 env_set(inner, param->value, arg);
-                }
+            }
 
             object_t result = eval(function.function.body, NODE_BLOCK_STATEMENT, inner);
             if (result.type == OBJECT_RETURN) {
