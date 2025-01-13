@@ -29,8 +29,8 @@ void repl_start(FILE *in, FILE *out){
 		}
 	
 		char buff_out[BUFSIZ] = {'\0'};
-		object_t evaluated = eval(program, NODE_PROGRAM, env);
-		inspect_object(evaluated, buff_out);
+		object_t *evaluated = eval(program, NODE_PROGRAM, env);
+		inspect_object(*evaluated, buff_out);
 		printf("%s", buff_out);
 	}
 	

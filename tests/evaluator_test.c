@@ -66,8 +66,8 @@ void test_eval_integer_expression(){
 
 		program_t *program = parse_program(parser);
 		environment_t *env = new_environment();
-                object_t evaluated = eval(program, NODE_PROGRAM, env);
-                check_integer_object(evaluated, tests[i].expected);
+                object_t *evaluated = eval(program, NODE_PROGRAM, env);
+                check_integer_object(*evaluated, tests[i].expected);
 
         }
 }
@@ -108,6 +108,7 @@ void test_eval_boolean_expression(){
                 {"(1 > 2) == false", true},
         };
 
+        init_globals();
         for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++){
                 lexer_t *lexer = new_lexer(tests[i].input);
                 parser_t *parser = new_parser(lexer);
@@ -115,8 +116,8 @@ void test_eval_boolean_expression(){
                 program_t *program = parse_program(parser);
 		environment_t *env = new_environment();
                 statement_t *statement = program->statements->data[0];
-                object_t evaluated = eval(statement, NODE_STATEMENT, env);
-                check_boolean_object(evaluated, tests[i].expected);
+                object_t *evaluated = eval(statement, NODE_STATEMENT, env);
+                check_boolean_object(*evaluated, tests[i].expected);
         }
 }
 
@@ -140,8 +141,8 @@ void test_eval_bang_operator(){
                 program_t *program = parse_program(parser);
 		environment_t *env = new_environment();
 
-                object_t evaluated = eval(program, NODE_PROGRAM, env);
-                check_boolean_object(evaluated, tests[i].expected);
+                object_t *evaluated = eval(program, NODE_PROGRAM, env);
+                check_boolean_object(*evaluated, tests[i].expected);
         }
 }
 
@@ -174,11 +175,11 @@ void test_eval_if_else_expressions() {
                 parser_t *parser = new_parser(lexer);
                 program_t *program = parse_program(parser);
 		environment_t *env = new_environment();
-                object_t evaluated = eval(program, NODE_PROGRAM, env);
+                object_t *evaluated = eval(program, NODE_PROGRAM, env);
                 if (tests[i].has_value) {
-                        check_integer_object(evaluated, tests[i].expected);
+                        check_integer_object(*evaluated, tests[i].expected);
                 } else {
-                        check_null_object(evaluated);
+                        check_null_object(*evaluated);
                 }
         }
 }
@@ -205,8 +206,8 @@ void test_eval_return_statements() {
                 parser_t *parser = new_parser(lexer);
                 program_t *program = parse_program(parser);
 		environment_t *env = new_environment();
-                object_t evaluated = eval(program, NODE_PROGRAM, env);
-                check_integer_object(evaluated, tests[i].expected);
+                object_t *evaluated = eval(program, NODE_PROGRAM, env);
+                check_integer_object(*evaluated, tests[i].expected);
         }
 }
 
@@ -253,14 +254,14 @@ void test_eval_error_handling() {
                 "identifier not found: foobar",
                 },
         };
-
+        init_globals();
         for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
                 lexer_t *lexer = new_lexer(tests[i].input);
                 parser_t *parser = new_parser(lexer);
                 program_t *program = parse_program(parser);
 		environment_t *env = new_environment();
-                object_t evaluated = eval(program, NODE_PROGRAM, env);
-                check_error(evaluated, tests[i].expected_message);
+                object_t *evaluated = eval(program, NODE_PROGRAM, env);
+                check_error(*evaluated, tests[i].expected_message);
         }
 }
 
@@ -280,8 +281,8 @@ void test_eval_let_statements() {
                parser_t *parser = new_parser(lexer);
                program_t *program = parse_program(parser);
                environment_t *env = new_environment();
-               object_t evaluated = eval(program, NODE_PROGRAM, env);
-               check_integer_object(evaluated, tests[i].expected);
+               object_t *evaluated = eval(program, NODE_PROGRAM, env);
+               check_integer_object(*evaluated, tests[i].expected);
         }
 }
 
@@ -293,23 +294,23 @@ void test_eval_function_object() {
         program_t *program = parse_program(parser);
         environment_t *env = new_environment();
 
-        object_t evaluated = eval(program, NODE_PROGRAM, env);
+        object_t *evaluated = eval(program, NODE_PROGRAM, env);
 
-        assertf(evaluated.type == OBJECT_FUNCTION, 
+        assertf(evaluated->type == OBJECT_FUNCTION, 
                 "object is not Function. got=%s",
-                object_type_to_string(evaluated.type));
+                object_type_to_string(evaluated->type));
 
-        assertf(evaluated.function.parameters->count == 1,
+        assertf(evaluated->function.parameters->count == 1,
                 "function has wrong parameters. got=%d", 
-                evaluated.function.parameters->count);
+                evaluated->function.parameters->count);
 
-        identifier_t *param = evaluated.function.parameters->data[0];
+        identifier_t *param = evaluated->function.parameters->data[0];
         assertf(strcmp(param->value, "x") == 0,
                 "parameter is not 'x'. got=%s", 
                 param->value);
 
         string_t *body_str = string_new();
-        format_block_statement(body_str, evaluated.function.body);
+        format_block_statement(body_str, evaluated->function.body);
         assertf(strcmp(string_get_data(body_str), "(x + 2)") == 0,
                 "body is not '(x + 2)'. got=%s",
                 body_str);
@@ -335,8 +336,8 @@ void test_eval_function_application() {
                 parser_t *parser = new_parser(lexer);
                 program_t *program = parse_program(parser);
                 environment_t *env = new_environment();
-                object_t evaluated = eval(program, NODE_PROGRAM, env);
-                check_integer_object(evaluated, tests[i].expected);
+                object_t *evaluated = eval(program, NODE_PROGRAM, env);
+                check_integer_object(*evaluated, tests[i].expected);
         }
 }
 
@@ -360,8 +361,8 @@ void test_closures() {
                 parser_t *parser = new_parser(lexer);
                 program_t *program = parse_program(parser);
                 environment_t *env = new_environment();
-                object_t evaluated = eval(program, NODE_PROGRAM, env);
-                check_integer_object(evaluated, tests[i].expected);
+                object_t *evaluated = eval(program, NODE_PROGRAM, env);
+                check_integer_object(*evaluated, tests[i].expected);
         }
 }
 
@@ -381,16 +382,16 @@ void test_string_literal() {
                 parser_t *parser = new_parser(lexer);
                 program_t *program = parse_program(parser);
                 environment_t *env = new_environment();
-                object_t evaluated = eval(program, NODE_PROGRAM, env);
-                if (evaluated.type != OBJECT_STRING) {
+                object_t *evaluated = eval(program, NODE_PROGRAM, env);
+                if (evaluated->type != OBJECT_STRING) {
                         fprintf(stderr, "object is not String. got=%d (%s)\n", 
-                                evaluated.type, evaluated.string_literal->data);
+                                evaluated->type, evaluated->string_literal->data);
                         exit(1);
                 }
 
-                if (strcmp(evaluated.string_literal->data, tests[i].expected) != 0) {
+                if (strcmp(evaluated->string_literal->data, tests[i].expected) != 0) {
                         fprintf(stderr, "String has wrong value. got=%s\n", 
-                                evaluated.string_literal->data);
+                                evaluated->string_literal->data);
                         exit(1);
                 }
         }

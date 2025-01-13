@@ -5,7 +5,6 @@
 #include "ast.h"
 #include "custom_string.h"
 #include "object.h"
-#include "token.h"
 #include "vector.h"
 
 char *object_type_to_string(object_type_t object_type){
@@ -27,7 +26,7 @@ char *object_type_to_string(object_type_t object_type){
     }
 }
 
-object_t eval(void *node, node_type_t node_type, environment_t *env){
+object_t *eval(void *node, node_type_t node_type, environment_t *env){
     switch(node_type){
         case NODE_PROGRAM:{
             program_t *program = (program_t *)node;
@@ -46,83 +45,80 @@ object_t eval(void *node, node_type_t node_type, environment_t *env){
             return eval_block_statement(block_statement, env);
         }
         default:
-            return (object_t){};
+            return NULL;
     }
 }
 
-object_t eval_program(program_t *program, environment_t *env){
-    object_t result;
+object_t *eval_program(program_t *program, environment_t *env){
+    object_t *result;
     for(int i = 0; i < program->statements->count; i++){
         result = eval(program->statements->data[i], NODE_STATEMENT, env);
-        if (result.type == OBJECT_ERROR){
+        if (result->type == OBJECT_ERROR){
             return result;
         }
-        if (result.type == OBJECT_RETURN){
-            return *result.return_obj;
+        if (result->type == OBJECT_RETURN){
+            return result->return_obj;
         }
     }
     return result;
 }
 
-object_t eval_statement(statement_t *statement, environment_t *env){
-    object_t result = eval(statement->value, NODE_EXPRESSION, env);
-    if (result.type == OBJECT_ERROR){
+object_t *eval_statement(statement_t *statement, environment_t *env){
+    object_t *result = eval(statement->value, NODE_EXPRESSION, env);
+    if (result->type == OBJECT_ERROR){
         return result;
     } else if (statement->type == RETURN_STATEMENT){
-        object_t *return_value = malloc(sizeof(object_t));
-        *return_value = result;  // Store the original result with its type
-        return (object_t){
-            .type = OBJECT_RETURN,
-            .return_obj = return_value
-        };
+        object_t *to_return = new_object(OBJECT_RETURN);
+        to_return->return_obj = result;
+        return to_return;
     } else if (statement->type == LET_STATEMENT){
-        env_set(env, statement->name.value, &result);
+        env_set(env, statement->name.value, result);
     }
     return result;
 }
 
-object_t eval_block_statement(block_statement_t *block_statement, environment_t *env){
-    object_t result;
+object_t *eval_block_statement(block_statement_t *block_statement, environment_t *env){
+    object_t *result;
     vector_t *statements = block_statement->statements;
     for(int i = 0; i < statements->count; i++){
          result = eval_statement(statements->data[i], env);
-         if (result.type == OBJECT_RETURN || result.type == OBJECT_ERROR){
+         if (result->type == OBJECT_RETURN || result->type == OBJECT_ERROR){
             return result;
          }
     }
     return result;
 }
 
-object_t eval_expression_node(expression_t *expression, environment_t *env){
+object_t *eval_expression_node(expression_t *expression, environment_t *env){
     switch(expression->type){
-        case INTEGER_LITERAL:
-            return (object_t){
-                .type = OBJECT_INTEGER,
-                .integer = expression->integer
-            };
+        case INTEGER_LITERAL:{
+            object_t *integer_obj = new_object(OBJECT_INTEGER);
+            integer_obj->integer = expression->integer;
+            return integer_obj;
+        }
         case BOOLEAN_EXPR:
             return native_bool_to_boolean(expression->boolean);
         case PREFIX_EXPR: {
-            object_t right = eval(expression->prefix_expression.right, NODE_EXPRESSION, env);
-            if(right.type == OBJECT_ERROR){ return right; }
+            object_t *right = eval(expression->prefix_expression.right, NODE_EXPRESSION, env);
+            if(right->type == OBJECT_ERROR){ return right; }
             return eval_prefix_expression(expression->prefix_expression.op, right);
         }
         case INFIX_EXPR:{
-            object_t right = eval(expression->infix_expression.right, NODE_EXPRESSION, env);
-            if(right.type == OBJECT_ERROR){ return right; }
+            object_t *right = eval(expression->infix_expression.right, NODE_EXPRESSION, env);
+            if(right->type == OBJECT_ERROR){ return right; }
 
-            object_t left = eval(expression->infix_expression.left, NODE_EXPRESSION, env);
-            if(left.type == OBJECT_ERROR){ return left; }
+            object_t *left = eval(expression->infix_expression.left, NODE_EXPRESSION, env);
+            if(left->type == OBJECT_ERROR){ return left; }
 
             return eval_infix_expression(expression->infix_expression.op, left, right);
         }
         case IF_EXPR:{
-            object_t condition = eval(expression->if_expression.condition, NODE_EXPRESSION, env);
-            if(condition.type == OBJECT_ERROR){ return condition; }
+            object_t *condition = eval(expression->if_expression.condition, NODE_EXPRESSION, env);
+            if(condition->type == OBJECT_ERROR){ return condition; }
 
             if (is_truthy(condition)){
-                object_t result = eval(expression->if_expression.consequence, NODE_BLOCK_STATEMENT, env);
-                if (result.type == OBJECT_ERROR){ return result; }
+                object_t *result = eval(expression->if_expression.consequence, NODE_BLOCK_STATEMENT, env);
+                if (result->type == OBJECT_ERROR){ return result; }
                 return result;
             } else if (expression->if_expression.alternative != NULL){
                 return eval(expression->if_expression.alternative, NODE_BLOCK_STATEMENT, env);
@@ -133,86 +129,79 @@ object_t eval_expression_node(expression_t *expression, environment_t *env){
         case IDENT_EXPR:{
             object_t *value = env_get(env, expression->ident.value);
             if (value == NULL){
-                return (object_t){
-                    .type = OBJECT_ERROR,
-                    .error_message = string_from("identifier not found")
-                };
+                object_t *obj = new_object(OBJECT_ERROR);
+                obj->error_message = string_from("identifier not found");
+                return obj;
             }
-            return *value;
+            return value;
         }
         case FUNCTION_LITERAL: {
-            object_t obj = {
-                .type = OBJECT_FUNCTION,
-                .function = {
+            object_t *obj = new_object(OBJECT_FUNCTION);
+            obj->function = (function_object_t){
                     .parameters = expression->function_literal.parameters,
                     .body = expression->function_literal.body,
                     .env = env
-                }
             };
             return obj;
         }
         case CALL_EXPRESSION: {
-            object_t function = eval_expression_node(expression->call_expression.function, env);
-            if (function.type == OBJECT_ERROR){ return function; }
-            if (function.type != OBJECT_FUNCTION){
-                return (object_t){
-                    .type = OBJECT_ERROR,
-                    .error_message = string_from("not a function")
-                };
+            object_t *function = eval_expression_node(expression->call_expression.function, env);
+            if (function->type == OBJECT_ERROR){ return function; }
+            if (function->type != OBJECT_FUNCTION){
+                object_t *obj = new_object(OBJECT_ERROR);
+                obj->error_message = string_from("not a function");
+                return obj;
             }
 
             vector_t *args = create_vector();
             for (int i = 0; i < expression->call_expression.arguments->count; i++){
-                object_t arg = eval_expression_node(expression->call_expression.arguments->data[i], env);
+                object_t *arg = eval_expression_node(expression->call_expression.arguments->data[i], env);
 
-                if (arg.type == OBJECT_ERROR){ return arg; }
+                if (arg->type == OBJECT_ERROR){ return arg; }
 
-                object_t *arg_copy = malloc(sizeof(object_t));
-                *arg_copy = arg;
-                append_vector(args, arg_copy);
+                append_vector(args, arg);
             }
 
-            if (args->count != function.function.parameters->count) {
+            if (args->count != function->function.parameters->count) {
                 return new_error("wrong number of arguments");
             }
 
             environment_t *inner = new_environment();
-            inner->outer = function.function.env;
-            for (int i = 0; i < function.function.parameters->count; i ++){
-                identifier_t *param = function.function.parameters->data[i];
+            inner->outer = function->function.env;
+            for (int i = 0; i < function->function.parameters->count; i ++){
+                identifier_t *param = function->function.parameters->data[i];
                 object_t *arg = args->data[i];
                 env_set(inner, param->value, arg);
             }
 
-            object_t result = eval(function.function.body, NODE_BLOCK_STATEMENT, inner);
-            if (result.type == OBJECT_RETURN) {
-                return *result.return_obj;
+            object_t *result = eval(function->function.body, NODE_BLOCK_STATEMENT, inner);
+            if (result->type == OBJECT_RETURN) {
+                return result->return_obj;
             }
             //TODO: free the args vector
             return result;
 
         }
         case STRING_LITERAL: {
-            return (object_t){
-                .type = OBJECT_STRING,
-                .string_literal = expression->string_literal
-            };
+            object_t *obj = new_object(OBJECT_STRING);
+            obj->string_literal = expression->string_literal;
+            return obj;
         }
         default:
-            return (object_t){};
+            return NULL;
     }
 }
 
-bool is_truthy(object_t object){
-    if (object.type == OBJECT_NULL) return NULL;
-    return object.boolean;
+bool is_truthy(object_t *object){
+    if (object->type == OBJECT_NULL) return NULL;
+    return object->boolean;
 }
 
-object_t native_bool_to_boolean(bool input){
+object_t *native_bool_to_boolean(bool input){
     return input ? global_true : global_false;
 }
 
-object_t eval_prefix_expression(char *op, object_t right){
+object_t *eval_prefix_expression(char *op, object_t *right){
     switch(op[0]){
         case '!':
             return eval_bang_operator(right);
@@ -220,57 +209,53 @@ object_t eval_prefix_expression(char *op, object_t right){
             return eval_minus_operator(right);
         default:{
             char error_msg[BUFSIZ];
-            snprintf(error_msg, BUFSIZ, "unknown operator: %s%s", op, object_type_to_string(right.type));
+            snprintf(error_msg, BUFSIZ, "unknown operator: %s%s", op, object_type_to_string(right->type));
             return new_error(error_msg);
         }
     }
 }
 
-object_t eval_infix_expression(char *op, object_t left, object_t right){
-    if (left.type != right.type){
+object_t *eval_infix_expression(char *op, object_t *left, object_t *right){
+    if (left->type != right->type){
         char error_msg[BUFSIZ];
-        snprintf(error_msg, BUFSIZ, "type mismatched: %s %s %s",object_type_to_string(right.type), op, object_type_to_string(right.type));
+        snprintf(error_msg, BUFSIZ, "type mismatched: %s %s %s",object_type_to_string(right->type), op, object_type_to_string(right->type));
         return new_error(error_msg);
     }
-    if(left.type == OBJECT_INTEGER && right.type == OBJECT_INTEGER){
+    if(left->type == OBJECT_INTEGER && right->type == OBJECT_INTEGER){
         return eval_integer_infix_expression(op, left, right);
     }
     // TODO: this coincidentally works for both bools and integers - does this need to be disambiguiated? are there platforms where integers and booleans are encoded differently in the union?
     if(strcmp(op, "==") == 0){
-        return native_bool_to_boolean(left.integer == right.integer);
+        return native_bool_to_boolean(left->integer == right->integer);
     }
     if(strcmp(op, "!=") == 0){
-        return native_bool_to_boolean(left.integer != right.integer);
+        return native_bool_to_boolean(left->integer != right->integer);
     }
 
     char error_msg[BUFSIZ];
-    snprintf(error_msg, BUFSIZ, "unknown operator: %s%s%s",object_type_to_string(right.type), op, object_type_to_string(right.type));
+    snprintf(error_msg, BUFSIZ, "unknown operator: %s%s%s",object_type_to_string(right->type), op, object_type_to_string(right->type));
     return new_error(error_msg);
 }
-object_t eval_integer_infix_expression(char *op, object_t left, object_t right){
-    int left_value = left.integer;
-    int right_value = right.integer;
+object_t *eval_integer_infix_expression(char *op, object_t *left, object_t *right){
+    int left_value = left->integer;
+    int right_value = right->integer;
     
     if(strcmp(op, "+") == 0){
-            return (object_t){
-                .type = OBJECT_INTEGER,
-                .integer = left_value + right_value
-            };
+            object_t *obj = new_object(OBJECT_INTEGER);
+            obj->integer = left_value + right_value;
+            return obj;
     } else if(strcmp(op, "-") == 0){
-            return (object_t){
-                .type = OBJECT_INTEGER,
-                .integer = left_value - right_value
-            };
+            object_t *obj = new_object(OBJECT_INTEGER);
+            obj->integer = left_value - right_value;
+            return obj;
     } else if(strcmp(op, "*") == 0){
-            return (object_t){
-                .type = OBJECT_INTEGER,
-                .integer = left_value * right_value
-            };
+            object_t *obj = new_object(OBJECT_INTEGER);
+            obj->integer = left_value * right_value;
+            return obj;
     } else if(strcmp(op, "/") == 0){
-            return (object_t){
-                .type = OBJECT_INTEGER,
-                .integer = left_value / right_value
-            };
+            object_t *obj = new_object(OBJECT_INTEGER);
+            obj->integer = left_value / right_value;
+            return obj;
     } else if(strcmp(op, "<") == 0){
             return native_bool_to_boolean(left_value < right_value);
     } else if(strcmp(op, ">") == 0){
@@ -282,36 +267,35 @@ object_t eval_integer_infix_expression(char *op, object_t left, object_t right){
     }
 
     char error_msg[BUFSIZ];
-    snprintf(error_msg, BUFSIZ, "unknown operator: %s %s %s",object_type_to_string(right.type), op, object_type_to_string(right.type));
+    snprintf(error_msg, BUFSIZ, "unknown operator: %s %s %s",object_type_to_string(right->type), op, object_type_to_string(right->type));
     return new_error(error_msg);
 }
 
-object_t eval_bang_operator(object_t right){
-    if (right.type == OBJECT_NULL) {
+object_t *eval_bang_operator(object_t *right){
+    if (right->type == OBJECT_NULL) {
         return global_true;
     }
-    else if (right.type == OBJECT_BOOLEAN && !right.boolean) {
+    else if (right->type == OBJECT_BOOLEAN && !right->boolean) {
         return global_true; 
     }
     return global_false;
 }
 
-object_t eval_minus_operator(object_t right){
-    if(right.type != OBJECT_INTEGER){
+object_t *eval_minus_operator(object_t *right){
+    if(right->type != OBJECT_INTEGER){
         char error_msg[BUFSIZ];
-        snprintf(error_msg, BUFSIZ, "unknown operator: -%s ",object_type_to_string(right.type));
+        snprintf(error_msg, BUFSIZ, "unknown operator: -%s ",object_type_to_string(right->type));
         return new_error(error_msg);
     }
-    int value = right.integer;
-    return (object_t){
-        .type = OBJECT_INTEGER,
-        .integer = -value };
+    int value = right->integer;
+    object_t *obj = new_object(OBJECT_INTEGER);
+    obj->integer = -value;
+    return obj;
 }
 
-object_t new_error(char *format){
-    return (object_t){
-        .type = OBJECT_ERROR,
-        .error_message = string_from(format),
-    };
+object_t *new_error(char *format){
+    object_t *obj = new_object(OBJECT_ERROR);
+    obj->error_message = string_from(format);
+    return obj;
 }
 

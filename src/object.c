@@ -4,6 +4,29 @@
 #include "string.h"
 #include "custom_string.h"
 
+object_t *global_true;
+object_t *global_false;  
+object_t *global_null;
+
+void init_globals(void) {
+    global_true = new_object(OBJECT_BOOLEAN);
+    global_true->boolean = true;
+
+    global_false = new_object(OBJECT_BOOLEAN);
+    global_false->boolean = false;
+
+    global_null = new_object(OBJECT_NULL);
+}
+
+object_t *new_object(object_type_t obj_type){
+    object_t *obj = calloc(1, sizeof(object_t));
+    if (obj == NULL){
+        return NULL;
+    }
+    obj->type = obj_type;
+    return obj;
+}
+
 void inspect_object(object_t object, char *buff_out){
     switch(object.type){
         case OBJECT_INTEGER:
