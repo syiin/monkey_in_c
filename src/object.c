@@ -15,29 +15,34 @@ void inspect_object(object_t object, char *buff_out){
         case OBJECT_NULL:
             snprintf(buff_out, BUFSIZ, "NULL\n");
             break;
-    case OBJECT_FUNCTION:{
-       string_t *params = string_new();
-       for (int i = 0; i < object.function.parameters->count; i++) {
-           identifier_t *param = object.function.parameters->data[i];
-           string_append(params, param->value);
-           if (i < object.function.parameters->count - 1) {
-               string_append(params, ", ");
+        case OBJECT_FUNCTION:{
+           string_t *params = string_new();
+           for (int i = 0; i < object.function.parameters->count; i++) {
+               identifier_t *param = object.function.parameters->data[i];
+               string_append(params, param->value);
+               if (i < object.function.parameters->count - 1) {
+                   string_append(params, ", ");
+               }
            }
-       }
 
-       string_t *body_str = string_new();
-       format_block_statement(body_str, object.function.body);
+           string_t *body_str = string_new();
+           format_block_statement(body_str, object.function.body);
 
-       snprintf(buff_out, BUFSIZ, "fn(%s) %s", params->data, body_str->data);
+           snprintf(buff_out, BUFSIZ, "fn(%s) %s\n", params->data, body_str->data);
 
-       string_free(params);
-       string_free(body_str);
-    }
-   break;
-        default:
-            snprintf(buff_out, BUFSIZ, "Unknown object type\n");
+           string_free(params);
+           string_free(body_str);
+           break;
+        }
+        case OBJECT_STRING:{
+            snprintf(buff_out, BUFSIZ, "%s\n", object.string_literal->data);
             break;
-    }
+        }
+       break;
+            default:
+                snprintf(buff_out, BUFSIZ, "Unknown object type\n");
+                break;
+        }
 }
 
 object_t *object_heap_copy(const object_t *source) {

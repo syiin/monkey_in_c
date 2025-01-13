@@ -14,6 +14,7 @@ typedef enum ObjectType {
 	OBJECT_RETURN,
 	OBJECT_ERROR,
 	OBJECT_FUNCTION,
+	OBJECT_STRING,
 } object_type_t;
 
 typedef struct Function{
@@ -32,6 +33,7 @@ typedef struct Object {
 		string_t *error_message;
 		function_object_t function;	
 		object_t *return_obj;
+		string_t *string_literal;
 	};
 } object_t;
 

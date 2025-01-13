@@ -5,6 +5,7 @@
 #include "ast.h"
 #include "custom_string.h"
 #include "object.h"
+#include "token.h"
 #include "vector.h"
 
 char *object_type_to_string(object_type_t object_type){
@@ -190,6 +191,12 @@ object_t eval_expression_node(expression_t *expression, environment_t *env){
             //TODO: free the args vector
             return result;
 
+        }
+        case STRING_LITERAL: {
+            return (object_t){
+                .type = OBJECT_STRING,
+                .string_literal = expression->string_literal
+            };
         }
         default:
             return (object_t){};

@@ -365,6 +365,37 @@ void test_closures() {
         }
 }
 
+void test_string_literal() {
+        struct {
+                char *input;
+                char *expected;
+        } tests[] = {
+                {
+                    "\"Hello World!\"",
+                    "Hello World!"
+                }
+        };
+
+        for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+                lexer_t *lexer = new_lexer(tests[i].input); 
+                parser_t *parser = new_parser(lexer);
+                program_t *program = parse_program(parser);
+                environment_t *env = new_environment();
+                object_t evaluated = eval(program, NODE_PROGRAM, env);
+                if (evaluated.type != OBJECT_STRING) {
+                        fprintf(stderr, "object is not String. got=%d (%s)\n", 
+                                evaluated.type, evaluated.string_literal->data);
+                        exit(1);
+                }
+
+                if (strcmp(evaluated.string_literal->data, tests[i].expected) != 0) {
+                        fprintf(stderr, "String has wrong value. got=%s\n", 
+                                evaluated.string_literal->data);
+                        exit(1);
+                }
+        }
+}
+
 int main(int argc, char *argv[]) {
         TEST(test_eval_boolean_expression);
         TEST(test_eval_integer_expression);
@@ -375,5 +406,5 @@ int main(int argc, char *argv[]) {
         TEST(test_eval_let_statements);
         TEST(test_eval_function_object);
         TEST(test_eval_function_application);
-        TEST(test_closures);
+        TEST(test_string_literal);
 }
