@@ -108,7 +108,6 @@ void test_eval_boolean_expression(){
                 {"(1 > 2) == false", true},
         };
 
-        init_globals();
         for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++){
                 lexer_t *lexer = new_lexer(tests[i].input);
                 parser_t *parser = new_parser(lexer);
@@ -254,7 +253,7 @@ void test_eval_error_handling() {
                 "identifier not found: foobar",
                 },
         };
-        init_globals();
+
         for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
                 lexer_t *lexer = new_lexer(tests[i].input);
                 parser_t *parser = new_parser(lexer);

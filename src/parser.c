@@ -6,6 +6,7 @@
 #include "lexer.h"
 #include "token.h"
 #include "vector.h"
+#include "object.h"
 
 parser_t *new_parser(lexer_t *lexer){
 	parser_t *parser = malloc(sizeof(parser_t));
@@ -183,6 +184,11 @@ program_t *new_program(){
 }
 
 program_t *parse_program(parser_t *parser){
+	static bool globals_initialized = false;
+	if (!globals_initialized) {
+		init_globals();
+		globals_initialized = true;
+	}
 	program_t *program = new_program();
 
 	while (parser->curr_token.type != EOF_TOKEN){
