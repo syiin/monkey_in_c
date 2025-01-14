@@ -252,6 +252,10 @@ void test_eval_error_handling() {
                 "foobar",
                 "identifier not found: foobar",
                 },
+                {
+                "\"Hello\" - \"World\"",
+                "unknown operator: STRING - STRING",
+                },
         };
 
         for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {

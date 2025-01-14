@@ -220,9 +220,10 @@ object_t *eval_infix_expression(char *op, object_t *left, object_t *right){
         char error_msg[BUFSIZ];
         snprintf(error_msg, BUFSIZ, "type mismatched: %s %s %s",object_type_to_string(right->type), op, object_type_to_string(right->type));
         return new_error(error_msg);
-    }
-    if(left->type == OBJECT_INTEGER && right->type == OBJECT_INTEGER){
+    } else if(left->type == OBJECT_INTEGER && right->type == OBJECT_INTEGER){
         return eval_integer_infix_expression(op, left, right);
+    } else if (left->type == OBJECT_STRING && right->type == OBJECT_STRING){
+        return eval_string_infix_expression(op, left, right);
     }
     // TODO: this coincidentally works for both bools and integers - does this need to be disambiguiated? are there platforms where integers and booleans are encoded differently in the union?
     if(strcmp(op, "==") == 0){
@@ -236,6 +237,19 @@ object_t *eval_infix_expression(char *op, object_t *left, object_t *right){
     snprintf(error_msg, BUFSIZ, "unknown operator: %s%s%s",object_type_to_string(right->type), op, object_type_to_string(right->type));
     return new_error(error_msg);
 }
+
+object_t *eval_string_infix_expression(char *op, object_t *left, object_t *right){
+    if (strcmp(op, "+") != 0){
+        char error_msg[BUFSIZ];
+        snprintf(error_msg, BUFSIZ, "unknown operator: %s%s%s",object_type_to_string(right->type), op, object_type_to_string(right->type));
+        return new_error(error_msg);
+    }
+
+    object_t *obj = new_object(OBJECT_STRING);
+    obj->string_literal = string_concat(left->string_literal, right->string_literal);
+    return obj;
+}
+
 object_t *eval_integer_infix_expression(char *op, object_t *left, object_t *right){
     int left_value = left->integer;
     int right_value = right->integer;

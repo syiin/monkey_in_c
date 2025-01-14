@@ -13,6 +13,7 @@ object_t* eval_program(program_t *program, environment_t *env);
 object_t* eval_expression_node(expression_t *expression, environment_t *env);
 object_t* eval_infix_expression(char *op, object_t *left, object_t *right);
 object_t* eval_integer_infix_expression(char *op, object_t *left, object_t *right); 
+object_t *eval_string_infix_expression(char *op, object_t *left, object_t *right);
 object_t* native_bool_to_boolean(bool input);
 object_t* eval_prefix_expression(char *op, object_t *right);
 object_t* eval_bang_operator(object_t *right);
