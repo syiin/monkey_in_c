@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdint.h>
+
 // TODO: Implement dynamic sizing here too
 #define TABLE_SIZE 128
 

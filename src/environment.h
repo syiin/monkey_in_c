@@ -2,6 +2,7 @@
 #define ENVIRONMENT_H
 
 #include "hashmap.h"
+#include <stdint.h>
 
 // Forward declaration - see object.h
 struct Object;

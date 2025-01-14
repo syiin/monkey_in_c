@@ -3,6 +3,34 @@
 #include <stdio.h>
 #include "token.h"
 
+const char *TOKEN_TYPE_STRINGS[TOKEN_TYPE_COUNT] = {
+	[ILLEGAL]   = "ILLEGAL",
+	[EOF_TOKEN] = "EOF_TOKEN",
+	[IDENT]     = "IDENT",
+	[INT]       = "INT",
+	[ASSIGN]    = "ASSIGN",
+	[PLUS]     = "PLUS",
+	[MINUS] = "-",
+	[BANG] = "!",
+	[ASTERISK] = "*",
+	[SLASH] = "/",
+	[EQ] = "==",
+	[NOT_EQ] = "!=",
+	[LT] = "<",
+	[GT] = ">",
+	[COMMA]     = "COMMA",
+	[SEMICOLON] = "SEMICOLON",
+	[LPAREN]    = "LPAREN",
+	[RPAREN]    = "RPAREN",
+	[LBRACE]    = "LBRACE",
+	[RBRACE]    = "RBRACE",
+	[FUNCTION]  = "FUNCTION",
+	[LET]       = "LET",
+	[FALSE] = "FALSE",
+	[TRUE] = "TRUE",
+	[STRING] = "STRING"
+};
+
 const char *token_type_to_string(TokenType t) {
     if (t < 0 || t >= TOKEN_TYPE_COUNT) {
         return "UNKNOWN";

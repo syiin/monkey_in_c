@@ -41,33 +41,7 @@ typedef enum {
 	TOKEN_TYPE_COUNT,
 } TokenType;
 
-static const char *TOKEN_TYPE_STRINGS[TOKEN_TYPE_COUNT] = {
-	[ILLEGAL]   = "ILLEGAL",
-	[EOF_TOKEN] = "EOF_TOKEN",
-	[IDENT]     = "IDENT",
-	[INT]       = "INT",
-	[ASSIGN]    = "ASSIGN",
-	[PLUS]     = "PLUS",
-	[MINUS] = "-",
-	[BANG] = "!",
-	[ASTERISK] = "*",
-	[SLASH] = "/",
-	[EQ] = "==",
-	[NOT_EQ] = "!=",
-	[LT] = "<",
-	[GT] = ">",
-	[COMMA]     = "COMMA",
-	[SEMICOLON] = "SEMICOLON",
-	[LPAREN]    = "LPAREN",
-	[RPAREN]    = "RPAREN",
-	[LBRACE]    = "LBRACE",
-	[RBRACE]    = "RBRACE",
-	[FUNCTION]  = "FUNCTION",
-	[LET]       = "LET",
-	[FALSE] = "FALSE",
-	[TRUE] = "TRUE",
-	[STRING] = "STRING"
-};
+extern const char *TOKEN_TYPE_STRINGS[TOKEN_TYPE_COUNT];
 
 typedef struct Token {
 	TokenType	type;
