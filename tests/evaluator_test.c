@@ -386,18 +386,14 @@ void test_string_literal() {
                 program_t *program = parse_program(parser);
                 environment_t *env = new_environment();
                 object_t *evaluated = eval(program, NODE_PROGRAM, env);
-                if (evaluated->type != OBJECT_STRING) {
-                        fprintf(stderr, "object is not String. got=%d (%s)\n", 
-                                evaluated->type, evaluated->string_literal->data);
-                        exit(1);
-                }
+                assertf(evaluated->type == OBJECT_STRING,
+                        "object is not String. got=%d (%s)", 
+                        evaluated->type, evaluated->string_literal->data);
 
-                if (strcmp(evaluated->string_literal->data, tests[i].expected) != 0) {
-                        fprintf(stderr, "String has wrong value. got=%s\n", 
-                                evaluated->string_literal->data);
-                        exit(1);
-                }
-        }
+                assertf(strcmp(evaluated->string_literal->data, tests[i].expected) == 0,
+                        "String has wrong value. got=%s",
+                        evaluated->string_literal->data);
+                        }
 }
 
 void test_string_concatenation() {
@@ -410,6 +406,57 @@ void test_string_concatenation() {
                     "Hello World!"
                 }
         };
+        for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+                lexer_t *lexer = new_lexer(tests[i].input);
+                parser_t *parser = new_parser(lexer);
+                program_t *program = parse_program(parser);
+                environment_t *env = new_environment();
+                object_t *evaluated = eval(program, NODE_PROGRAM, env);
+                assertf(evaluated->type == OBJECT_STRING,
+                        "object is not String. got=%d (%s)",
+                        evaluated->type, evaluated->string_literal->data);
+
+                assertf(strcmp(evaluated->string_literal->data, tests[i].expected) == 0,
+                        "String has wrong value. got=%s",
+                        evaluated->string_literal->data);
+        }
+}
+
+void test_builtin_functions() {
+        struct {
+                char *input;
+                union {
+                    int int_val;
+                    char *str_val;
+                } expected;
+                int is_error; // Flag to indicate if expecting error message
+        } tests[] = {
+                {
+                    "len(\"\")", 
+                    {.int_val = 0},
+                    0
+                },
+                {
+                    "len(\"four\")",
+                    {.int_val = 4},
+                    0
+                },
+                {
+                    "len(\"hello world\")",
+                    {.int_val = 11},
+                    0
+                },
+                {
+                    "len(1)",
+                    {.str_val = "argument to `len` not supported, got INTEGER"},
+                    1
+                },
+                {
+                    "len(\"one\", \"two\")",
+                    {.str_val = "wrong number of arguments. got=2, want=1"},
+                    1
+                }
+        };
 
         for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
                 lexer_t *lexer = new_lexer(tests[i].input);
@@ -417,16 +464,24 @@ void test_string_concatenation() {
                 program_t *program = parse_program(parser);
                 environment_t *env = new_environment();
                 object_t *evaluated = eval(program, NODE_PROGRAM, env);
-                if (evaluated->type != OBJECT_STRING) {
-                        fprintf(stderr, "object is not String. got=%d (%s)\n",
-                                evaluated->type, evaluated->string_literal->data);
-                        exit(1);
-                }
 
-                if (strcmp(evaluated->string_literal->data, tests[i].expected) != 0) {
-                        fprintf(stderr, "String has wrong value. got=%s\n",
-                                evaluated->string_literal->data);
-                        exit(1);
+                if (!tests[i].is_error) {
+                        // Expecting integer result
+                        assertf(evaluated->type == OBJECT_INTEGER, 
+                                "object is not Integer. got=%d", 
+                                evaluated->type);
+                        assertf(evaluated->integer == tests[i].expected.int_val,
+                                "wrong integer value. got=%d, want=%d",
+                                evaluated->integer, tests[i].expected.int_val);
+                } else {
+                        // Expecting error message 
+                        assertf(evaluated->type == OBJECT_ERROR,
+                                "object is not Error. got=%d",
+                                evaluated->type);
+                        char *error_msg = string_get_data(evaluated->error_message);
+                        assertf(strcmp(error_msg, tests[i].expected.str_val) != 0,
+                                "wrong error message. got=%s, want=%s",
+                                error_msg, tests[i].expected.str_val);
                 }
         }
 }
@@ -443,4 +498,5 @@ int main(int argc, char *argv[]) {
         TEST(test_eval_function_application);
         TEST(test_string_literal);
         TEST(test_string_concatenation);
+        TEST(test_builtin_functions);
 }
