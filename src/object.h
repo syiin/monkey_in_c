@@ -15,6 +15,7 @@ typedef enum ObjectType {
 	OBJECT_ERROR,
 	OBJECT_FUNCTION,
 	OBJECT_STRING,
+	OBJECT_BUILTIN,
 } object_type_t;
 
 typedef struct Function{
@@ -23,6 +24,7 @@ typedef struct Function{
 	block_statement_t *body;
 } function_object_t;
 
+typedef object_t *(*builtin_function_t)(int count, ...);
 typedef struct Object object_t;
 typedef struct Object {
 	object_type_t type;
@@ -34,6 +36,7 @@ typedef struct Object {
 		function_object_t function;	
 		object_t *return_obj;
 		string_t *string_literal;
+		builtin_function_t builtin;
 	};
 } object_t;
 
