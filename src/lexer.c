@@ -101,7 +101,6 @@ char *read_string(lexer_t *l){
 
 	strncpy(result_string, l->input + position, length);
 	result_string[length] = '\0';
-	read_char(l);
 	return result_string;
 }
 
