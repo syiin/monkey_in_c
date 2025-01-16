@@ -21,6 +21,8 @@ char *object_type_to_string(object_type_t object_type){
             return "OBJECT_ERROR";
         case OBJECT_FUNCTION:
             return "OBJECT_FUNCTION";
+        case OBJECT_BUILTIN:
+            return "OBJECT_BUILTIN";
         default:
             return "";
     }
@@ -128,11 +130,16 @@ object_t *eval_expression_node(expression_t *expression, environment_t *env){
         }
         case IDENT_EXPR:{
             object_t *value = env_get(env, expression->ident.value);
+
+            if (value == NULL){
+                value = get_builtin_by_name(expression->ident.value);
+            }
             if (value == NULL){
                 object_t *obj = new_object(OBJECT_ERROR);
                 obj->error_message = string_from("identifier not found");
                 return obj;
             }
+
             return value;
         }
         case FUNCTION_LITERAL: {
@@ -311,5 +318,5 @@ object_t *new_error(char *format){
     object_t *obj = new_object(OBJECT_ERROR);
     obj->error_message = string_from(format);
     return obj;
-}
 
+}

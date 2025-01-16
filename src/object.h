@@ -48,4 +48,6 @@ void init_globals();
 object_t *new_object(object_type_t obj_type);
 void inspect_object(object_t object, char *buff_out);
 object_t *object_heap_copy(const object_t *source);
+object_t *get_builtin_by_name(const char *name);
+
 #endif

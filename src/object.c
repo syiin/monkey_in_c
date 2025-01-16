@@ -2,6 +2,7 @@
 #include "ast.h"
 #include "stdlib.h"
 #include "string.h"
+#include "stdarg.h"
 #include "custom_string.h"
 
 object_t *global_true;
@@ -84,3 +85,27 @@ object_t *object_heap_copy(const object_t *source) {
 
     return new_obj;
 }
+
+object_t *get_builtin_function(builtin_function_t builtin_function){
+    object_t *builtin = new_object(OBJECT_BUILTIN);
+    builtin->builtin = builtin_function;
+    return builtin;
+}
+
+object_t *len_builtin(int count, ...){
+    va_list args;
+    va_start(args, count);
+    return NULL;
+}
+
+object_t *get_builtin_by_name(const char *name) {
+    if (strcmp(name, "len") == 0) {
+        object_t *built_in_obj = new_object(OBJECT_BUILTIN);
+        built_in_obj->builtin = len_builtin;
+        return built_in_obj;
+    }
+
+    return NULL;
+}
+
+
