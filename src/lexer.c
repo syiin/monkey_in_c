@@ -66,6 +66,13 @@ token_t *lexer_next_token(lexer_t *lexer){
 		case '"':
 			tok = new_token(STRING, read_string(lexer));
 			break;
+		case '[':
+			tok = new_token(LBRACKET, "{");
+			break;
+		case ']':
+			tok = new_token(RBRACKET, "}");
+			break;
+
 		case 0:
 			tok = new_token(EOF_TOKEN, "");
 			break;
