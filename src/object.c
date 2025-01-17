@@ -63,6 +63,10 @@ void inspect_object(object_t object, char *buff_out){
             snprintf(buff_out, BUFSIZ, "%s\n", object.string_literal->data);
             break;
         }
+        case OBJECT_ERROR:{
+            snprintf(buff_out, BUFSIZ, "%s\n", object.error_message->data);
+            break;
+        }
        break;
             default:
                 snprintf(buff_out, BUFSIZ, "Unknown object type\n");
@@ -104,8 +108,11 @@ object_t *len_builtin(vector_t *args){
             obj->integer = arg->string_literal->len;
             return obj;
         }
-        default:
-            return new_error("argument to len not supported");
+        default:{
+            char error_msg[BUFSIZ];
+            snprintf(error_msg, BUFSIZ, "argument to `len` not supported, got %s", object_type_to_string(arg->type));
+            return new_error(error_msg);
+        }
     }
 }
 
