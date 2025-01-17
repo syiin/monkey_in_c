@@ -4,11 +4,12 @@
 #include "string.h"
 #include "stdarg.h"
 #include "custom_string.h"
+#include "evaluator.h"
+#include <string.h>
 
 object_t *global_true;
 object_t *global_false;  
 object_t *global_null;
-
 void init_globals(void) {
     global_true = new_object(OBJECT_BOOLEAN);
     global_true->boolean = true;
@@ -92,10 +93,20 @@ object_t *get_builtin_function(builtin_function_t builtin_function){
     return builtin;
 }
 
-object_t *len_builtin(int count, ...){
-    va_list args;
-    va_start(args, count);
-    return NULL;
+object_t *len_builtin(vector_t *args){
+    if (args->count != 1){
+        return new_error("wrong number of arguments");
+    }
+    object_t *arg = args->data[0];
+    switch(arg->type){
+        case OBJECT_STRING:{
+            object_t *obj = new_object(OBJECT_INTEGER);
+            obj->integer = arg->string_literal->len;
+            return obj;
+        }
+        default:
+            return new_error("argument to len not supported");
+    }
 }
 
 object_t *get_builtin_by_name(const char *name) {
@@ -103,9 +114,10 @@ object_t *get_builtin_by_name(const char *name) {
         object_t *built_in_obj = new_object(OBJECT_BUILTIN);
         built_in_obj->builtin = len_builtin;
         return built_in_obj;
+    } else if(strcmp(name, "puts") == 0){
+
     }
 
     return NULL;
 }
-
 

@@ -24,7 +24,7 @@ typedef struct Function{
 	block_statement_t *body;
 } function_object_t;
 
-typedef object_t *(*builtin_function_t)(int count, ...);
+typedef object_t *(*builtin_function_t)(vector_t *args);
 typedef struct Object object_t;
 typedef struct Object {
 	object_type_t type;

@@ -22,5 +22,5 @@ bool is_truthy(object_t *object);
 object_t* eval_statement(statement_t *statement, environment_t *env);
 object_t* eval_block_statement(block_statement_t *statement, environment_t *env);
 object_t* new_error(char *format);
-
+object_t *apply_function(object_t *fn, vector_t *args);
 #endif

@@ -154,12 +154,9 @@ object_t *eval_expression_node(expression_t *expression, environment_t *env){
         case CALL_EXPRESSION: {
             object_t *function = eval_expression_node(expression->call_expression.function, env);
             if (function->type == OBJECT_ERROR){ return function; }
-            if (function->type != OBJECT_FUNCTION){
-                object_t *obj = new_object(OBJECT_ERROR);
-                obj->error_message = string_from("not a function");
-                return obj;
+            if (function->type != OBJECT_FUNCTION && function->type != OBJECT_BUILTIN){
+                return new_error("not a function");
             }
-
             vector_t *args = create_vector();
             for (int i = 0; i < expression->call_expression.arguments->count; i++){
                 object_t *arg = eval_expression_node(expression->call_expression.arguments->data[i], env);
@@ -169,22 +166,12 @@ object_t *eval_expression_node(expression_t *expression, environment_t *env){
                 append_vector(args, arg);
             }
 
-            if (args->count != function->function.parameters->count) {
+            if (function->type == OBJECT_FUNCTION && args->count != function->function.parameters->count) {
                 return new_error("wrong number of arguments");
             }
 
-            environment_t *inner = new_environment();
-            inner->outer = function->function.env;
-            for (int i = 0; i < function->function.parameters->count; i ++){
-                identifier_t *param = function->function.parameters->data[i];
-                object_t *arg = args->data[i];
-                env_set(inner, param->value, arg);
-            }
+            object_t *result = apply_function(function, args);
 
-            object_t *result = eval(function->function.body, NODE_BLOCK_STATEMENT, inner);
-            if (result->type == OBJECT_RETURN) {
-                return result->return_obj;
-            }
             //TODO: free the args vector
             return result;
 
@@ -196,6 +183,34 @@ object_t *eval_expression_node(expression_t *expression, environment_t *env){
         }
         default:
             return NULL;
+    }
+}
+
+object_t *apply_function(object_t *fn, vector_t *args) {
+    switch (fn->type) {
+        case OBJECT_FUNCTION: {
+            environment_t* extended_env = new_environment();
+            extended_env->outer = fn->function.env;
+
+            for (int i = 0; i < fn->function.parameters->count; i++) {
+                identifier_t* param = fn->function.parameters->data[i];
+                object_t* arg = args->data[i];
+                env_set(extended_env, param->value, arg);
+            }
+
+            object_t* evaluated = eval(fn->function.body, NODE_BLOCK_STATEMENT, extended_env);
+            if (evaluated->type == OBJECT_RETURN) {
+                return evaluated->return_obj;
+            }
+            return evaluated;
+        }
+        case OBJECT_BUILTIN:
+            return fn->builtin(args);
+        default:{
+            char error_msg[BUFSIZ];
+            snprintf(error_msg, BUFSIZ, "not a function: %s", object_type_to_string(fn->type));
+            return new_error(error_msg);
+        }
     }
 }
 
