@@ -138,6 +138,14 @@ void format_expression_statement(string_t *str, expression_t *expression) {
             }
             string_append(str, "]");
             break;
+        case INDEX_EXPR: {
+            string_append(str, "(");
+            format_expression_statement(str, expression->index_expression.left);
+            string_append(str, "[");
+            format_expression_statement(str, expression->index_expression.right);
+            string_append(str, "])");
+            break;
+        }
     }
 }
 

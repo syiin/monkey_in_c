@@ -29,6 +29,7 @@ typedef enum {
 	CALL_EXPRESSION,
 	STRING_LITERAL,
 	ARRAY_LITERAL,
+	INDEX_EXPR,
 } expression_type_t;
 
 typedef struct Identifier {
@@ -72,6 +73,12 @@ typedef struct CallExpression {
 	vector_t *arguments;
 } call_expression_t;
 
+typedef struct IndexExpression {
+	token_t token;
+	expression_t *left;
+	expression_t *right;
+} index_expression_t;
+
 typedef struct Expression {
 	node_type_t node_type;
 	expression_type_t type;
@@ -87,6 +94,7 @@ typedef struct Expression {
 		call_expression_t call_expression;
 		string_t *string_literal;
 		array_literal_t array_literal;
+		index_expression_t index_expression;
 	};
 } expression_t;
 
