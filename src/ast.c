@@ -14,7 +14,6 @@ char *program_to_string(program_t *program) {
 
     ast_string(str_buffer, program);
     char *result = string_get_data(str_buffer);
-    
     return result;
 }
 

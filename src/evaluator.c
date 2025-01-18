@@ -275,7 +275,7 @@ object_t *eval_string_infix_expression(char *op, object_t *left, object_t *right
 object_t *eval_integer_infix_expression(char *op, object_t *left, object_t *right){
     int left_value = left->integer;
     int right_value = right->integer;
-    
+
     if(strcmp(op, "+") == 0){
             object_t *obj = new_object(OBJECT_INTEGER);
             obj->integer = left_value + right_value;
@@ -312,7 +312,7 @@ object_t *eval_bang_operator(object_t *right){
         return global_true;
     }
     else if (right->type == OBJECT_BOOLEAN && !right->boolean) {
-        return global_true; 
+        return global_true;
     }
     return global_false;
 }

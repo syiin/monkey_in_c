@@ -593,6 +593,34 @@ void test_string_literal_expression(void) {
 	    "hello world", string_literal);
 }
 
+void test_array_literal_expression(void) {
+    char *input = "[1, 2 * 3, 4 + 5];";
+    lexer_t *lexer = new_lexer(input);
+    parser_t *parser = new_parser(lexer);
+    program_t *program = parse_program(parser);
+
+    check_parser_errors(parser);
+
+    assertf(program->statements->count == 1,
+            "program does not contain 1 statement. got=%d\n",
+            program->statements->count);
+
+    statement_t *stmt = program->statements->data[0];
+    assertf(stmt->type == EXPRESSION_STATEMENT,
+            "statement is not expression statement. got=%d",
+            stmt->type);
+
+    expression_t *exp = stmt->value;
+    assertf(exp->type == ARRAY_LITERAL,
+            "expression is not array literal. got=%d",
+            exp->type);
+
+    array_literal_t *array = &exp->array_literal;
+    assertf(array->elements->count == 3,
+            "array has wrong number of elements. got=%d",
+            array->elements->count);
+}
+
 int main(int argc, char *argv[]) {
 	TEST(test_let_statements);
 	TEST(test_return_statements);
@@ -607,4 +635,5 @@ int main(int argc, char *argv[]) {
 	TEST(test_function_literal_parsing);
 	TEST(test_call_expression_parsing);
 	TEST(test_string_literal_expression);
+	TEST(test_array_literal_expression);
 }

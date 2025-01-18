@@ -8,8 +8,9 @@
 #include <string.h>
 
 object_t *global_true;
-object_t *global_false;  
+object_t *global_false;
 object_t *global_null;
+
 void init_globals(void) {
     global_true = new_object(OBJECT_BOOLEAN);
     global_true->boolean = true;
@@ -65,6 +66,10 @@ void inspect_object(object_t object, char *buff_out){
         }
         case OBJECT_ERROR:{
             snprintf(buff_out, BUFSIZ, "%s\n", object.error_message->data);
+            break;
+        }
+        case OBJECT_BUILTIN: {
+            snprintf(buff_out, BUFSIZ, "builtin function\n");
             break;
         }
        break;
@@ -127,4 +132,3 @@ object_t *get_builtin_by_name(const char *name) {
 
     return NULL;
 }
-

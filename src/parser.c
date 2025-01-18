@@ -72,11 +72,11 @@ statement_t *parse_let_statement(parser_t *parser){
 	}
 
 	statement->token = parser->curr_token;
-	
+
 	if (!(expect_peek(parser, IDENT))){
 		return NULL;
 	}
-	
+
 	statement->name.token = parser->curr_token;
 	statement->name.value = parser->curr_token.literal;
 
@@ -113,13 +113,13 @@ expression_t *parse_expression(parser_t *parser, precedence_t precedence){
 	prefix_parser prefix_fn = parse_prefix_fns(parser->curr_token.type);
 	if (prefix_fn == NULL) {
 		char error[100];
-		snprintf(error, sizeof(error), "no prefix parse function for %s found", 
+		snprintf(error, sizeof(error), "no prefix parse function for %s found",
 			token_type_to_string(parser->curr_token.type));
 		append_error(parser, error);
 		return NULL;
 	}
 
-	expression_t *left = prefix_fn(parser);	
+	expression_t *left = prefix_fn(parser);
 	if (left == NULL) {
 		return NULL;
 	}
@@ -228,6 +228,8 @@ prefix_parser parse_prefix_fns(TokenType token_type){
 			return &parse_function_literal;
 		case STRING:
 			return &parse_string_literal;
+		case LBRACKET:
+		  return &parse_array_literal;
 		default:
 			return NULL;
 	}
@@ -240,6 +242,19 @@ infix_parser parser_infix_fns(TokenType token_type){
 		default:
 			return &parse_infix_expression;
 	}
+}
+
+expression_t *parse_array_literal(parser_t *parser){
+	    token_t token = {
+		.type = LBRACKET,
+		.literal = strdup("[")
+	    };
+
+	    expression_t *array = new_expression(ARRAY_LITERAL, token);
+	    vector_t *list = parse_expression_list(parser, RBRACKET);
+	    array->array_literal.elements = list;
+
+	    return array;
 }
 
 expression_t *parse_identifier(parser_t *parser){
@@ -314,11 +329,11 @@ expression_t *parse_call_expression(parser_t *parser, expression_t *left){
 		};
 	expression_t *expression = new_expression(CALL_EXPRESSION, token);
 	expression->call_expression.function = left;
-	expression->call_expression.arguments = parse_call_arguments(parser);
+	expression->call_expression.arguments = parse_expression_list(parser, RPAREN);
 	return expression;
 }
 
-vector_t *parse_call_arguments(parser_t *parser){
+vector_t *parse_expression_list(parser_t *parser, TokenType end){
 	vector_t *arguments = create_vector();
 
 	if (peek_token_is(parser, RPAREN)){
@@ -335,7 +350,7 @@ vector_t *parse_call_arguments(parser_t *parser){
 		append_vector(arguments, parse_expression(parser, PRECEDENCE_LOWEST));
 	}
 
-	if (!expect_peek(parser, RPAREN)){
+	if (!expect_peek(parser, end)){
 		return NULL;
 	}
 
