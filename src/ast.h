@@ -76,7 +76,7 @@ typedef struct CallExpression {
 typedef struct IndexExpression {
 	token_t token;
 	expression_t *left;
-	expression_t *right;
+	expression_t *index;
 } index_expression_t;
 
 typedef struct Expression {
