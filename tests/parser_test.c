@@ -633,8 +633,8 @@ void test_index_expression(void) {
 
 	check_parser_errors(parser);
 
-	assertf(program->statements->count == 2,
-		    "program does not contain 2 statement. got=%d\n",
+	assertf(program->statements->count == 1,
+		    "program does not contain 1 statement. got=%d\n",
 		    program->statements->count);
 
 	statement_t *stmt = program->statements->data[0];
@@ -649,7 +649,16 @@ void test_index_expression(void) {
 
 	index_expression_t *index_exp = &exp->index_expression;
 	check_identifier(index_exp->left, "myArray");
-	check_integer_literal(index_exp->right, 1);
+	assertf(index_exp->index->type == INFIX_EXPR,
+	"index is not infix expression. got=%d",
+            index_exp->index->type);
+    
+    expression_t *infix = index_exp->index;
+    check_integer_literal(infix->infix_expression.left, 1);
+    assertf(strcmp(infix->infix_expression.op, "+") == 0,
+            "operator is not '+'. got=%s",
+            infix->infix_expression.op);
+    check_integer_literal(infix->infix_expression.right, 1);
 }
 
 int main(int argc, char *argv[]) {

@@ -29,6 +29,7 @@ typedef enum {
 	PRECEDENCE_PRODUCT, // *
 	PRECEDENCE_PREFIX ,// -X or !X
 	PRECEDENCE_CALL, // myFunction(X)
+	PRECEDENCE_INDEX, // myArray[1]
 } precedence_t;
 
 void parser_next_token(parser_t *parser);
@@ -58,6 +59,7 @@ expression_t *parse_prefix_expression(parser_t *parser);
 expression_t *parse_group_expression(parser_t *parser);
 expression_t *parse_infix_expression(parser_t *parser, expression_t *left);
 expression_t *parse_call_expression(parser_t *parser, expression_t *left);
+expression_t *parse_index_expression(parser_t *parser, expression_t *left);
 vector_t *parse_expression_list(parser_t *parser, TokenType end);
 expression_t *parse_string_literal(parser_t*parser);
 precedence_t get_precedence(TokenType token_type);

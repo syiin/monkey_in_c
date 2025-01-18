@@ -134,6 +134,9 @@ void format_expression_statement(string_t *str, expression_t *expression) {
         case ARRAY_LITERAL:
             string_append(str, "[");
             for (size_t i = 0; i < expression->array_literal.elements->count; i++){
+                if (i > 0) {
+                    string_append(str, ", ");
+                }
                 format_expression_statement(str, expression->array_literal.elements->data[i]);
             }
             string_append(str, "]");

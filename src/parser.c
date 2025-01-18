@@ -239,9 +239,28 @@ infix_parser parser_infix_fns(TokenType token_type){
 	switch (token_type) {
 		case LPAREN:
 			return &parse_call_expression;
+		case LBRACKET:
+			return &parse_index_expression;
 		default:
 			return &parse_infix_expression;
 	}
+}
+
+expression_t *parse_index_expression(parser_t *parser, expression_t *left){
+	token_t token = {
+			.type = parser->curr_token.type,
+			.literal = strdup(parser->curr_token.literal)
+		};
+
+	parser_next_token(parser);
+	expression_t *expression = new_expression(INDEX_EXPR, token);
+	expression->index_expression.left = left;
+	expression->index_expression.index = parse_expression(parser, PRECEDENCE_LOWEST);
+
+	if (!expect_peek(parser, RBRACKET)){
+		return NULL;
+	}
+	return expression;
 }
 
 expression_t *parse_array_literal(parser_t *parser){
@@ -503,6 +522,8 @@ precedence_t get_precedence(TokenType token_type) {
             return PRECEDENCE_PRODUCT;
         case LPAREN:
             return PRECEDENCE_CALL;
+		case LBRACKET:
+			return PRECEDENCE_INDEX;
         default:
             return PRECEDENCE_LOWEST;
     }
