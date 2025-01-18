@@ -142,7 +142,7 @@ void format_expression_statement(string_t *str, expression_t *expression) {
             string_append(str, "(");
             format_expression_statement(str, expression->index_expression.left);
             string_append(str, "[");
-            format_expression_statement(str, expression->index_expression.right);
+            format_expression_statement(str, expression->index_expression.index);
             string_append(str, "])");
             break;
         }
