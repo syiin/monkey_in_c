@@ -68,6 +68,23 @@ void inspect_object(object_t object, char *buff_out){
             snprintf(buff_out, BUFSIZ, "%s\n", object.error_message->data);
             break;
         }
+        case OBJECT_ARRAY:{
+            string_t *temp = string_new();
+            string_append(temp, "[");
+            for (int i = 0; i < object.array.elements->count; i++){
+                object_t *element = object.array.elements->data[i];
+                char element_str[BUFSIZ];
+                inspect_object(*element, element_str);
+                string_append(temp, element_str);
+                if (i < object.array.elements->count - 1){
+                    string_append(temp, ", ");
+                }
+            }
+            string_append(temp, "]");
+            snprintf(buff_out, BUFSIZ, "%s\n", temp->data);
+            string_free(temp);
+            break;
+        }
         case OBJECT_BUILTIN: {
             snprintf(buff_out, BUFSIZ, "builtin function\n");
             break;

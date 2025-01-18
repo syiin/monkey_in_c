@@ -16,7 +16,12 @@ typedef enum ObjectType {
 	OBJECT_FUNCTION,
 	OBJECT_STRING,
 	OBJECT_BUILTIN,
+	OBJECT_ARRAY,
 } object_type_t;
+
+typedef struct Array{
+	vector_t *elements;
+} array_object_t;
 
 typedef struct Function{
 	environment_t *env;
@@ -37,6 +42,7 @@ typedef struct Object {
 		object_t *return_obj;
 		string_t *string_literal;
 		builtin_function_t builtin;
+		array_object_t array;
 	};
 } object_t;
 
