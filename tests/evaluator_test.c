@@ -486,6 +486,35 @@ void test_builtin_functions() {
         }
 }
 
+void test_array_literals() {
+    char *input = "[1, 2 * 2, 3 + 3]";
+    
+    lexer_t *lexer = new_lexer(input);
+    parser_t *parser = new_parser(lexer);
+    program_t *program = parse_program(parser);
+    environment_t *env = new_environment();
+    
+    object_t *evaluated = eval(program, NODE_PROGRAM, env);
+    
+    assertf(evaluated->type == OBJECT_ARRAY,
+            "object is not Array. got=%s\n",
+            object_type_to_string(evaluated->type));
+    
+    assertf(evaluated->array.elements->count == 3,
+            "array has wrong num of elements. got=%d\n",
+            evaluated->array.elements->count);
+    
+    // Test each element
+    object_t *first = evaluated->array.elements->data[0];
+    check_integer_object(*first, 1);
+    
+    object_t *second = evaluated->array.elements->data[1];
+    check_integer_object(*second, 4);
+    
+    object_t *third = evaluated->array.elements->data[2];
+    check_integer_object(*third, 6);
+}
+
 int main(int argc, char *argv[]) {
         TEST(test_eval_boolean_expression);
         TEST(test_eval_integer_expression);
@@ -499,4 +528,5 @@ int main(int argc, char *argv[]) {
         TEST(test_string_literal);
         TEST(test_string_concatenation);
         TEST(test_builtin_functions);
+        TEST(test_array_literals);
 }

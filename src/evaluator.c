@@ -181,6 +181,20 @@ object_t *eval_expression_node(expression_t *expression, environment_t *env){
             obj->string_literal = expression->string_literal;
             return obj;
         }
+        case ARRAY_LITERAL: {
+            object_t *obj = new_object(OBJECT_ARRAY);
+             vector_t *elements = create_vector();
+            if (expression->array_literal.elements->count == 1 && ((object_t *)expression->array_literal.elements->data[0])->type == OBJECT_ERROR){
+                return expression->array_literal.elements->data[0];
+            }
+
+            for (int i = 0; i < expression->array_literal.elements->count; i++){
+                object_t *element = expression->array_literal.elements->data[i];
+                append_vector(elements, element);
+            }
+            obj->array.elements = elements;
+            return obj;
+        }
         default:
             return NULL;
     }
@@ -333,5 +347,4 @@ object_t *new_error(char *format){
     object_t *obj = new_object(OBJECT_ERROR);
     obj->error_message = string_from(format);
     return obj;
-
 }
