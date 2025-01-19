@@ -157,15 +157,12 @@ object_t *eval_expression_node(expression_t *expression, environment_t *env){
             if (function->type != OBJECT_FUNCTION && function->type != OBJECT_BUILTIN){
                 return new_error("not a function");
             }
-            vector_t *args = create_vector();
-            for (int i = 0; i < expression->call_expression.arguments->count; i++){
-                object_t *arg = eval_expression_node(expression->call_expression.arguments->data[i], env);
+            
+            vector_t *args = eval_call_expressions(expression->call_expression.arguments, env);
 
-                if (arg->type == OBJECT_ERROR){ return arg; }
-
-                append_vector(args, arg);
+            if (args->count == 1 && ((object_t *)args->data[0])->type == OBJECT_ERROR){
+                return args->data[0];
             }
-
             if (function->type == OBJECT_FUNCTION && args->count != function->function.parameters->count) {
                 return new_error("wrong number of arguments");
             }
@@ -182,22 +179,38 @@ object_t *eval_expression_node(expression_t *expression, environment_t *env){
             return obj;
         }
         case ARRAY_LITERAL: {
-            object_t *obj = new_object(OBJECT_ARRAY);
-             vector_t *elements = create_vector();
-            if (expression->array_literal.elements->count == 1 && ((object_t *)expression->array_literal.elements->data[0])->type == OBJECT_ERROR){
-                return expression->array_literal.elements->data[0];
+            vector_t *elements = eval_call_expressions(expression->array_literal.elements, env);
+            if (elements->count == 1 && ((object_t *)elements->data[0])->type == OBJECT_ERROR){
+                return elements->data[0];
             }
 
-            for (int i = 0; i < expression->array_literal.elements->count; i++){
-                object_t *element = expression->array_literal.elements->data[i];
-                append_vector(elements, element);
+            object_t *obj = new_object(OBJECT_ARRAY);
+            if (obj == NULL) {
+                return new_error("cannot allocate for array");
             }
+
             obj->array.elements = elements;
             return obj;
         }
         default:
             return NULL;
     }
+}
+
+vector_t *eval_call_expressions(vector_t *input_args, environment_t *env){
+    vector_t *args = create_vector();
+
+    for (int i = 0; i < input_args->count; i++){
+        object_t *arg = eval_expression_node(input_args->data[i], env);
+
+        if (arg->type == OBJECT_ERROR){ 
+            append_vector(args, arg);
+            return args;
+        }
+
+        append_vector(args, arg);
+    }
+    return args;
 }
 
 object_t *apply_function(object_t *fn, vector_t *args) {
