@@ -497,23 +497,63 @@ void test_array_literals() {
         object_t *evaluated = eval(program, NODE_PROGRAM, env);
         printf("%s\n", object_type_to_string(evaluated->type));
 
-    /*assertf(evaluated->type == OBJECT_ARRAY,*/
-    /*        "object is not Array. got=%s\n",*/
-    /*        object_type_to_string(evaluated->type));*/
-    
-    /*assertf(evaluated->array.elements->count == 3,*/
-    /*        "array has wrong num of elements. got=%d\n",*/
-    /*        evaluated->array.elements->count);*/
-    
-    // Test each element
-    /*object_t *first = evaluated->array.elements->data[0];*/
-    /*check_integer_object(*first, 1);*/
-    /**/
-    /*object_t *second = evaluated->array.elements->data[1];*/
-    /*check_integer_object(*second, 4);*/
-    /**/
-    /*object_t *third = evaluated->array.elements->data[2];*/
-    /*check_integer_object(*third, 6);*/
+        assertf(evaluated->type == OBJECT_ARRAY,
+                    "object is not Array. got=%s\n",
+                    object_type_to_string(evaluated->type));
+        assertf(evaluated->array.elements->count == 3,
+                    "array has wrong num of elements. got=%d\n",
+                    evaluated->array.elements->count);
+        // Test each element
+        object_t *first = evaluated->array.elements->data[0];
+        check_integer_object(*first, 1);
+
+        object_t *second = evaluated->array.elements->data[1];
+        check_integer_object(*second, 4);
+
+        object_t *third = evaluated->array.elements->data[2];
+        check_integer_object(*third, 6);
+}
+
+
+void test_array_index_expressions() {
+    struct test_case {
+        char *input;
+        union {
+            int int_val;
+            object_type_t type;
+        } expected;
+        int is_error;
+    };
+
+    struct test_case tests[] = {
+        {"[1, 2, 3][0]", {.int_val = 1}, 0},
+        {"[1, 2, 3][1]", {.int_val = 2}, 0},
+        {"[1, 2, 3][2]", {.int_val = 3}, 0},
+        {"let i = 0; [1][i];", {.int_val = 1}, 0},
+        {"[1, 2, 3][1 + 1];", {.int_val = 3}, 0},
+        {"let myArray = [1, 2, 3]; myArray[2];", {.int_val = 3}, 0},
+        {"let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", {.int_val = 6}, 0},
+        {"let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", {.int_val = 2}, 0},
+        {"[1, 2, 3][3]", {0}, 1},
+        {"[1, 2, 3][-1]", {0}, 1}
+    };
+
+    for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
+        lexer_t *lexer = new_lexer(tests[i].input);
+        parser_t *parser = new_parser(lexer);
+        program_t *program = parse_program(parser);
+        environment_t *env = new_environment();
+        object_t *evaluated = eval(program, NODE_PROGRAM, env);
+        if (!tests[i].is_error) {
+            // Expecting integer result
+            check_integer_object(*evaluated, tests[i].expected.int_val);
+        } else {
+            // Expecting null or error message (in this case, null)
+            assertf(evaluated->type == OBJECT_NULL,
+                    "object is not Null. got=%d",
+                    evaluated->type);
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -530,4 +570,5 @@ int main(int argc, char *argv[]) {
         TEST(test_string_concatenation);
         TEST(test_builtin_functions);
         TEST(test_array_literals);
+        TEST(test_array_index_expressions);
 }

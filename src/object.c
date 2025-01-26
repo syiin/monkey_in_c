@@ -33,7 +33,7 @@ object_t *new_object(object_type_t obj_type){
 void inspect_object(object_t object, char *buff_out){
     switch(object.type){
         case OBJECT_INTEGER:
-            snprintf(buff_out, BUFSIZ, "%d\n", object.integer);
+            snprintf(buff_out, BUFSIZ, "%d", object.integer);
             break;
         case OBJECT_BOOLEAN:
             snprintf(buff_out, BUFSIZ, "%s\n", object.boolean ? "true" : "false");
@@ -54,7 +54,7 @@ void inspect_object(object_t object, char *buff_out){
            string_t *body_str = string_new();
            format_block_statement(body_str, object.function.body);
 
-           snprintf(buff_out, BUFSIZ, "fn(%s) %s\n", params->data, body_str->data);
+           snprintf(buff_out, BUFSIZ, "fn(%s) %s", params->data, body_str->data);
 
            string_free(params);
            string_free(body_str);

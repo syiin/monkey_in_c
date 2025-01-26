@@ -157,7 +157,6 @@ object_t *eval_expression_node(expression_t *expression, environment_t *env){
             if (function->type != OBJECT_FUNCTION && function->type != OBJECT_BUILTIN){
                 return new_error("not a function");
             }
-            
             vector_t *args = eval_call_expressions(expression->call_expression.arguments, env);
 
             if (args->count == 1 && ((object_t *)args->data[0])->type == OBJECT_ERROR){
