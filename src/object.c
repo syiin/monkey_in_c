@@ -130,6 +130,11 @@ object_t *len_builtin(vector_t *args){
             obj->integer = arg->string_literal->len;
             return obj;
         }
+        case OBJECT_ARRAY:{
+            object_t *obj = new_object(OBJECT_INTEGER);
+            obj->integer = arg->array.elements->count;
+            return obj;
+        }
         default:{
             char error_msg[BUFSIZ];
             snprintf(error_msg, BUFSIZ, "argument to `len` not supported, got %s", object_type_to_string(arg->type));
@@ -138,10 +143,33 @@ object_t *len_builtin(vector_t *args){
     }
 }
 
+
+object_t *first_builtin(vector_t *args){
+    if (args->count != 1){
+        return new_error("wrong number of arguments");
+    }
+    object_t *arg = args->data[0];
+    if (arg->type != OBJECT_ARRAY){
+        char error_msg[BUFSIZ];
+        snprintf(error_msg, BUFSIZ, "argument to `first` must be an array, got %s", object_type_to_string(arg->type));
+        return new_error(error_msg);
+    }
+
+    if (arg->array.elements->count > 0){
+        return arg->array.elements->data[0];
+    }
+
+    return global_null;
+}
+
 object_t *get_builtin_by_name(const char *name) {
     if (strcmp(name, "len") == 0) {
         object_t *built_in_obj = new_object(OBJECT_BUILTIN);
         built_in_obj->builtin = len_builtin;
+        return built_in_obj;
+    } else if (strcmp(name, "first") == 0) {
+        object_t *built_in_obj = new_object(OBJECT_BUILTIN);
+        built_in_obj->builtin = first_builtin;
         return built_in_obj;
     } else if(strcmp(name, "puts") == 0){
 
