@@ -191,9 +191,38 @@ object_t *eval_expression_node(expression_t *expression, environment_t *env){
             obj->array.elements = elements;
             return obj;
         }
+        case INDEX_EXPR: {
+            object_t *left = eval(expression->index_expression.left, NODE_EXPRESSION, env);
+            if (left->type == OBJECT_ERROR){ return left; }
+
+            object_t *index = eval(expression->index_expression.index, NODE_EXPRESSION, env);
+            if (index->type == OBJECT_ERROR){ return index; }
+
+            return eval_index_expression(left, index);
+
+        }
         default:
             return NULL;
     }
+}
+
+object_t *eval_index_expression(object_t *left, object_t *index){
+    if (left->type == OBJECT_ARRAY && index->type == OBJECT_INTEGER){
+        return eval_array_index_expression(left, index);
+    }
+
+    char error_msg[BUFSIZ];
+    snprintf(error_msg, BUFSIZ, "index operator not supported: %s", object_type_to_string(left->type));
+    return new_error(error_msg);
+}
+
+object_t *eval_array_index_expression(object_t *array, object_t *index){
+    int idx = index->integer;
+    int max = array->array.elements->count;
+    if (idx < 0 || idx >= max){
+        return global_null;
+    }
+    return (object_t *)array->array.elements->data[idx];
 }
 
 vector_t *eval_call_expressions(vector_t *input_args, environment_t *env){

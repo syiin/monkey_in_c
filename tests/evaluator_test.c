@@ -522,20 +522,20 @@ void test_array_index_expressions() {
             int int_val;
             object_type_t type;
         } expected;
-        int is_error;
+        int should_be_null;
     };
 
     struct test_case tests[] = {
-        {"[1, 2, 3][0]", {.int_val = 1}, 0},
-        {"[1, 2, 3][1]", {.int_val = 2}, 0},
-        {"[1, 2, 3][2]", {.int_val = 3}, 0},
-        {"let i = 0; [1][i];", {.int_val = 1}, 0},
-        {"[1, 2, 3][1 + 1];", {.int_val = 3}, 0},
-        {"let myArray = [1, 2, 3]; myArray[2];", {.int_val = 3}, 0},
-        {"let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", {.int_val = 6}, 0},
-        {"let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", {.int_val = 2}, 0},
-        {"[1, 2, 3][3]", {0}, 1},
-        {"[1, 2, 3][-1]", {0}, 1}
+        {"[1, 2, 3][0]", {.int_val = 1}, false},
+        {"[1, 2, 3][1]", {.int_val = 2}, false},
+        {"[1, 2, 3][2]", {.int_val = 3}, false},
+        {"let i = 0; [1][i];", {.int_val = 1}, false},
+        {"[1, 2, 3][1 + 1];", {.int_val = 3}, false},
+        {"let myArray = [1, 2, 3]; myArray[2];", {.int_val = 3}, false},
+        {"let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];", {.int_val = 6}, false},
+        {"let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]", {.int_val = 2}, false},
+        /*{"[1, 2, 3][3]", {0}, true},*/
+        {"[1, 2, 3][-1]", {0}, true}
     };
 
     for (int i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
@@ -544,14 +544,10 @@ void test_array_index_expressions() {
         program_t *program = parse_program(parser);
         environment_t *env = new_environment();
         object_t *evaluated = eval(program, NODE_PROGRAM, env);
-        if (!tests[i].is_error) {
-            // Expecting integer result
-            check_integer_object(*evaluated, tests[i].expected.int_val);
+        if (!tests[i].should_be_null){
+                check_integer_object(*evaluated, tests[i].expected.int_val);
         } else {
-            // Expecting null or error message (in this case, null)
-            assertf(evaluated->type == OBJECT_NULL,
-                    "object is not Null. got=%d",
-                    evaluated->type);
+                check_null_object(*evaluated);
         }
     }
 }

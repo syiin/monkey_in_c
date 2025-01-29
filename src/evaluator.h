@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include "ast.h"
+#include "environment.h"
 #include "object.h"
 
 typedef struct Environment environment_t;
@@ -24,4 +25,6 @@ object_t* eval_block_statement(block_statement_t *statement, environment_t *env)
 object_t* new_error(char *format);
 vector_t *eval_call_expressions(vector_t *input_args, environment_t *env);
 object_t *apply_function(object_t *fn, vector_t *args);
+object_t* eval_index_expression(object_t *left, object_t *index);
+object_t *eval_array_index_expression(object_t *array, object_t *index);
 #endif
