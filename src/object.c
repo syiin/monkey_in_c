@@ -36,10 +36,10 @@ void inspect_object(object_t object, char *buff_out){
             snprintf(buff_out, BUFSIZ, "%d", object.integer);
             break;
         case OBJECT_BOOLEAN:
-            snprintf(buff_out, BUFSIZ, "%s\n", object.boolean ? "true" : "false");
+            snprintf(buff_out, BUFSIZ, "%s", object.boolean ? "true" : "false");
             break;
         case OBJECT_NULL:
-            snprintf(buff_out, BUFSIZ, "NULL\n");
+            snprintf(buff_out, BUFSIZ, "NULL");
             break;
         case OBJECT_FUNCTION:{
            string_t *params = string_new();
@@ -61,11 +61,11 @@ void inspect_object(object_t object, char *buff_out){
            break;
         }
         case OBJECT_STRING:{
-            snprintf(buff_out, BUFSIZ, "%s\n", object.string_literal->data);
+            snprintf(buff_out, BUFSIZ, "%s", object.string_literal->data);
             break;
         }
         case OBJECT_ERROR:{
-            snprintf(buff_out, BUFSIZ, "%s\n", object.error_message->data);
+            snprintf(buff_out, BUFSIZ, "%s", object.error_message->data);
             break;
         }
         case OBJECT_ARRAY:{
@@ -81,17 +81,17 @@ void inspect_object(object_t object, char *buff_out){
                 }
             }
             string_append(temp, "]");
-            snprintf(buff_out, BUFSIZ, "%s\n", temp->data);
+            snprintf(buff_out, BUFSIZ, "%s", temp->data);
             string_free(temp);
             break;
         }
         case OBJECT_BUILTIN: {
-            snprintf(buff_out, BUFSIZ, "builtin function\n");
+            snprintf(buff_out, BUFSIZ, "builtin function");
             break;
         }
        break;
             default:
-                snprintf(buff_out, BUFSIZ, "Unknown object type\n");
+                snprintf(buff_out, BUFSIZ, "Unknown object type");
                 break;
         }
 }

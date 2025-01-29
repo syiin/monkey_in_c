@@ -32,7 +32,7 @@ void repl_start(FILE *in, FILE *out){
 		object_t *evaluated = eval(program, NODE_PROGRAM, env);
 		//TODO: write a format wrapper so that new lines and spaces can be handled
 		inspect_object(*evaluated, buff_out);
-		printf("%s", buff_out);
+		printf("%s\n", buff_out);
 	}
 	
 	/* TODO: Free allocated memory*/
