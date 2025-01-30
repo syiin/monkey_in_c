@@ -29,6 +29,37 @@ void append_vector(vector_t *vector, void *element){
 	vector->count++;
 }
 
+vector_t *rest_vector(const vector_t *original, copy_fn_t copy){
+	vector_t *copied = create_vector();
+	if (copied == NULL){
+		return NULL;
+	}
+
+	if (original == NULL || original->count <= 1){
+		return copied;
+	}
+	
+	int new_count = original->count - 1;
+	int new_capacity = new_count * 2;
+	if (new_capacity > SIZE_MAX/sizeof(void *)){
+		return NULL;
+	}
+
+	copied->data =  malloc(sizeof(void *) * copied->capacity);
+	if (copied->data == NULL){
+		free(copied);
+		return NULL;
+	}
+
+	for (int i = 1; i < original->count; i++){
+		copied->data[i-1] = copy( original->data[i] );
+	}
+
+	copied->capacity = new_capacity;
+	copied->count = new_count;
+	return copied;
+}
+
 void free_vector(vector_t *vector){
 	for (int i = 0; i < vector->count; i++){
 		free(vector->data[i]);
