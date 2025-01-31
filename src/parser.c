@@ -264,16 +264,21 @@ expression_t *parse_index_expression(parser_t *parser, expression_t *left){
 }
 
 expression_t *parse_array_literal(parser_t *parser){
-	    token_t token = {
+	token_t token = {
 		.type = LBRACKET,
 		.literal = strdup("[")
-	    };
+	};
 
-	    expression_t *array = new_expression(ARRAY_LITERAL, token);
-	    vector_t *list = parse_expression_list(parser, RBRACKET);
-	    array->array_literal.elements = list;
+	expression_t *array = new_expression(ARRAY_LITERAL, token);
+	if (peek_token_is(parser, RBRACKET)) {
+		parser_next_token(parser);
+		array->array_literal.elements = create_vector();
+		return array;
+	}
+	vector_t *list = parse_expression_list(parser, RBRACKET);
+	array->array_literal.elements = list;
 
-	    return array;
+	return array;
 }
 
 expression_t *parse_identifier(parser_t *parser){
