@@ -28,6 +28,7 @@ typedef enum {
 	RBRACE,
 	LBRACKET,
 	RBRACKET,
+	COLON,
 	// Keywords
 	FUNCTION,
 	LET,

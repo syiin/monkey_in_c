@@ -128,12 +128,12 @@ void test_next_token(){
 		{INT, "2"},
 		{RBRACKET, "]"},
 		{SEMICOLON, ";"},
-		{EOF_TOKEN, ""},
 		{LBRACE, "{"},
 		{STRING, "foo"},
 		{COLON, ":"},
 		{STRING, "bar"},
 		{RBRACE, "}"},
+		{EOF_TOKEN, ""},
 	};
 	lexer_t *l = new_lexer(input);
 	token_t *t;

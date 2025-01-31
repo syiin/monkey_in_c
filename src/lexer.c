@@ -72,7 +72,9 @@ token_t *lexer_next_token(lexer_t *lexer){
 		case ']':
 			tok = new_token(RBRACKET, "}");
 			break;
-
+		case ':':
+			tok = new_token(COLON, ":");
+			break;
 		case 0:
 			tok = new_token(EOF_TOKEN, "");
 			break;
