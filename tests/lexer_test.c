@@ -43,7 +43,8 @@ void test_next_token(){
 		"10 != 9;\n"
 		"\"foobar\"\n"          // Add string literal test cases
 		"\"foo bar\"\n"
-		"[1, 2];";
+		"[1, 2];\n"
+		"{\"foo\": \"bar\"}";
 	
 	token_t tests[] = {
 		{LET, "let"},
@@ -128,6 +129,11 @@ void test_next_token(){
 		{RBRACKET, "]"},
 		{SEMICOLON, ";"},
 		{EOF_TOKEN, ""},
+		{LBRACE, "{"},
+		{STRING, "foo"},
+		{COLON, ":"},
+		{STRING, "bar"},
+		{RBRACE, "}"},
 	};
 	lexer_t *l = new_lexer(input);
 	token_t *t;
