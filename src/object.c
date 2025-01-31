@@ -192,14 +192,39 @@ object_t *rest_builtin(vector_t *args){
         snprintf(error_msg, BUFSIZ, "argument to `rest` must be an array, got %s", object_type_to_string(arg->type));
         return new_error(error_msg);
     }
+
     object_t *new_array = object_heap_copy(arg);
-    int old_count = new_array->array.elements->count;
-    for(int i = 1; i < old_count; i++){
-        new_array->array.elements->data[i - 1] = new_array->array.elements->data[i];
+    new_array->array.elements = create_vector();
+    for(int i = 1; i < arg->array.elements->count; i++){
+        append_vector(new_array->array.elements, object_heap_copy(arg->array.elements->data[i]));
     }
-    new_array->array.elements->count = old_count - 1;
+
     return new_array;
 }
+
+
+object_t *push_builtin(vector_t *args){
+    if (args->count != 2){
+        return new_error("wrong number of arguments");
+    }
+    object_t *arg = args->data[0];
+    if (arg->type != OBJECT_ARRAY){
+        char error_msg[BUFSIZ];
+        snprintf(error_msg, BUFSIZ, "argument to `rest` must be an array, got %s", object_type_to_string(arg->type));
+        return new_error(error_msg);
+    }
+
+    object_t *new_array = object_heap_copy(arg);
+    new_array->array.elements = create_vector();
+    for(int i = 0; i < arg->array.elements->count; i++){
+        append_vector(new_array->array.elements, object_heap_copy(arg->array.elements->data[i]));
+    }
+
+    append_vector(new_array->array.elements, object_heap_copy(args->data[1]));
+
+    return new_array;
+}
+
 
 object_t *get_builtin_by_name(const char *name) {
     if (strcmp(name, "len") == 0) {
@@ -217,6 +242,10 @@ object_t *get_builtin_by_name(const char *name) {
     } else if(strcmp(name, "rest") == 0){
         object_t *built_in_obj = new_object(OBJECT_BUILTIN);
         built_in_obj->builtin = rest_builtin;
+        return built_in_obj;
+    } else if(strcmp(name, "push") == 0){
+        object_t *built_in_obj = new_object(OBJECT_BUILTIN);
+        built_in_obj->builtin = push_builtin;
         return built_in_obj;
     }
 
