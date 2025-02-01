@@ -1,6 +1,7 @@
 #include "token.h"
 #include "custom_string.h"
 #include "ast.h"
+#include "hashmap.h"
 #include <err.h>
 #include <string.h>
 #include <stdio.h>
@@ -140,6 +141,33 @@ void format_expression_statement(string_t *str, expression_t *expression) {
                 format_expression_statement(str, expression->array_literal.elements->data[i]);
             }
             string_append(str, "]");
+            break;
+        case HASH_LITERAL:
+            string_append(str, "{");
+            bool first = true;
+            hash_map_t *hash = expression->hash_literal.pairs;
+
+            // Iterate through all buckets
+            for (int i = 0; i < TABLE_SIZE; i++) {
+                hash_entry_t *entry = hash->table[i];
+                while (entry != NULL) {
+                    if (!first) {
+                        string_append(str, ", ");
+                    }
+                    first = false;
+
+                    // Format key (assuming it's a string)
+                    string_append(str, "\"");
+                    string_append(str, entry->key);
+                    string_append(str, "\": ");
+
+                    // Format value (assuming it's an expression)
+                    format_expression_statement(str, (expression_t *)entry->value);
+
+                    entry = entry->next;
+                }
+            }
+            string_append(str, "}");
             break;
         case INDEX_EXPR: {
             string_append(str, "(");

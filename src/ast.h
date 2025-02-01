@@ -1,6 +1,7 @@
 #ifndef AST_H
 #define AST_H
 
+#include "hashmap.h"
 #include "token.h"
 #include "custom_string.h"
 #include "vector.h"
@@ -29,6 +30,7 @@ typedef enum {
 	CALL_EXPRESSION,
 	STRING_LITERAL,
 	ARRAY_LITERAL,
+	HASH_LITERAL,
 	INDEX_EXPR,
 } expression_type_t;
 
@@ -68,6 +70,10 @@ typedef struct ArrayLiteral {
 	vector_t *elements;
 } array_literal_t;
 
+typedef struct HashLiteral {
+	hash_map_t *pairs;
+} hash_literal_t;
+
 typedef struct CallExpression {
 	expression_t *function;
 	vector_t *arguments;
@@ -95,6 +101,7 @@ typedef struct Expression {
 		string_t *string_literal;
 		array_literal_t array_literal;
 		index_expression_t index_expression;
+		hash_literal_t hash_literal;
 	};
 } expression_t;
 
