@@ -3,6 +3,9 @@
 #include <string.h>
 #include "parser.h"
 #include "ast.h"
+#include "custom_string.h"
+#include "environment.h"
+#include "hashmap.h"
 #include "lexer.h"
 #include "token.h"
 #include "vector.h"
@@ -229,7 +232,9 @@ prefix_parser parse_prefix_fns(TokenType token_type){
 		case STRING:
 			return &parse_string_literal;
 		case LBRACKET:
-		  return &parse_array_literal;
+			return &parse_array_literal;
+		case LBRACE:
+			return &parse_hash_literal;
 		default:
 			return NULL;
 	}
@@ -279,6 +284,39 @@ expression_t *parse_array_literal(parser_t *parser){
 	array->array_literal.elements = list;
 
 	return array;
+}
+
+expression_t *parse_hash_literal(parser_t *parser){
+	token_t token = {
+		.type = LBRACE,
+		.literal = strdup("{")
+	};
+
+	expression_t *hash = new_expression(HASH_LITERAL, token);
+	hash->hash_literal.pairs = new_hash_table(free_object);
+	while(!peek_token_is(parser, RBRACE)){
+		parser_next_token(parser);
+		expression_t *key_expr = parse_expression(parser, PRECEDENCE_LOWEST); 
+		string_t *key_str = string_new();
+		format_expression_statement(key_str, key_expr);
+		char *key = string_get_data(key_str);
+		if (!expect_peek(parser, COLON)){
+			return NULL;
+		}
+		parser_next_token(parser);
+		expression_t *value = parse_expression(parser, PRECEDENCE_LOWEST); 
+
+		hash_set(hash->hash_literal.pairs, key, value);
+
+		if(!peek_token_is(parser, RBRACE) && !expect_peek(parser, COMMA)){
+			return NULL;
+		}
+	}
+
+	if(!expect_peek(parser, RBRACE)){
+		return NULL;
+	}
+	return hash;
 }
 
 expression_t *parse_identifier(parser_t *parser){

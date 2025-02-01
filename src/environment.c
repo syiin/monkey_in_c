@@ -24,5 +24,7 @@ object_t *env_get(environment_t *env, char *key){
 }
 
 void free_object(void *object){
+    // TODO: free dynamically allocated unions in the object (eg. arrays, hashes...etc)
+    // TODO: move this into the object files
     free((object_t *)(object));
 }
