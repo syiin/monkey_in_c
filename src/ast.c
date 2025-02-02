@@ -145,11 +145,11 @@ void format_expression_statement(string_t *str, expression_t *expression) {
         case HASH_LITERAL:
             string_append(str, "{");
             bool first = true;
-            hash_map_t *hash = expression->hash_literal.pairs;
+            parser_hash_literal_t hash_literal = expression->hash_literal;
 
             // Iterate through all buckets
-            for (int i = 0; i < TABLE_SIZE; i++) {
-                hash_entry_t *entry = hash->table[i];
+            for (int i = 0; i < hash_literal.pairs_len; i++) {
+                parser_hash_pair_t *entry = hash_literal.pairs[i];
                 while (entry != NULL) {
                     if (!first) {
                         string_append(str, ", ");
@@ -158,13 +158,11 @@ void format_expression_statement(string_t *str, expression_t *expression) {
 
                     // Format key (assuming it's a string)
                     string_append(str, "\"");
-                    string_append(str, entry->key);
+                    format_expression_statement(str, (expression_t *)entry->key);
                     string_append(str, "\": ");
 
                     // Format value (assuming it's an expression)
                     format_expression_statement(str, (expression_t *)entry->value);
-
-                    entry = entry->next;
                 }
             }
             string_append(str, "}");

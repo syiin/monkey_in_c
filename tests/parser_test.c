@@ -661,6 +661,36 @@ void test_index_expression(void) {
     check_integer_literal(infix->infix_expression.right, 1);
 }
 
+void check_infix_expression(expression_t *exp, int left_value, char *operator, int right_value) {
+    // First verify it's an infix expression
+    assertf(exp->type == INFIX_EXPR,
+            "expression is not infix expression. got=%d",
+            exp->type);
+    
+    // Check operator
+    assertf(strcmp(exp->infix_expression.op, operator) == 0,
+            "operator is not '%s'. got=%s",
+            operator, exp->infix_expression.op);
+    
+    // Check left operand is integer literal with correct value
+    expression_t *left = exp->infix_expression.left;
+    assertf(left->type == INTEGER_LITERAL,
+            "left expression is not integer literal. got=%d",
+            left->type);
+    assertf(left->integer == left_value,
+            "left value not %d. got=%d",
+            left_value, left->integer);
+    
+    // Check right operand is integer literal with correct value  
+    expression_t *right = exp->infix_expression.right;
+    assertf(right->type == INTEGER_LITERAL,
+            "right expression is not integer literal. got=%d",
+            right->type);
+    assertf(right->integer == right_value,
+            "right value not %d. got=%d", 
+            right_value, right->integer);
+}
+
 void test_hash_literal_string_keys() {
     char *input = "{\"one\": 1, \"two\": 2, \"three\": 3}";
     lexer_t *lexer = new_lexer(input);
@@ -683,31 +713,35 @@ void test_hash_literal_string_keys() {
             "expression is not hash literal. got=%d",
             exp->type);
 
-    hash_map_t *hash = exp->hash_literal.pairs;
-    // Check length by counting entries in all buckets
-    int count = 0;
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        hash_entry_t *entry = hash->table[i];
-        while (entry != NULL) {
-            count++;
-            entry = entry->next;
-        }
-    }
-    assertf(count == 3,
+    // Check length
+    assertf(exp->hash_literal.pairs_len == 3,
             "hash has wrong length. got=%d",
-            count);
+            exp->hash_literal.pairs_len);
+
+    // Create test key expressions
+    token_t one_token = {.type = STRING, .literal = "one"};
+    expression_t *one_key = new_expression(STRING_LITERAL, one_token);
+    one_key->string_literal = string_from("one");
+
+    token_t two_token = {.type = STRING, .literal = "two"};
+    expression_t *two_key = new_expression(STRING_LITERAL, two_token);
+    two_key->string_literal = string_from("two");
+
+    token_t three_token = {.type = STRING, .literal = "three"};
+    expression_t *three_key = new_expression(STRING_LITERAL, three_token);
+    three_key->string_literal = string_from("three");
 
     // Test expected values
     expression_t *value;
-    value = hash_get(hash, "one");
+    value = parser_hash_get_value(&exp->hash_literal, one_key);
     assertf(value != NULL, "value for key 'one' not found");
     check_integer_literal(value, 1);
 
-    value = hash_get(hash, "two");
+    value = parser_hash_get_value(&exp->hash_literal, two_key);
     assertf(value != NULL, "value for key 'two' not found");
     check_integer_literal(value, 2);
 
-    value = hash_get(hash, "three");
+    value = parser_hash_get_value(&exp->hash_literal, three_key);
     assertf(value != NULL, "value for key 'three' not found");
     check_integer_literal(value, 3);
 }
@@ -734,51 +768,12 @@ void test_empty_hash_literal() {
             "expression is not hash literal. got=%d",
             exp->type);
 
-    hash_map_t *hash = exp->hash_literal.pairs;
-    int count = 0;
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        hash_entry_t *entry = hash->table[i];
-        while (entry != NULL) {
-            count++;
-            entry = entry->next;
-        }
-    }
-    assertf(count == 0,
+    assertf(exp->hash_literal.pairs_len == 0,
             "hash.Pairs has wrong length. got=%d",
-            count);
+            exp->hash_literal.pairs_len);
 }
 
-void check_infix_expression(expression_t *exp, int left_value, char *operator, int right_value) {
-    // First verify it's an infix expression
-    assertf(exp->type == INFIX_EXPR,
-            "expression is not infix expression. got=%d",
-            exp->type);
-    
-    // Check operator
-    assertf(strcmp(exp->infix_expression.op, operator) == 0,
-            "operator is not '%s'. got=%s",
-            operator, exp->infix_expression.op);
-    
-    // Check left operand is integer literal with correct value
-    expression_t *left = exp->infix_expression.left;
-    assertf(left->type == INTEGER_LITERAL,
-            "left expression is not integer literal. got=%d",
-            left->type);
-    assertf(left->integer == left_value,
-            "left value not %d. got=%d",
-            left_value, left->integer);
-    
-    // Check right operand is integer literal with correct value
-    expression_t *right = exp->infix_expression.right;
-    assertf(right->type == INTEGER_LITERAL,
-            "right expression is not integer literal. got=%d",
-            right->type);
-    assertf(right->integer == right_value,
-            "right value not %d. got=%d",
-            right_value, right->integer);
-}
-
-void test_hash_literal_with_expressions(void) {
+void test_hash_literal_with_expressions() {
     char *input = "{\"one\": 0 + 1, \"two\": 10 - 8, \"three\": 15 / 5}";
     lexer_t *lexer = new_lexer(input);
     parser_t *parser = new_parser(lexer);
@@ -800,44 +795,39 @@ void test_hash_literal_with_expressions(void) {
             "expression is not hash literal. got=%d",
             exp->type);
 
-    hash_map_t *hash = exp->hash_literal.pairs;
+    assertf(exp->hash_literal.pairs_len == 3,
+            "hash has wrong length. got=%d",
+            exp->hash_literal.pairs_len);
 
-    // Check total entries
-    int count = 0;
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        hash_entry_t *entry = hash->table[i];
-        while (entry != NULL) {
-            count++;
-            entry = entry->next;
-        }
-    }
-    assertf(count == 3, "hash has wrong length. got=%d", count);
+    // Create test key expressions
+    token_t one_token = {.type = STRING, .literal = "one"};
+    expression_t *one_key = new_expression(STRING_LITERAL, one_token);
+    one_key->string_literal = string_from("one");
+
+    token_t two_token = {.type = STRING, .literal = "two"};
+    expression_t *two_key = new_expression(STRING_LITERAL, two_token);
+    two_key->string_literal = string_from("two");
+
+    token_t three_token = {.type = STRING, .literal = "three"};
+    expression_t *three_key = new_expression(STRING_LITERAL, three_token);
+    three_key->string_literal = string_from("three");
 
     // Test expressions
     expression_t *value;
 
     // Test "one": 0 + 1
-    value = hash_get(hash, "one");
+    value = parser_hash_get_value(&exp->hash_literal, one_key);
     assertf(value != NULL, "value for key 'one' not found");
-    assertf(value->type == INFIX_EXPR,
-            "value is not infix expression. got=%d",
-            value->type);
     check_infix_expression(value, 0, "+", 1);
 
-    // Test "two": 10 - 8
-    value = hash_get(hash, "two");
+    // Test "two": 10 - 8  
+    value = parser_hash_get_value(&exp->hash_literal, two_key);
     assertf(value != NULL, "value for key 'two' not found");
-    assertf(value->type == INFIX_EXPR,
-            "value is not infix expression. got=%d",
-            value->type);
     check_infix_expression(value, 10, "-", 8);
 
     // Test "three": 15 / 5
-    value = hash_get(hash, "three");
+    value = parser_hash_get_value(&exp->hash_literal, three_key);
     assertf(value != NULL, "value for key 'three' not found");
-    assertf(value->type == INFIX_EXPR,
-            "value is not infix expression. got=%d",
-            value->type);
     check_infix_expression(value, 15, "/", 5);
 }
 

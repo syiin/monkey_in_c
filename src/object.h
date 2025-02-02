@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "ast.h"
 #include "custom_string.h"
+#include "hashmap.h"
 #include "vector.h"
 #include "environment.h"
 
@@ -17,6 +18,7 @@ typedef enum ObjectType {
 	OBJECT_STRING,
 	OBJECT_BUILTIN,
 	OBJECT_ARRAY,
+	OBJECT_HASH,
 } object_type_t;
 
 typedef struct Array{
@@ -28,6 +30,10 @@ typedef struct Function{
 	vector_t *parameters;
 	block_statement_t *body;
 } function_object_t;
+
+typedef struct Hash{
+	hash_map_t *pairs;
+} hash_object_t;
 
 typedef object_t *(*builtin_function_t)(vector_t *args);
 typedef struct Object object_t;
@@ -43,6 +49,7 @@ typedef struct Object {
 		string_t *string_literal;
 		builtin_function_t builtin;
 		array_object_t array;
+		hash_object_t hash;
 	};
 } object_t;
 

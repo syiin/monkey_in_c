@@ -552,6 +552,84 @@ void test_array_index_expressions() {
     }
 }
 
+void test_eval_hash_literals(void) {
+    char *input = "let two = \"two\";\n"
+                  "{\n"
+                  "\"one\": 10 - 9,\n"
+                  "two: 1 + 1,\n"
+                  "\"thr\" + \"ee\": 6 / 2,\n"
+                  "4: 4,\n"
+                  "true: 5,\n"
+                  "false: 6\n"
+                  "}";
+
+    lexer_t *lexer = new_lexer(input);
+    parser_t *parser = new_parser(lexer);
+    program_t *program = parse_program(parser);
+    environment_t *env = new_environment();
+    object_t *evaluated = eval_program(program, env);
+
+    // Check that we got a hash object
+    assertf(evaluated->type == OBJECT_HASH,
+            "object is not Hash. got=%d",
+            evaluated->type);
+
+    hash_object_t hash = evaluated->hash;
+    hash_map_t *pairs = hash.pairs;
+
+    // Check total number of pairs
+    int pair_count = 0;
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        hash_entry_t *entry = pairs->table[i];
+        while (entry != NULL) {
+            pair_count++;
+            entry = entry->next;
+        }
+    }
+    assertf(pair_count == 6,
+            "hash has wrong number of pairs. got=%d",
+            pair_count);
+
+    // Test each expected key-value pair
+    object_t *value;
+
+    // Test "one": 10 - 9
+    value = hash_get(pairs, "one");
+    assertf(value != NULL, "no pair for key 'one'");
+    assertf(value->type == OBJECT_INTEGER && value->integer == 1,
+            "wrong value for 'one'. got=%d", value->integer);
+
+    // Test two: 1 + 1
+    value = hash_get(pairs, "two");
+    assertf(value != NULL, "no pair for key 'two'");
+    assertf(value->type == OBJECT_INTEGER && value->integer == 2,
+            "wrong value for 'two'. got=%d", value->integer);
+
+    // Test "three": 6 / 2 
+    value = hash_get(pairs, "three");
+    assertf(value != NULL, "no pair for key 'three'");
+    assertf(value->type == OBJECT_INTEGER && value->integer == 3,
+            "wrong value for 'three'. got=%d", value->integer);
+
+    // Test 4: 4
+    value = hash_get(pairs, "4");  // integer keys stored as strings
+    assertf(value != NULL, "no pair for key '4'");
+    assertf(value->type == OBJECT_INTEGER && value->integer == 4,
+            "wrong value for '4'. got=%d", value->integer);
+
+    // Test true: 5
+    value = hash_get(pairs, "true");
+    assertf(value != NULL, "no pair for key 'true'");
+    assertf(value->type == OBJECT_INTEGER && value->integer == 5,
+            "wrong value for 'true'. got=%d", value->integer);
+
+    // Test false: 6
+    value = hash_get(pairs, "false");
+    assertf(value != NULL, "no pair for key 'false'");
+    assertf(value->type == OBJECT_INTEGER && value->integer == 6,
+            "wrong value for 'false'. got=%d", value->integer);
+}
+
 int main(int argc, char *argv[]) {
         TEST(test_eval_boolean_expression);
         TEST(test_eval_integer_expression);
@@ -567,4 +645,5 @@ int main(int argc, char *argv[]) {
         TEST(test_builtin_functions);
         TEST(test_array_literals);
         TEST(test_array_index_expressions);
+        TEST(test_eval_hash_literals);
 }

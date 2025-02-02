@@ -46,11 +46,9 @@ void string_free(string_t *str) {
 void string_append(string_t *str, const char *append) {
     size_t append_len = strlen(append);
     size_t needed_cap = str->len + append_len + 1;
-    
     if (needed_cap > str->cap) {
         string_grow(str, needed_cap);
     }
-    
     strcpy(str->data + str->len, append);
     str->len += append_len;
 }

@@ -4,6 +4,7 @@
 #include "evaluator.h"
 #include "ast.h"
 #include "custom_string.h"
+#include "hashmap.h"
 #include "object.h"
 #include "vector.h"
 
@@ -190,6 +191,8 @@ object_t *eval_expression_node(expression_t *expression, environment_t *env){
 
             obj->array.elements = elements;
             return obj;
+        }
+        case HASH_LITERAL: {
         }
         case INDEX_EXPR: {
             object_t *left = eval(expression->index_expression.left, NODE_EXPRESSION, env);

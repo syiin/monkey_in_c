@@ -286,45 +286,71 @@ expression_t *parse_array_literal(parser_t *parser){
 	return array;
 }
 
-expression_t *parse_hash_literal(parser_t *parser){
-	token_t token = {
-		.type = LBRACE,
-		.literal = strdup("{")
-	};
+expression_t *parse_hash_literal(parser_t *parser) {
+    token_t token = {
+        .type = LBRACE,
+        .literal = strdup("{")
+    };
 
-	expression_t *hash = new_expression(HASH_LITERAL, token);
-	hash->hash_literal.pairs = new_hash_table(free_object);
-	while(!peek_token_is(parser, RBRACE)){
-		parser_next_token(parser);
-		expression_t *key_expr = parse_expression(parser, PRECEDENCE_LOWEST); 
-		char *key;
-		if (key_expr->type == STRING_LITERAL) {
-		    key = strdup(key_expr->string_literal->data);  // Assuming string_literal contains the raw string
-		} else {
-		    string_t *key_str = string_new();
-		    format_expression_statement(key_str, key_expr);
-		    key = string_get_data(key_str);
-		}
-		if (!expect_peek(parser, COLON)){
-			return NULL;
-		}
-		parser_next_token(parser);
-		expression_t *value = parse_expression(parser, PRECEDENCE_LOWEST); 
+    expression_t *hash = new_expression(HASH_LITERAL, token);
+    hash->hash_literal.pairs = NULL;
+    hash->hash_literal.pairs_len = 0;
+    hash->hash_literal.pairs_capacity = 0;
 
-		if(!hash_set(hash->hash_literal.pairs, key, value)){
-			printf("FAILED TO SET HASH VALUE\n");
-			return NULL;
-		}
+    // Skip the opening brace
+    if (!peek_token_is(parser, RBRACE)) {
+        parser_next_token(parser);
 
-		if(!peek_token_is(parser, RBRACE) && !expect_peek(parser, COMMA)){
-			return NULL;
-		}
-	}
+        while (true) {
+            // Parse key
+            expression_t *key = parse_expression(parser, PRECEDENCE_LOWEST);
+            if (!key) {
+                return NULL;
+            }
 
-	if(!expect_peek(parser, RBRACE)){
-		return NULL;
-	}
-	return hash;
+            if (!expect_peek(parser, COLON)) {
+                return NULL;
+            }
+
+            parser_next_token(parser);
+
+            // Parse value
+            expression_t *value = parse_expression(parser, PRECEDENCE_LOWEST);
+            if (!value) {
+                return NULL;
+            }
+
+            // Add the key-value pair
+            if (hash->hash_literal.pairs_len >= hash->hash_literal.pairs_capacity) {
+                size_t new_capacity = (hash->hash_literal.pairs_capacity == 0) ? 
+                    8 : hash->hash_literal.pairs_capacity * 2;
+                hash->hash_literal.pairs = realloc(hash->hash_literal.pairs, 
+                    new_capacity * sizeof(parser_hash_pair_t*));
+                hash->hash_literal.pairs_capacity = new_capacity;
+            }
+
+            parser_hash_pair_t *pair = malloc(sizeof(parser_hash_pair_t));
+            pair->key = key;
+            pair->value = value;
+            hash->hash_literal.pairs[hash->hash_literal.pairs_len++] = pair;
+
+            if (peek_token_is(parser, RBRACE)) {
+                break;
+            }
+
+            if (!expect_peek(parser, COMMA)) {
+                return NULL;
+            }
+
+            parser_next_token(parser);
+        }
+    }
+
+    if (!expect_peek(parser, RBRACE)) {
+        return NULL;
+    }
+
+    return hash;
 }
 
 expression_t *parse_identifier(parser_t *parser){
@@ -577,5 +603,33 @@ precedence_t get_precedence(TokenType token_type) {
 			return PRECEDENCE_INDEX;
         default:
             return PRECEDENCE_LOWEST;
+    }
+}
+
+expression_t *parser_hash_get_value(parser_hash_literal_t *hash, expression_t *key) {
+    for (size_t i = 0; i < hash->pairs_len; i++) {
+        parser_hash_pair_t *pair = hash->pairs[i];
+        if (expressions_equal(pair->key, key)) {
+            return pair->value;
+        }
+    }
+    return NULL;
+}
+
+bool expressions_equal(expression_t *a, expression_t *b) {
+    if (a->type != b->type) {
+        return false;
+    }
+
+    switch (a->type) {
+        case STRING_LITERAL:
+            return strcmp(a->string_literal->data, b->string_literal->data) == 0;
+        case INTEGER_LITERAL:
+            return a->integer == b->integer;
+        case BOOLEAN_EXPR:
+            return a->boolean == b->boolean;
+        // Add other expression type comparisons as needed
+        default:
+            return false;
     }
 }

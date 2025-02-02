@@ -86,6 +86,38 @@ void inspect_object(object_t object, char *buff_out){
             string_free(temp);
             break;
         }
+        case OBJECT_HASH: {
+            string_t *temp = string_new();
+            string_append(temp, "{");
+            bool first = true;
+
+            // Iterate through all buckets in the hash table
+            for (int i = 0; i < TABLE_SIZE; i++) {
+                hash_entry_t *entry = object.hash.pairs->table[i];
+                // Iterate through all entries in this bucket
+                while (entry != NULL) {
+                    if (!first) {
+                        string_append(temp, ", ");
+                    }
+                    first = false;
+
+                    // Add the key
+                    string_append(temp, entry->key);
+                    string_append(temp, ": ");
+
+                    // Add the value
+                    char value_str[BUFSIZ];
+                    inspect_object(*(object_t*)entry->value, value_str);
+                    string_append(temp, value_str);
+
+                    entry = entry->next;
+                }
+            }
+            string_append(temp, "}");
+            snprintf(buff_out, BUFSIZ, "%s", temp->data);
+            string_free(temp);
+            break;
+        }
         case OBJECT_BUILTIN: {
             snprintf(buff_out, BUFSIZ, "builtin function");
             break;

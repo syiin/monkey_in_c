@@ -73,5 +73,6 @@ bool curr_token_is(parser_t *parser, TokenType token_type);
 void append_error(parser_t *parser, const char *error);
 void peek_error(parser_t *parser, TokenType token_type);
 void print_errors(parser_t *parser);
+bool expressions_equal(expression_t *a, expression_t *b);
 
 #endif

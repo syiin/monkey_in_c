@@ -70,9 +70,16 @@ typedef struct ArrayLiteral {
 	vector_t *elements;
 } array_literal_t;
 
-typedef struct HashLiteral {
-	hash_map_t *pairs;
-} hash_literal_t;
+typedef struct ParserHashPair {
+    expression_t *key;
+    expression_t *value;
+} parser_hash_pair_t;
+
+typedef struct ParserHashLiteral {
+    parser_hash_pair_t **pairs;
+    size_t pairs_len;
+    size_t pairs_capacity;
+} parser_hash_literal_t;
 
 typedef struct CallExpression {
 	expression_t *function;
@@ -101,7 +108,7 @@ typedef struct Expression {
 		string_t *string_literal;
 		array_literal_t array_literal;
 		index_expression_t index_expression;
-		hash_literal_t hash_literal;
+		parser_hash_literal_t hash_literal;
 	};
 } expression_t;
 
@@ -133,4 +140,5 @@ char *program_to_string(program_t *program);
 expression_t *new_expression(expression_type_t type, token_t token);
 statement_t *new_statement(statement_type_t type);
 block_statement_t *new_block_statement();
+expression_t *parser_hash_get_value(parser_hash_literal_t *hash, expression_t *key);
 #endif
