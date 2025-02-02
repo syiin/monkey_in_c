@@ -4,8 +4,6 @@
 #include "parser.h"
 #include "ast.h"
 #include "custom_string.h"
-#include "environment.h"
-#include "hashmap.h"
 #include "lexer.h"
 #include "token.h"
 #include "vector.h"
@@ -287,70 +285,63 @@ expression_t *parse_array_literal(parser_t *parser){
 }
 
 expression_t *parse_hash_literal(parser_t *parser) {
-    token_t token = {
-        .type = LBRACE,
-        .literal = strdup("{")
-    };
+	token_t token = {
+		.type = LBRACE,
+		.literal = strdup("{")
+	};
+	expression_t *hash = new_expression(HASH_LITERAL, token);
+	hash->hash_literal.pairs = NULL;
+	hash->hash_literal.pairs_len = 0;
+	hash->hash_literal.pairs_capacity = 0;
+	if (!peek_token_is(parser, RBRACE)) {
+		parser_next_token(parser);
 
-    expression_t *hash = new_expression(HASH_LITERAL, token);
-    hash->hash_literal.pairs = NULL;
-    hash->hash_literal.pairs_len = 0;
-    hash->hash_literal.pairs_capacity = 0;
+		while (true) {
+			expression_t *key = parse_expression(parser, PRECEDENCE_LOWEST);
+			if (!key) {
+				return NULL;
+			}
+			if (!expect_peek(parser, COLON)) {
+				return NULL;
+			}
 
-    // Skip the opening brace
-    if (!peek_token_is(parser, RBRACE)) {
-        parser_next_token(parser);
+			parser_next_token(parser);
+			// Parse value
+			expression_t *value = parse_expression(parser, PRECEDENCE_LOWEST);
+			if (!value) {
+				return NULL;
+			}
 
-        while (true) {
-            // Parse key
-            expression_t *key = parse_expression(parser, PRECEDENCE_LOWEST);
-            if (!key) {
-                return NULL;
-            }
+			if (hash->hash_literal.pairs_len >= hash->hash_literal.pairs_capacity) {
+				size_t new_capacity = (hash->hash_literal.pairs_capacity == 0) ? 
+				    8 : hash->hash_literal.pairs_capacity * 2;
+				hash->hash_literal.pairs = realloc(hash->hash_literal.pairs, 
+				    new_capacity * sizeof(parser_hash_pair_t*));
+				hash->hash_literal.pairs_capacity = new_capacity;
+			}
 
-            if (!expect_peek(parser, COLON)) {
-                return NULL;
-            }
+			parser_hash_pair_t *pair = malloc(sizeof(parser_hash_pair_t));
+			pair->key = key;
+			pair->value = value;
+			hash->hash_literal.pairs[hash->hash_literal.pairs_len++] = pair;
 
-            parser_next_token(parser);
+			if (peek_token_is(parser, RBRACE)) {
+				break;
+			}
 
-            // Parse value
-            expression_t *value = parse_expression(parser, PRECEDENCE_LOWEST);
-            if (!value) {
-                return NULL;
-            }
+			if (!expect_peek(parser, COMMA)) {
+				return NULL;
+			}
 
-            // Add the key-value pair
-            if (hash->hash_literal.pairs_len >= hash->hash_literal.pairs_capacity) {
-                size_t new_capacity = (hash->hash_literal.pairs_capacity == 0) ? 
-                    8 : hash->hash_literal.pairs_capacity * 2;
-                hash->hash_literal.pairs = realloc(hash->hash_literal.pairs, 
-                    new_capacity * sizeof(parser_hash_pair_t*));
-                hash->hash_literal.pairs_capacity = new_capacity;
-            }
+			parser_next_token(parser);
+		}
+	}
 
-            parser_hash_pair_t *pair = malloc(sizeof(parser_hash_pair_t));
-            pair->key = key;
-            pair->value = value;
-            hash->hash_literal.pairs[hash->hash_literal.pairs_len++] = pair;
+	if (!expect_peek(parser, RBRACE)) {
+		return NULL;
+	}
 
-            if (peek_token_is(parser, RBRACE)) {
-                break;
-            }
-
-            if (!expect_peek(parser, COMMA)) {
-                return NULL;
-            }
-
-            parser_next_token(parser);
-        }
-    }
-
-    if (!expect_peek(parser, RBRACE)) {
-        return NULL;
-    }
-
-    return hash;
+	return hash;
 }
 
 expression_t *parse_identifier(parser_t *parser){

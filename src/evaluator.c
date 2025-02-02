@@ -26,6 +26,10 @@ char *object_type_to_string(object_type_t object_type){
             return "OBJECT_FUNCTION";
         case OBJECT_BUILTIN:
             return "OBJECT_BUILTIN";
+        case OBJECT_ARRAY:
+            return "OBJECT_ARRAY";
+        case OBJECT_HASH:
+            return "OBJECT_HASH";
         default:
             return "";
     }
@@ -232,9 +236,40 @@ object_t *eval_index_expression(object_t *left, object_t *index){
         return eval_array_index_expression(left, index);
     }
 
+    if (left->type == OBJECT_HASH){
+        return eval_hash_index_expression(left, index);
+    }
+
     char error_msg[BUFSIZ];
     snprintf(error_msg, BUFSIZ, "index operator not supported: %s", object_type_to_string(left->type));
     return new_error(error_msg);
+}
+
+object_t *eval_hash_index_expression(object_t *hash, object_t *index){
+    char key[BUFSIZ];
+    switch (index->type){
+        case OBJECT_STRING:{
+            snprintf(key, BUFSIZ, "OBJECT_STRING-%s", index->string_literal->data);
+            break;
+        }
+        case OBJECT_INTEGER:{
+            snprintf(key, BUFSIZ, "OBJECT_INTEGER-%d", index->integer);
+            break;
+        }
+        case OBJECT_BOOLEAN:{
+            snprintf(key, BUFSIZ, "OBJECT_BOOLEAN-%s", index->boolean ? "true" : "false");
+            break;
+        }
+        default:{
+            char error_msg[BUFSIZ];
+            snprintf(error_msg, BUFSIZ, "unuseable as hash key: %s", object_type_to_string(index->type));
+            return new_error(error_msg);
+        }
+
+    }
+    object_t *value = hash_get(hash->hash.pairs, key);
+    if (value == NULL){ return global_null; }
+    return value;
 }
 
 object_t *eval_array_index_expression(object_t *array, object_t *index){

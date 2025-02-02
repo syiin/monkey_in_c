@@ -258,7 +258,7 @@ void test_eval_error_handling() {
                 },
                 {
                 "{\"name\": \"Monkey\"}[fn(x) { x }];",
-                "unusable as hash key: OBJECT_FUNCTION",
+                "unuseable as hash key: OBJECT_FUNCTION",
                 },
         };
 
@@ -634,30 +634,29 @@ void test_eval_hash_literals(void) {
             "wrong value for 'false'. got=%d", value->integer);
 }
 
-void test_hash_index_expressions(void) {
-    // Test cases as array of structs
+void test_hash_index_expressions() {
     struct {
         char *input;
         int expected;
         bool is_null;  // To handle nil/null cases
     } tests[] = {
         {
-            "{'foo': 5}['foo']",
+            "{\"foo\": 5}[\"foo\"]",
             5,
             false
         },
         {
-            "{'foo': 5}['bar']", 
+            "{\"foo\": 5}[\"bar\"]", 
             0,  // Value doesn't matter when is_null is true
             true
         },
         {
-            "let key = 'foo'; {'foo': 5}[key]",
+            "let key = \"foo\"; {\"foo\": 5}[key]",
             5,
             false
         },
         {
-            "{}['foo']",
+            "{}[\"foo\"]",
             0,
             true
         },
@@ -686,8 +685,8 @@ void test_hash_index_expressions(void) {
         parser_t *parser = new_parser(lexer);
         program_t *program = parse_program(parser);
         environment_t *env = new_environment();
-        object_t *evaluated = eval_program(program, env);
 
+        object_t *evaluated = eval(program, NODE_PROGRAM, env);
         if (tests[i].is_null) {
             // Test for null cases
             assertf(evaluated->type == OBJECT_NULL,
@@ -698,7 +697,7 @@ void test_hash_index_expressions(void) {
             assertf(evaluated->type == OBJECT_INTEGER,
                    "wrong type for input '%s'. got=%d, want=OBJECT_INTEGER",
                    tests[i].input, evaluated->type);
-            
+
             assertf(evaluated->integer == tests[i].expected,
                    "wrong integer value for input '%s'. got=%d, want=%d",
                    tests[i].input, evaluated->integer, tests[i].expected);
