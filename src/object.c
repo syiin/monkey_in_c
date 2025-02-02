@@ -6,6 +6,8 @@
 #include "custom_string.h"
 #include "evaluator.h"
 #include "vector.h"
+#include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 object_t *global_true;
@@ -282,5 +284,86 @@ object_t *get_builtin_by_name(const char *name) {
     }
 
     return NULL;
-} 
+}
 
+char *object_to_key(object_t *object){
+    char buf[128];
+    switch(object->type){
+        case OBJECT_STRING:
+            snprintf(buf, sizeof(buf), "%d_%s", object->type, object->string_literal->data);
+            break;
+        case OBJECT_INTEGER:
+            snprintf(buf, sizeof(buf), "%d_%d", object->type, object->integer);
+            break;
+        case OBJECT_BOOLEAN:
+            snprintf(buf, sizeof(buf), "%d_%d", object->type, object->boolean ? 1 : 0);
+            break;
+        default:
+            printf("WARNING: INVALID OBJECT PASSED AS KEY\n");
+    }
+    return strdup(buf);
+}
+
+/*bool object_hash_set(object_hash_map_t *hash_map, object_t *key, object_t *value){*/
+/*    uint64_t idx = 0;*/
+/*    switch(key->type){*/
+/*        case OBJECT_STRING: {*/
+/*            uint64_t idx = fnv1a_hash(key->string_literal->data) % TABLE_SIZE;*/
+/*            object_hash_entry_t *curr_entry = hash_map->table[idx];*/
+/**/
+/*            while(curr_entry != NULL){*/
+/*                if(strcmp(curr_entry->key->string_literal->data, key->string_literal->data) == 0){*/
+/*                    curr_entry->value = value;*/
+/*                    return true;*/
+/*                }*/
+/*            }*/
+/*            break;*/
+/*        }*/
+/*        case OBJECT_INTEGER: {*/
+/*            uint64_t idx = key->integer;*/
+/*            object_hash_entry_t *curr_entry = hash_map->table[idx];*/
+/**/
+/*            while(curr_entry != NULL){*/
+/*                if(curr_entry->key->integer == key->integer){*/
+/*                    curr_entry->value = value;*/
+/*                    return true;*/
+/*                }*/
+/*            }*/
+/*            break;*/
+/*        }*/
+/*        default:*/
+/*            return false;*/
+/*    }*/
+/**/
+/*    object_hash_entry_t *entry = malloc(sizeof(hash_entry_t));*/
+/*    if (entry == NULL){*/
+/*        return false;*/
+/*    }*/
+/*    entry->key = key;*/
+/*    entry->value = value;*/
+/*    entry->next = hash_map->table[idx];*/
+/*    hash_map->table[idx] = entry;*/
+/**/
+/*    return true;*/
+/*}*/
+/**/
+/*void *hash_get(hash_map_t *hash_map, object_t *key){*/
+/*    uint64_t idx = fnv1a_hash(key) % TABLE_SIZE;*/
+/*    hash_entry_t *curr_entry = hash_map->table[idx];*/
+/*    while(curr_entry != NULL){*/
+/*        if(strcmp(curr_entry->key, key) == 0){*/
+/*            return curr_entry->value;*/
+/*        }*/
+/*        curr_entry = curr_entry->next;*/
+/*    }*/
+/*    return NULL;*/
+/*}*/
+/**/
+/*uint64_t fnv1a_hash(const char* str) {*/
+/*    uint64_t hash = 0xcbf29ce484222325ULL; // FNV-1a offset basis*/
+/*    while (*str) {*/
+/*        hash ^= (uint64_t)*str++;*/
+/*        hash *= 0x100000001B3ULL; // FNV-1a prime*/
+/*    }*/
+/*    return hash;*/
+/*}*/

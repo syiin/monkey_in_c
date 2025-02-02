@@ -193,6 +193,22 @@ object_t *eval_expression_node(expression_t *expression, environment_t *env){
             return obj;
         }
         case HASH_LITERAL: {
+            object_t *obj = new_object(OBJECT_HASH);
+            hash_map_t *pairs = new_hash_table(free_object);
+            for (int i = 0; i < expression->hash_literal.pairs_len; i++){
+                object_t *key = eval_expression_node(expression->hash_literal.pairs[i]->key, env);
+                if (key->type == OBJECT_ERROR){
+                    return key;
+                }
+                char *actual_key = object_to_key(key);
+                object_t *value = eval_expression_node(expression->hash_literal.pairs[i]->value, env);
+                if (value->type == OBJECT_ERROR){
+                    return value;
+                }
+                hash_set(pairs, actual_key, value);
+            }
+            obj->hash.pairs = pairs;
+            return obj;
         }
         case INDEX_EXPR: {
             object_t *left = eval(expression->index_expression.left, NODE_EXPRESSION, env);

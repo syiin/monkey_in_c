@@ -1,5 +1,6 @@
 #include "vector.h"
 #include <stdlib.h>
+#include <stdint.h>
 
 vector_t *create_vector(){
 	int init_cap = 2;

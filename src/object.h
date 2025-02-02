@@ -31,6 +31,18 @@ typedef struct Function{
 	block_statement_t *body;
 } function_object_t;
 
+/*typedef struct ObjectHashEntry object_hash_entry_t;*/
+/**/
+/*typedef struct ObjectHashEntry{*/
+/*	object_t *key;*/
+/*	object_t *value;*/
+/*	object_hash_entry_t *next;*/
+/*} object_hash_entry_t;*/
+/**/
+/*typedef struct ObjectHashMap{*/
+/*	object_hash_entry_t **table;*/
+/*} object_hash_map_t;*/
+
 typedef struct Hash{
 	hash_map_t *pairs;
 } hash_object_t;
@@ -63,4 +75,5 @@ void inspect_object(object_t object, char *buff_out);
 object_t *object_heap_copy(const object_t *source);
 object_t *get_builtin_by_name(const char *name);
 
+char *object_to_key(object_t *object);
 #endif
