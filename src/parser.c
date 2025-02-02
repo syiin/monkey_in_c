@@ -297,16 +297,24 @@ expression_t *parse_hash_literal(parser_t *parser){
 	while(!peek_token_is(parser, RBRACE)){
 		parser_next_token(parser);
 		expression_t *key_expr = parse_expression(parser, PRECEDENCE_LOWEST); 
-		string_t *key_str = string_new();
-		format_expression_statement(key_str, key_expr);
-		char *key = string_get_data(key_str);
+		char *key;
+		if (key_expr->type == STRING_LITERAL) {
+		    key = strdup(key_expr->string_literal->data);  // Assuming string_literal contains the raw string
+		} else {
+		    string_t *key_str = string_new();
+		    format_expression_statement(key_str, key_expr);
+		    key = string_get_data(key_str);
+		}
 		if (!expect_peek(parser, COLON)){
 			return NULL;
 		}
 		parser_next_token(parser);
 		expression_t *value = parse_expression(parser, PRECEDENCE_LOWEST); 
 
-		hash_set(hash->hash_literal.pairs, key, value);
+		if(!hash_set(hash->hash_literal.pairs, key, value)){
+			printf("FAILED TO SET HASH VALUE\n");
+			return NULL;
+		}
 
 		if(!peek_token_is(parser, RBRACE) && !expect_peek(parser, COMMA)){
 			return NULL;
