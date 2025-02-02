@@ -30,7 +30,7 @@ void check_error(object_t evaluated, char *expected_msg){
                 "wrong type, expected OBJECT_ERROR, got %s\n",
                 object_type_to_string(evaluated.integer));
         char *error_msg = string_get_data(evaluated.error_message);
-        assertf(strcmp(error_msg, expected_msg) != 0,
+        assertf(strcmp(error_msg, expected_msg) == 0,
                "wrong error message, expected %s, got %s\n",
                expected_msg,
                error_msg);
@@ -225,7 +225,7 @@ void test_eval_error_handling() {
                 },
                 {
                    "-true",
-                   "unknown operator: -OBJECT_BOOLEAN"
+                   "unknown operator: -OBJECT_BOOLEAN "
                 },
                 {
                    "true + false;",
@@ -254,7 +254,11 @@ void test_eval_error_handling() {
                 },
                 {
                 "\"Hello\" - \"World\"",
-                "unknown operator: STRING - STRING",
+                "unknown operator: OBJECT_STRING - OBJECT_STRING",
+                },
+                {
+                "{\"name\": \"Monkey\"}[fn(x) { x }];",
+                "unusable as hash key: OBJECT_FUNCTION",
                 },
         };
 
@@ -630,6 +634,78 @@ void test_eval_hash_literals(void) {
             "wrong value for 'false'. got=%d", value->integer);
 }
 
+void test_hash_index_expressions(void) {
+    // Test cases as array of structs
+    struct {
+        char *input;
+        int expected;
+        bool is_null;  // To handle nil/null cases
+    } tests[] = {
+        {
+            "{'foo': 5}['foo']",
+            5,
+            false
+        },
+        {
+            "{'foo': 5}['bar']", 
+            0,  // Value doesn't matter when is_null is true
+            true
+        },
+        {
+            "let key = 'foo'; {'foo': 5}[key]",
+            5,
+            false
+        },
+        {
+            "{}['foo']",
+            0,
+            true
+        },
+        {
+            "{5: 5}[5]",
+            5,
+            false
+        },
+        {
+            "{true: 5}[true]",
+            5,
+            false
+        },
+        {
+            "{false: 5}[false]",
+            5,
+            false
+        }
+    };
+
+    int tests_count = sizeof(tests) / sizeof(tests[0]);
+
+    // Run each test case
+    for (int i = 0; i < tests_count; i++) {
+        lexer_t *lexer = new_lexer(tests[i].input);
+        parser_t *parser = new_parser(lexer);
+        program_t *program = parse_program(parser);
+        environment_t *env = new_environment();
+        object_t *evaluated = eval_program(program, env);
+
+        if (tests[i].is_null) {
+            // Test for null cases
+            assertf(evaluated->type == OBJECT_NULL,
+                   "expected null for input '%s'. got=%d",
+                   tests[i].input, evaluated->type);
+        } else {
+            // Test for integer cases
+            assertf(evaluated->type == OBJECT_INTEGER,
+                   "wrong type for input '%s'. got=%d, want=OBJECT_INTEGER",
+                   tests[i].input, evaluated->type);
+            
+            assertf(evaluated->integer == tests[i].expected,
+                   "wrong integer value for input '%s'. got=%d, want=%d",
+                   tests[i].input, evaluated->integer, tests[i].expected);
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
         TEST(test_eval_boolean_expression);
         TEST(test_eval_integer_expression);
@@ -646,4 +722,5 @@ int main(int argc, char *argv[]) {
         TEST(test_array_literals);
         TEST(test_array_index_expressions);
         TEST(test_eval_hash_literals);
+        TEST(test_hash_index_expressions);
 }

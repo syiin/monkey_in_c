@@ -138,9 +138,9 @@ object_t *eval_expression_node(expression_t *expression, environment_t *env){
                 value = get_builtin_by_name(expression->ident.value);
             }
             if (value == NULL){
-                object_t *obj = new_object(OBJECT_ERROR);
-                obj->error_message = string_from("identifier not found");
-                return obj;
+                char error_msg[BUFSIZ];
+                snprintf(error_msg, BUFSIZ, "identifier not found: %s", expression->ident.value);
+                return new_error(error_msg);
             }
 
             return value;
@@ -316,7 +316,7 @@ object_t *eval_prefix_expression(char *op, object_t *right){
 object_t *eval_infix_expression(char *op, object_t *left, object_t *right){
     if (left->type != right->type){
         char error_msg[BUFSIZ];
-        snprintf(error_msg, BUFSIZ, "type mismatched: %s %s %s",object_type_to_string(right->type), op, object_type_to_string(right->type));
+        snprintf(error_msg, BUFSIZ, "type mismatch: %s %s %s",object_type_to_string(left->type), op, object_type_to_string(right->type));
         return new_error(error_msg);
     } else if(left->type == OBJECT_INTEGER && right->type == OBJECT_INTEGER){
         return eval_integer_infix_expression(op, left, right);
@@ -332,14 +332,14 @@ object_t *eval_infix_expression(char *op, object_t *left, object_t *right){
     }
 
     char error_msg[BUFSIZ];
-    snprintf(error_msg, BUFSIZ, "unknown operator: %s%s%s",object_type_to_string(right->type), op, object_type_to_string(right->type));
+    snprintf(error_msg, BUFSIZ, "unknown operator: %s %s %s",object_type_to_string(right->type), op, object_type_to_string(right->type));
     return new_error(error_msg);
 }
 
 object_t *eval_string_infix_expression(char *op, object_t *left, object_t *right){
     if (strcmp(op, "+") != 0){
         char error_msg[BUFSIZ];
-        snprintf(error_msg, BUFSIZ, "unknown operator: %s%s%s",object_type_to_string(right->type), op, object_type_to_string(right->type));
+        snprintf(error_msg, BUFSIZ, "unknown operator: %s %s %s",object_type_to_string(right->type), op, object_type_to_string(right->type));
         return new_error(error_msg);
     }
 
