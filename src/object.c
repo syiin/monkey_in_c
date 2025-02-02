@@ -296,7 +296,7 @@ char *object_to_key(object_t *object){
             snprintf(buf, sizeof(buf), "%d_%d", object->type, object->integer);
             break;
         case OBJECT_BOOLEAN:
-            snprintf(buf, sizeof(buf), "%d_%d", object->type, object->boolean ? 1 : 0);
+            snprintf(buf, sizeof(buf), "%d_%s", object->type, object->boolean ? "true" : "false");
             break;
         default:
             printf("WARNING: INVALID OBJECT PASSED AS KEY\n");
