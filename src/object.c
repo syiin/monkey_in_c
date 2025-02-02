@@ -259,6 +259,15 @@ object_t *push_builtin(vector_t *args){
     return new_array;
 }
 
+object_t *puts_builtin(vector_t *args){
+    char buf[BUFSIZ];
+    for (int i = 0; i < args->count; i++){
+        inspect_object(*(object_t *)args->data[i], buf);
+    }
+    printf("%s\n", buf);
+    return global_null;
+}
+
 
 object_t *get_builtin_by_name(const char *name) {
     if (strcmp(name, "len") == 0) {
@@ -281,6 +290,10 @@ object_t *get_builtin_by_name(const char *name) {
         object_t *built_in_obj = new_object(OBJECT_BUILTIN);
         built_in_obj->builtin = push_builtin;
         return built_in_obj;
+    } else if(strcmp(name, "puts") == 0){
+        object_t *built_in_obj = new_object(OBJECT_BUILTIN);
+        built_in_obj->builtin = puts_builtin;
+        return built_in_obj;
     }
 
     return NULL;
@@ -298,25 +311,6 @@ char *object_to_key(object_t *object){
             break;
         case OBJECT_BOOLEAN:
             snprintf(buf, sizeof(buf), "%s-%s", object_type, object->boolean ? "true" : "false");
-            break;
-        default:
-            printf("WARNING: INVALID OBJECT PASSED AS KEY\n");
-    }
-    return strdup(buf);
-}
-
-
-char *object_to_formattable_key(object_t *object){
-    char buf[128];
-    switch(object->type){
-        case OBJECT_STRING:
-            snprintf(buf, sizeof(buf), "%s", object->string_literal->data);
-            break;
-        case OBJECT_INTEGER:
-            snprintf(buf, sizeof(buf), "%d", object->integer);
-            break;
-        case OBJECT_BOOLEAN:
-            snprintf(buf, sizeof(buf), "%s", object->boolean ? "true" : "false");
             break;
         default:
             printf("WARNING: INVALID OBJECT PASSED AS KEY\n");
