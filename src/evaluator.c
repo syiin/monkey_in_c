@@ -12,6 +12,8 @@ char *object_type_to_string(object_type_t object_type){
     switch(object_type){
         case OBJECT_INTEGER:
             return "OBJECT_INTEGER";
+        case OBJECT_STRING:
+            return "OBJECT_STRING";
         case OBJECT_BOOLEAN:
             return "OBJECT_BOOLEAN";
         case OBJECT_NULL:

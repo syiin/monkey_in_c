@@ -594,37 +594,37 @@ void test_eval_hash_literals(void) {
     object_t *value;
 
     // Test "one": 10 - 9
-    value = hash_get(pairs, "one");
+    value = hash_get(pairs, "OBJECT_STRING_one");
     assertf(value != NULL, "no pair for key 'one'");
     assertf(value->type == OBJECT_INTEGER && value->integer == 1,
             "wrong value for 'one'. got=%d", value->integer);
 
     // Test two: 1 + 1
-    value = hash_get(pairs, "two");
+    value = hash_get(pairs, "OBJECT_STRING_two");
     assertf(value != NULL, "no pair for key 'two'");
     assertf(value->type == OBJECT_INTEGER && value->integer == 2,
             "wrong value for 'two'. got=%d", value->integer);
 
     // Test "three": 6 / 2 
-    value = hash_get(pairs, "three");
+    value = hash_get(pairs, "OBJECT_STRING_three");
     assertf(value != NULL, "no pair for key 'three'");
     assertf(value->type == OBJECT_INTEGER && value->integer == 3,
             "wrong value for 'three'. got=%d", value->integer);
 
     // Test 4: 4
-    value = hash_get(pairs, "4");  // integer keys stored as strings
+    value = hash_get(pairs, "OBJECT_INTEGER_4");  // integer keys stored as strings
     assertf(value != NULL, "no pair for key '4'");
     assertf(value->type == OBJECT_INTEGER && value->integer == 4,
             "wrong value for '4'. got=%d", value->integer);
 
     // Test true: 5
-    value = hash_get(pairs, "true");
+    value = hash_get(pairs, "OBJECT_BOOLEAN_true");
     assertf(value != NULL, "no pair for key 'true'");
     assertf(value->type == OBJECT_INTEGER && value->integer == 5,
             "wrong value for 'true'. got=%d", value->integer);
 
     // Test false: 6
-    value = hash_get(pairs, "false");
+    value = hash_get(pairs, "OBJECT_BOOLEAN_false");
     assertf(value != NULL, "no pair for key 'false'");
     assertf(value->type == OBJECT_INTEGER && value->integer == 6,
             "wrong value for 'false'. got=%d", value->integer);

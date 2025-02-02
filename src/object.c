@@ -288,15 +288,16 @@ object_t *get_builtin_by_name(const char *name) {
 
 char *object_to_key(object_t *object){
     char buf[128];
+    char *object_type = object_type_to_string(object->type);
     switch(object->type){
         case OBJECT_STRING:
-            snprintf(buf, sizeof(buf), "%d_%s", object->type, object->string_literal->data);
+            snprintf(buf, sizeof(buf), "%s_%s", object_type, object->string_literal->data);
             break;
         case OBJECT_INTEGER:
-            snprintf(buf, sizeof(buf), "%d_%d", object->type, object->integer);
+            snprintf(buf, sizeof(buf), "%s_%d", object_type, object->integer);
             break;
         case OBJECT_BOOLEAN:
-            snprintf(buf, sizeof(buf), "%d_%s", object->type, object->boolean ? "true" : "false");
+            snprintf(buf, sizeof(buf), "%s_%s", object_type, object->boolean ? "true" : "false");
             break;
         default:
             printf("WARNING: INVALID OBJECT PASSED AS KEY\n");
